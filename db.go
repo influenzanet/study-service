@@ -14,6 +14,12 @@ func collectionRefSurveys(instanceID string) *mongo.Collection {
 	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studies").Collection("survey-definitions")
 }
 
+// DB utils
+func getContext() (ctx context.Context, cancel context.CancelFunc) {
+	return context.WithTimeout(context.Background(), time.Duration(conf.DB.Timeout)*time.Second)
+}
+
+// Connect to DB
 func dbInit() {
 	var err error
 	dbClient, err = mongo.NewClient(

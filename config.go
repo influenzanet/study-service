@@ -12,6 +12,7 @@ type Config struct {
 	Port string
 	DB   struct {
 		URI             string
+		DBNamePrefix    string
 		Timeout         int
 		MaxPoolSize     uint64
 		IdleConnTimeout int
@@ -47,4 +48,6 @@ func getDBConfig() {
 	if err != nil {
 		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
+
+	conf.DB.DBNamePrefix = os.Getenv("DB_DB_NAME_PREFIX")
 }
