@@ -14,6 +14,10 @@ func collectionRefSurveys(instanceID string) *mongo.Collection {
 	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studies").Collection("survey-definitions")
 }
 
+func collectionRefReports(instanceID string, studyID string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studies").Collection(studyID + "_reports")
+}
+
 // DB utils
 func getContext() (ctx context.Context, cancel context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(conf.DB.Timeout)*time.Second)
