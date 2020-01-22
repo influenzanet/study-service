@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -24,6 +25,8 @@ func (s *studyServiceServer) CreateSurvey(ctx context.Context, req *api.CreateSu
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.SurveyDef == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
+
+	log.Println(req.SurveyDef)
 
 	newSurvey := models.Survey{
 		Current: models.SurveyVersion{

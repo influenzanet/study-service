@@ -60,7 +60,7 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
 	default:
 		log.Printf("api.ExpressionArg has unexpected type %T", x)
 	}
-	return ExpressionArg{}
+	return newEA
 }
 
 func ExpressionFromAPI(e *api.Expression) Expression {
