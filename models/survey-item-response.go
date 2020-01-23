@@ -3,12 +3,12 @@ package models
 import api "github.com/influenzanet/study-service/api"
 
 type SurveyItemResponse struct {
-	Key  string       `bson:"key"`
-	Meta ResponseMeta `bson:"meta"`
+	Key  string       `bson:"key,omitempty"`
+	Meta ResponseMeta `bson:"meta,omitempty"`
 	// for item groups:
-	Items []SurveyItemResponse `bson:"items"`
+	Items []SurveyItemResponse `bson:"items,omitempty"`
 	// for single items:
-	Response ResponseValue `bson:"response"`
+	Response *ResponseValue `bson:"response,omitempty"`
 }
 
 func (sir SurveyItemResponse) ToAPI() *api.SurveyItemResponse {
@@ -16,12 +16,15 @@ func (sir SurveyItemResponse) ToAPI() *api.SurveyItemResponse {
 	for i, si := range sir.Items {
 		items[i] = si.ToAPI()
 	}
-	return &api.SurveyItemResponse{
-		Key:      sir.Key,
-		Meta:     sir.Meta.ToAPI(),
-		Items:    items,
-		Response: sir.Response.ToAPI(),
+	apiResp := &api.SurveyItemResponse{
+		Key:   sir.Key,
+		Meta:  sir.Meta.ToAPI(),
+		Items: items,
 	}
+	if sir.Response != nil {
+		apiResp.Response = sir.Response.ToAPI()
+	}
+	return apiResp
 }
 
 func SurveyItemResponseFromAPI(sir *api.SurveyItemResponse) SurveyItemResponse {
@@ -42,11 +45,11 @@ func SurveyItemResponseFromAPI(sir *api.SurveyItemResponse) SurveyItemResponse {
 
 // ResponseValue
 type ResponseValue struct {
-	Key   string `bson:"key"`
-	Value string `bson:"value"`
-	Dtype string `bson:"dtype"`
+	Key   string `bson:"key,omitempty"`
+	Value string `bson:"value,omitempty"`
+	Dtype string `bson:"dtype,omitempty"`
 	// For response option groups:
-	Items []ResponseValue `bson:"items"`
+	Items []ResponseValue `bson:"items,omitempty"`
 }
 
 func (rv ResponseValue) ToAPI() *api.ResponseValue {
@@ -62,15 +65,15 @@ func (rv ResponseValue) ToAPI() *api.ResponseValue {
 	}
 }
 
-func ResponseValueFromAPI(rv *api.ResponseValue) ResponseValue {
+func ResponseValueFromAPI(rv *api.ResponseValue) *ResponseValue {
 	if rv == nil {
-		return ResponseValue{}
+		return nil
 	}
 	items := make([]ResponseValue, len(rv.Items))
 	for i, si := range rv.Items {
-		items[i] = ResponseValueFromAPI(si)
+		items[i] = *ResponseValueFromAPI(si)
 	}
-	return ResponseValue{
+	return &ResponseValue{
 		Key:   rv.Key,
 		Value: rv.Value,
 		Dtype: rv.Dtype,
