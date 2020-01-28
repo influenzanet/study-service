@@ -7,9 +7,9 @@ import (
 )
 
 type Expression struct {
-	Name  string          `bson:"name"`
-	DType string          `bson:"dtype"`
-	Data  []ExpressionArg `bson:"data"`
+	Name       string          `bson:"name"`
+	ReturnType string          `bson:"returnType"`
+	Data       []ExpressionArg `bson:"data"`
 }
 
 type ExpressionArg struct {
@@ -36,9 +36,9 @@ func (e Expression) ToAPI() *api.Expression {
 		data[i] = ea.ToAPI()
 	}
 	return &api.Expression{
-		Name:  e.Name,
-		Dtype: e.DType,
-		Data:  data,
+		Name:       e.Name,
+		ReturnType: e.ReturnType,
+		Data:       data,
 	}
 }
 
@@ -69,7 +69,7 @@ func ExpressionFromAPI(e *api.Expression) Expression {
 		return exp
 	}
 	exp.Name = e.Name
-	exp.DType = e.Dtype
+	exp.ReturnType = e.ReturnType
 
 	exp.Data = make([]ExpressionArg, len(e.Data))
 	for i, ea := range e.Data {

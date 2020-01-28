@@ -8,7 +8,7 @@ type SurveyItemResponse struct {
 	// for item groups:
 	Items []SurveyItemResponse `bson:"items,omitempty"`
 	// for single items:
-	Response *ResponseValue `bson:"response,omitempty"`
+	Response *ResponseItem `bson:"response,omitempty"`
 }
 
 func (sir SurveyItemResponse) ToAPI() *api.SurveyItemResponse {
@@ -39,25 +39,25 @@ func SurveyItemResponseFromAPI(sir *api.SurveyItemResponse) SurveyItemResponse {
 		Key:      sir.Key,
 		Meta:     ResponseMetaFromAPI(sir.Meta),
 		Items:    items,
-		Response: ResponseValueFromAPI(sir.Response),
+		Response: ResponseItemFromAPI(sir.Response),
 	}
 }
 
-// ResponseValue
-type ResponseValue struct {
+// ResponseItem
+type ResponseItem struct {
 	Key   string `bson:"key,omitempty"`
 	Value string `bson:"value,omitempty"`
 	Dtype string `bson:"dtype,omitempty"`
 	// For response option groups:
-	Items []ResponseValue `bson:"items,omitempty"`
+	Items []ResponseItem `bson:"items,omitempty"`
 }
 
-func (rv ResponseValue) ToAPI() *api.ResponseValue {
-	items := make([]*api.ResponseValue, len(rv.Items))
+func (rv ResponseItem) ToAPI() *api.ResponseItem {
+	items := make([]*api.ResponseItem, len(rv.Items))
 	for i, si := range rv.Items {
 		items[i] = si.ToAPI()
 	}
-	return &api.ResponseValue{
+	return &api.ResponseItem{
 		Key:   rv.Key,
 		Value: rv.Value,
 		Dtype: rv.Dtype,
@@ -65,15 +65,15 @@ func (rv ResponseValue) ToAPI() *api.ResponseValue {
 	}
 }
 
-func ResponseValueFromAPI(rv *api.ResponseValue) *ResponseValue {
+func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 	if rv == nil {
 		return nil
 	}
-	items := make([]ResponseValue, len(rv.Items))
+	items := make([]ResponseItem, len(rv.Items))
 	for i, si := range rv.Items {
-		items[i] = *ResponseValueFromAPI(si)
+		items[i] = *ResponseItemFromAPI(si)
 	}
-	return &ResponseValue{
+	return &ResponseItem{
 		Key:   rv.Key,
 		Value: rv.Value,
 		Dtype: rv.Dtype,
