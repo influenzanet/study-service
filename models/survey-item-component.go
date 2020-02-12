@@ -16,6 +16,8 @@ type ItemComponent struct {
 
 	// response compontent
 	Dtype string `bson:"dtype,omitempty"`
+
+	Style []Style `bson:"style,omitempty"`
 }
 
 func (comp ItemComponent) ToAPI() *api.ItemComponent {
@@ -27,6 +29,10 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 	for i, si := range comp.Items {
 		items[i] = si.ToAPI()
 	}
+	style := make([]*api.ItemComponent_Style, len(comp.Style))
+	for i, si := range comp.Style {
+		style[i] = si.ToAPI()
+	}
 
 	apiComp := &api.ItemComponent{
 		Role:             comp.Role,
@@ -37,6 +43,7 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 		Items:            items,
 
 		Dtype: comp.Dtype,
+		Style: style,
 	}
 	if comp.Order != nil {
 		apiComp.Order = comp.Order.ToAPI()
@@ -57,6 +64,11 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 		items[i] = ItemComponentFromAPI(si)
 	}
 
+	style := make([]Style, len(comp.Style))
+	for i, si := range comp.Style {
+		style[i] = StyleFromAPI(si)
+	}
+
 	dbComp := ItemComponent{
 		Role:             comp.Role,
 		Key:              comp.Key,
@@ -66,12 +78,35 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 		Items:            items,
 
 		Dtype: comp.Dtype,
+		Style: style,
 	}
 	if comp.Order != nil {
 		exp := ExpressionFromAPI(comp.Order)
 		dbComp.Order = &exp
 	}
 	return dbComp
+}
+
+type Style struct {
+	Key   string
+	Value string
+}
+
+func (s Style) ToAPI() *api.ItemComponent_Style {
+	return &api.ItemComponent_Style{
+		Key:   s.Key,
+		Value: s.Value,
+	}
+}
+
+func StyleFromAPI(st *api.ItemComponent_Style) Style {
+	if st == nil {
+		return Style{}
+	}
+	return Style{
+		st.Key,
+		st.Value,
+	}
 }
 
 // LocalisedObject

@@ -19,20 +19,15 @@ type SurveyItem struct {
 	SelectionMethod Expression   `bson:"selectionMethod"`
 
 	// Question attributes ->
-	Type        string          `bson:"type"`
-	Components  []ItemComponent `bson:"components,omitempty"`
-	Validations []Validation    `bson:"validations,omitempty"`
+	Type        string        `bson:"type"`
+	Components  ItemComponent `bson:"components,omitempty"`
+	Validations []Validation  `bson:"validations,omitempty"`
 }
 
 func (s SurveyItem) ToAPI() *api.SurveyItem {
 	items := make([]*api.SurveyItem, len(s.Items))
 	for i, si := range s.Items {
 		items[i] = si.ToAPI()
-	}
-
-	components := make([]*api.ItemComponent, len(s.Components))
-	for i, si := range s.Components {
-		components[i] = si.ToAPI()
 	}
 
 	validations := make([]*api.Validation, len(s.Validations))
@@ -51,7 +46,7 @@ func (s SurveyItem) ToAPI() *api.SurveyItem {
 		Items:           items,
 		SelectionMethod: s.SelectionMethod.ToAPI(),
 		Type:            s.Type,
-		Components:      components,
+		Components:      s.Components.ToAPI(),
 		Validations:     validations,
 	}
 }
@@ -63,11 +58,6 @@ func SurveyItemFromAPI(s *api.SurveyItem) SurveyItem {
 	items := make([]SurveyItem, len(s.Items))
 	for i, si := range s.Items {
 		items[i] = SurveyItemFromAPI(si)
-	}
-
-	components := make([]ItemComponent, len(s.Components))
-	for i, si := range s.Components {
-		components[i] = ItemComponentFromAPI(si)
 	}
 
 	validations := make([]Validation, len(s.Validations))
@@ -88,7 +78,7 @@ func SurveyItemFromAPI(s *api.SurveyItem) SurveyItem {
 		Items:           items,
 		SelectionMethod: ExpressionFromAPI(s.SelectionMethod),
 		Type:            s.Type,
-		Components:      components,
+		Components:      ItemComponentFromAPI(s.Components),
 		Validations:     validations,
 	}
 }
