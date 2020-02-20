@@ -17,7 +17,8 @@ type ItemComponent struct {
 	// response compontent
 	Dtype string `bson:"dtype,omitempty"`
 
-	Style []Style `bson:"style,omitempty"`
+	Style       []Style           `bson:"style,omitempty"`
+	Description []LocalisedObject `bson:"description"`
 }
 
 func (comp ItemComponent) ToAPI() *api.ItemComponent {
@@ -25,6 +26,11 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 	for i, si := range comp.Content {
 		content[i] = si.ToAPI()
 	}
+	description := make([]*api.LocalisedObject, len(comp.Description))
+	for i, si := range comp.Description {
+		description[i] = si.ToAPI()
+	}
+
 	items := make([]*api.ItemComponent, len(comp.Items))
 	for i, si := range comp.Items {
 		items[i] = si.ToAPI()
@@ -42,8 +48,9 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 		Disabled:         comp.Disabled.ToAPI(),
 		Items:            items,
 
-		Dtype: comp.Dtype,
-		Style: style,
+		Dtype:       comp.Dtype,
+		Style:       style,
+		Description: description,
 	}
 	if comp.Order != nil {
 		apiComp.Order = comp.Order.ToAPI()
@@ -58,6 +65,10 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 	content := make([]LocalisedObject, len(comp.Content))
 	for i, si := range comp.Content {
 		content[i] = LocalisedObjectFromAPI(si)
+	}
+	description := make([]LocalisedObject, len(comp.Description))
+	for i, si := range comp.Description {
+		description[i] = LocalisedObjectFromAPI(si)
 	}
 	items := make([]ItemComponent, len(comp.Items))
 	for i, si := range comp.Items {
@@ -77,8 +88,9 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 		Disabled:         ExpressionFromAPI(comp.Disabled),
 		Items:            items,
 
-		Dtype: comp.Dtype,
-		Style: style,
+		Dtype:       comp.Dtype,
+		Style:       style,
+		Description: description,
 	}
 	if comp.Order != nil {
 		exp := ExpressionFromAPI(comp.Order)
@@ -88,8 +100,8 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 }
 
 type Style struct {
-	Key   string
-	Value string
+	Key   string `bson:"key"`
+	Value string `bson:"value"`
 }
 
 func (s Style) ToAPI() *api.ItemComponent_Style {
@@ -104,8 +116,33 @@ func StyleFromAPI(st *api.ItemComponent_Style) Style {
 		return Style{}
 	}
 	return Style{
-		st.Key,
-		st.Value,
+		Key:   st.Key,
+		Value: st.Value,
+	}
+}
+
+type ComponentProperties struct {
+	Min      ExpressionArg `bson:"min"`
+	Max      ExpressionArg `bson:"max"`
+	StepSize ExpressionArg `bson:"stepSize"`
+}
+
+func (s ComponentProperties) ToAPI() *api.ItemComponent_Properties {
+	return &api.ItemComponent_Properties{
+		Min:      s.Min.ToAPI(),
+		Max:      s.Max.ToAPI(),
+		StepSize: s.StepSize.ToAPI(),
+	}
+}
+
+func ComponentPropertiesFromAPI(st *api.ItemComponent_Properties) ComponentProperties {
+	if st == nil {
+		return ComponentProperties{}
+	}
+	return ComponentProperties{
+		Min:      ExpressionArgFromAPI(st.Min),
+		Max:      ExpressionArgFromAPI(st.Max),
+		StepSize: ExpressionArgFromAPI(st.StepSize),
 	}
 }
 
