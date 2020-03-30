@@ -3,10 +3,11 @@ package models
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Survey struct {
-	ID      primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-
-	Current SurveyVersion      `bson:"current"`
-	History []SurveyVersion    `bson:"history"`
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name        string             `bson:"name"`
+	Description string             `bson:"description"`
+	Current     SurveyVersion      `bson:"current"`
+	History     []SurveyVersion    `bson:"history"`
 }
 
 type SurveyVersion struct {

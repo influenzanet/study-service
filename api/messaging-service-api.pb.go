@@ -140,7 +140,9 @@ func init() {
 	proto.RegisterType((*MessagingRequest_Override)(nil), "inf.messaging_service_api.MessagingRequest.Override")
 }
 
-func init() { proto.RegisterFile("messaging-service-api.proto", fileDescriptor_d683ee4dabdf70fd) }
+func init() {
+	proto.RegisterFile("messaging-service-api.proto", fileDescriptor_d683ee4dabdf70fd)
+}
 
 var fileDescriptor_d683ee4dabdf70fd = []byte{
 	// 315 bytes of a gzipped FileDescriptorProto
@@ -168,11 +170,11 @@ var fileDescriptor_d683ee4dabdf70fd = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // MessagingServiceApiClient is the client API for MessagingServiceApi service.
 //
@@ -183,10 +185,10 @@ type MessagingServiceApiClient interface {
 }
 
 type messagingServiceApiClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewMessagingServiceApiClient(cc *grpc.ClientConn) MessagingServiceApiClient {
+func NewMessagingServiceApiClient(cc grpc.ClientConnInterface) MessagingServiceApiClient {
 	return &messagingServiceApiClient{cc}
 }
 

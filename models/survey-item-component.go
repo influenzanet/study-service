@@ -15,7 +15,8 @@ type ItemComponent struct {
 	Order *Expression     `bson:"order,omitempty"`
 
 	// response compontent
-	Dtype string `bson:"dtype,omitempty"`
+	Dtype      string              `bson:"dtype,omitempty"`
+	Properties ComponentProperties `bson:"properties,omitempty"`
 
 	Style       []Style           `bson:"style,omitempty"`
 	Description []LocalisedObject `bson:"description"`
@@ -49,6 +50,7 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 		Items:            items,
 
 		Dtype:       comp.Dtype,
+		Properties:  comp.Properties.ToAPI(),
 		Style:       style,
 		Description: description,
 	}
@@ -89,6 +91,7 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 		Items:            items,
 
 		Dtype:       comp.Dtype,
+		Properties:  ComponentPropertiesFromAPI(comp.Properties),
 		Style:       style,
 		Description: description,
 	}
@@ -122,16 +125,18 @@ func StyleFromAPI(st *api.ItemComponent_Style) Style {
 }
 
 type ComponentProperties struct {
-	Min      ExpressionArg `bson:"min"`
-	Max      ExpressionArg `bson:"max"`
-	StepSize ExpressionArg `bson:"stepSize"`
+	Min           ExpressionArg `bson:"min"`
+	Max           ExpressionArg `bson:"max"`
+	StepSize      ExpressionArg `bson:"stepSize"`
+	DateInputMode ExpressionArg `bson:"dateInputMode"`
 }
 
 func (s ComponentProperties) ToAPI() *api.ItemComponent_Properties {
 	return &api.ItemComponent_Properties{
-		Min:      s.Min.ToAPI(),
-		Max:      s.Max.ToAPI(),
-		StepSize: s.StepSize.ToAPI(),
+		Min:           s.Min.ToAPI(),
+		Max:           s.Max.ToAPI(),
+		StepSize:      s.StepSize.ToAPI(),
+		DateInputMode: s.DateInputMode.ToAPI(),
 	}
 }
 
@@ -140,9 +145,10 @@ func ComponentPropertiesFromAPI(st *api.ItemComponent_Properties) ComponentPrope
 		return ComponentProperties{}
 	}
 	return ComponentProperties{
-		Min:      ExpressionArgFromAPI(st.Min),
-		Max:      ExpressionArgFromAPI(st.Max),
-		StepSize: ExpressionArgFromAPI(st.StepSize),
+		Min:           ExpressionArgFromAPI(st.Min),
+		Max:           ExpressionArgFromAPI(st.Max),
+		StepSize:      ExpressionArgFromAPI(st.StepSize),
+		DateInputMode: ExpressionArgFromAPI(st.DateInputMode),
 	}
 }
 

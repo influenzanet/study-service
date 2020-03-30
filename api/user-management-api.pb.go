@@ -900,7 +900,9 @@ func init() {
 	proto.RegisterType((*EmailChangeMsg)(nil), "inf.user_management_api.EmailChangeMsg")
 }
 
-func init() { proto.RegisterFile("user-management-api.proto", fileDescriptor_23188efcd8e5ff27) }
+func init() {
+	proto.RegisterFile("user-management-api.proto", fileDescriptor_23188efcd8e5ff27)
+}
 
 var fileDescriptor_23188efcd8e5ff27 = []byte{
 	// 1093 bytes of a gzipped FileDescriptorProto
@@ -977,11 +979,11 @@ var fileDescriptor_23188efcd8e5ff27 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // UserManagementApiClient is the client API for UserManagementApi service.
 //
@@ -1009,10 +1011,10 @@ type UserManagementApiClient interface {
 }
 
 type userManagementApiClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewUserManagementApiClient(cc *grpc.ClientConn) UserManagementApiClient {
+func NewUserManagementApiClient(cc grpc.ClientConnInterface) UserManagementApiClient {
 	return &userManagementApiClient{cc}
 }
 
