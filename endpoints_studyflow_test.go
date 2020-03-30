@@ -1,16 +1,29 @@
 package main
 
 import (
+	"context"
 	"testing"
+
+	"github.com/influenzanet/study-service/api"
 )
 
 func TestEnterStudyEndpoint(t *testing.T) {
+	s := studyServiceServer{}
+
 	t.Run("with missing request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.EnterStudy(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.EnterStudy(context.Background(), &api.EnterStudyRequest{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
@@ -23,12 +36,21 @@ func TestEnterStudyEndpoint(t *testing.T) {
 }
 
 func TestGetAssignedSurveysEndpoint(t *testing.T) {
+	s := studyServiceServer{}
 	t.Run("with missing request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.GetAssignedSurveys(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.GetAssignedSurveys(context.Background(), &api.TokenInfos{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
@@ -41,12 +63,21 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 }
 
 func TestGetAssignedSurveyEndpoint(t *testing.T) {
+	s := studyServiceServer{}
 	t.Run("with missing request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.GetAssignedSurvey(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
@@ -59,12 +90,21 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 }
 
 func TestSubmitStatusReportEndpoint(t *testing.T) {
+	s := studyServiceServer{}
 	t.Run("with missing request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitStatusReport(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitStatusReport(context.Background(), &api.StatusReportRequest{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
@@ -77,12 +117,21 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 }
 
 func TestSubmitResponseEndpoint(t *testing.T) {
+	s := studyServiceServer{}
 	t.Run("with missing request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitResponse(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
