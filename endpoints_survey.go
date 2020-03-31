@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Status endpoint should return internal status of the system if running correctly
 func (s *studyServiceServer) Status(ctx context.Context, _ *empty.Empty) (*api.Status, error) {
 	return &api.Status{
 		Status: api.Status_NORMAL,

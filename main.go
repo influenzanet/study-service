@@ -1,3 +1,5 @@
+// Study service is responsible for handling study related logic, such as
+// handling participants, receiving survey responses etc.
 package main
 
 import (
