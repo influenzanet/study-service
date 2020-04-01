@@ -13,9 +13,10 @@ type Expression struct {
 }
 
 type ExpressionArg struct {
-	Exp Expression `bson:"exp"`
-	Str string     `bson:"str"`
-	Num float64    `bson:"num"`
+	DType string     `bson:"dtype"`
+	Exp   Expression `bson:"exp"`
+	Str   string     `bson:"str"`
+	Num   float64    `bson:"num"`
 }
 
 func (e ExpressionArg) ToAPI() *api.ExpressionArg {
@@ -27,6 +28,7 @@ func (e ExpressionArg) ToAPI() *api.ExpressionArg {
 	} else {
 		eargs.Data = &api.ExpressionArg_Num{Num: e.Num}
 	}
+	eargs.Dtype = e.DType
 	return eargs
 }
 
@@ -60,6 +62,7 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
 	default:
 		log.Printf("api.ExpressionArg has unexpected type %T", x)
 	}
+	newEA.DType = e.Dtype
 	return newEA
 }
 
@@ -76,4 +79,8 @@ func ExpressionFromAPI(e *api.Expression) Expression {
 		exp.Data[i] = ExpressionArgFromAPI(ea)
 	}
 	return exp
+}
+
+func (exp ExpressionArg) IsExpression() bool {
+	return exp.DType == "exp"
 }
