@@ -2,6 +2,7 @@ package studyengine
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/influenzanet/study-service/models"
 )
@@ -12,8 +13,8 @@ func ActionEval(action models.Action, oldState models.ParticipantState, event mo
 	switch action.Name {
 	case "IFTHEN":
 		newState, err = ifThenAction(action, oldState, event)
-	case "UPDATE_FLAG_STATUS":
-		err = errors.New("not implemented")
+	case "UPDATE_FLAG":
+		newState, err = updateFlagAction(action, oldState, event)
 	case "ADD_NEW_SURVEY":
 		err = errors.New("not implemented")
 	case "REMOVE_ALL_SURVEYS":
@@ -46,6 +47,7 @@ func checkCondition(condition models.ExpressionArg, evalContext evalContext) boo
 	return bVal && ok && err == nil
 }
 
+// ifThenAction is used to conditionally perform a sequence of actions
 func ifThenAction(action models.Action, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
 	evalContext := evalContext{
@@ -57,6 +59,41 @@ func ifThenAction(action models.Action, oldState models.ParticipantState, event 
 	}
 	for _, action := range action.Actions {
 		newState, err = ActionEval(action, newState, event)
+		if err != nil {
+			return newState, err
+		}
 	}
+	return
+}
+
+// updateFlagAction is used to update one of the string flags from the participant state
+func updateFlagAction(action models.Action, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Args) != 2 {
+		return newState, errors.New("updateFlagAction must have exactly two arguments")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Args[0])
+	if err != nil {
+		return newState, err
+	}
+	v, err := evalContext.expressionArgResolver(action.Args[1])
+	if err != nil {
+		return newState, err
+	}
+
+	key := k.(string)
+	value := v.(string)
+
+	switch key {
+	case "status":
+		newState.Flags.Status = value
+	default:
+		return newState, fmt.Errorf("status key not known: %s", key)
+	}
+
 	return
 }

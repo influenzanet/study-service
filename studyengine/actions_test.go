@@ -31,13 +31,45 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("IFTHEN", func(t *testing.T) {
-		t.Error("test unimplemented")
+		action2 := models.Action{
+			Name: "UPDATE_FLAG",
+			Args: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "status"},
+				models.ExpressionArg{DType: "str", Str: "testflag_cond"},
+			},
+		}
+		action := models.Action{
+			Name:      "IFTHEN",
+			Condition: models.ExpressionArg{DType: "num", Num: 0},
+			Actions:   []models.Action{action2},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if newState.Flags.Status == action2.Args[1].Str {
+			t.Errorf("error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
+		}
+
+		action = models.Action{
+			Name:      "IFTHEN",
+			Condition: models.ExpressionArg{DType: "num", Num: 1},
+			Actions:   []models.Action{action2},
+		}
+		newState, err = ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if newState.Flags.Status != action2.Args[1].Str {
+			t.Errorf("error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
+		}
 	})
 
-	t.Run("UPDATE_FLAG_STATUS", func(t *testing.T) {
+	t.Run("UPDATE_FLAG", func(t *testing.T) {
 		action := models.Action{
-			Name: "UPDATE_FLAG_STATUS",
+			Name: "UPDATE_FLAG",
 			Args: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "status"},
 				models.ExpressionArg{DType: "str", Str: "test2"},
 			},
 		}
@@ -45,8 +77,8 @@ func TestActions(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status != action.Args[0].Str {
-			t.Errorf("updated status error -> expected: %s, have: %s", action.Args[0].Str, newState.Flags.Status)
+		if newState.Flags.Status != action.Args[1].Str {
+			t.Errorf("updated status error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
 		}
 	})
 
