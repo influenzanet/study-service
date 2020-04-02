@@ -21,7 +21,7 @@ func TestActions(t *testing.T) {
 	}
 
 	t.Run("with wrong action name", func(t *testing.T) {
-		action := models.Action{
+		action := models.Expression{
 			Name: "WRONG",
 		}
 		_, err := ActionEval(action, participantState, event)
@@ -31,44 +31,56 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("IFTHEN", func(t *testing.T) {
-		action2 := models.Action{
+		action2 := models.Expression{
 			Name: "UPDATE_FLAG",
-			Args: []models.ExpressionArg{
+			Data: []models.ExpressionArg{
 				models.ExpressionArg{DType: "str", Str: "status"},
 				models.ExpressionArg{DType: "str", Str: "testflag_cond"},
 			},
 		}
-		action := models.Action{
-			Name:      "IFTHEN",
-			Condition: models.ExpressionArg{DType: "num", Num: 0},
-			Actions:   []models.Action{action2},
+		action3 := models.Expression{
+			Name: "UPDATE_FLAG",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "status"},
+				models.ExpressionArg{DType: "str", Str: "testflag_cond2"},
+			},
+		}
+		action := models.Expression{
+			Name: "IFTHEN",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "num", Num: 0},
+				models.ExpressionArg{DType: "exp", Exp: action2},
+			},
 		}
 		newState, err := ActionEval(action, participantState, event)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status == action2.Args[1].Str {
-			t.Errorf("error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
+		if newState.Flags.Status == action2.Data[1].Str {
+			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.Flags.Status)
 		}
 
-		action = models.Action{
-			Name:      "IFTHEN",
-			Condition: models.ExpressionArg{DType: "num", Num: 1},
-			Actions:   []models.Action{action2},
+		action = models.Expression{
+			Name: "IFTHEN",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "num", Num: 1},
+				models.ExpressionArg{DType: "exp", Exp: action2},
+				models.ExpressionArg{DType: "exp", Exp: action3},
+			},
 		}
 		newState, err = ActionEval(action, participantState, event)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status != action2.Args[1].Str {
-			t.Errorf("error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
+		if newState.Flags.Status != action3.Data[1].Str {
+			t.Errorf("error -> expected: %s, have: %s", action3.Data[1].Str, newState.Flags.Status)
 		}
 	})
 
 	t.Run("UPDATE_FLAG", func(t *testing.T) {
-		action := models.Action{
+		action := models.Expression{
 			Name: "UPDATE_FLAG",
-			Args: []models.ExpressionArg{
+			Data: []models.ExpressionArg{
 				models.ExpressionArg{DType: "str", Str: "status"},
 				models.ExpressionArg{DType: "str", Str: "test2"},
 			},
@@ -77,8 +89,8 @@ func TestActions(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status != action.Args[1].Str {
-			t.Errorf("updated status error -> expected: %s, have: %s", action.Args[1].Str, newState.Flags.Status)
+		if newState.Flags.Status != action.Data[1].Str {
+			t.Errorf("updated status error -> expected: %s, have: %s", action.Data[1].Str, newState.Flags.Status)
 		}
 	})
 

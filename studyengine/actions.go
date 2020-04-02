@@ -7,7 +7,7 @@ import (
 	"github.com/influenzanet/study-service/models"
 )
 
-func ActionEval(action models.Action, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func ActionEval(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
 
 	switch action.Name {
@@ -48,39 +48,44 @@ func checkCondition(condition models.ExpressionArg, evalContext evalContext) boo
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action models.Action, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func ifThenAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
+	if len(action.Data) < 1 {
+		return newState, errors.New("ifThenAction must have exactly one argument")
+	}
 	evalContext := evalContext{
 		event:            event,
 		participantState: newState,
 	}
-	if !checkCondition(action.Condition, evalContext) {
+	if !checkCondition(action.Data[0], evalContext) {
 		return
 	}
-	for _, action := range action.Actions {
-		newState, err = ActionEval(action, newState, event)
-		if err != nil {
-			return newState, err
+	for _, action := range action.Data[1:] {
+		if action.IsExpression() {
+			newState, err = ActionEval(action.Exp, newState, event)
+			if err != nil {
+				return newState, err
+			}
 		}
 	}
 	return
 }
 
 // updateFlagAction is used to update one of the string flags from the participant state
-func updateFlagAction(action models.Action, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func updateFlagAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
-	if len(action.Args) != 2 {
+	if len(action.Data) != 2 {
 		return newState, errors.New("updateFlagAction must have exactly two arguments")
 	}
 	evalContext := evalContext{
 		event:            event,
 		participantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Args[0])
+	k, err := evalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
-	v, err := evalContext.expressionArgResolver(action.Args[1])
+	v, err := evalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
 		return newState, err
 	}
