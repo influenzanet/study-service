@@ -3,12 +3,18 @@ package studyengine
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/influenzanet/study-service/models"
 )
 
 func ActionEval(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
-	newState = oldState
+	if event.Type == "SUBMIT" {
+		oldState, err = updateLastSubmissionForSurvey(oldState, event)
+		if err != nil {
+			return oldState, err
+		}
+	}
 
 	switch action.Name {
 	case "IFTHEN":
@@ -32,9 +38,21 @@ func ActionEval(action models.Expression, oldState models.ParticipantState, even
 	case "REMOVE_REPORTS_BY_KEY":
 		newState, err = removeReportsByKey(action, oldState, event)
 	default:
+		newState = oldState
 		err = errors.New("action name not known")
 	}
+	return
+}
 
+func updateLastSubmissionForSurvey(oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if event.Response.Key == "" {
+		return newState, errors.New("no response key found")
+	}
+	if newState.LastSubmissions == nil {
+		newState.LastSubmissions = map[string]int64{}
+	}
+	newState.LastSubmissions[event.Response.Key] = time.Now().Unix()
 	return
 }
 

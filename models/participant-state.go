@@ -9,6 +9,7 @@ type ParticipantState struct {
 	Flags           ParticipantStateFlags `bson:"flags"`
 	AssignedSurveys []AssignedSurvey      `bson:"assignedSurveys"`
 	Reports         []SurveyItemResponse  `bson:"reports"`
+	LastSubmissions map[string]int64      `bson:"lastSubmission"` // surveyKey with timestamp
 }
 
 // ParticipantStateFlags provide a quick overview of general state infos about the user

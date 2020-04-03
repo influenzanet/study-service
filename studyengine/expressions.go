@@ -16,8 +16,8 @@ type evalContext struct {
 
 func ExpressionEval(expression models.Expression, evalCtx evalContext) (val interface{}, err error) {
 	switch expression.Name {
-	case "getEventType":
-		val = evalCtx.getEventType()
+	case "checkEventType":
+		val, err = evalCtx.checkEventType(expression)
 	case "eq":
 		val, err = evalCtx.eq(expression)
 	case "lt":
@@ -41,11 +41,6 @@ func ExpressionEval(expression models.Expression, evalCtx evalContext) (val inte
 	return
 }
 
-// getEventType returns type from the event struct
-func (ctx evalContext) getEventType() string {
-	return ctx.event.Type
-}
-
 func (ctx evalContext) expressionArgResolver(arg models.ExpressionArg) (interface{}, error) {
 	switch arg.DType {
 	case "num":
@@ -55,6 +50,24 @@ func (ctx evalContext) expressionArgResolver(arg models.ExpressionArg) (interfac
 	default:
 		return ExpressionEval(arg.Exp, ctx)
 	}
+}
+
+// checkEventType compares the eventType with a string
+func (ctx evalContext) checkEventType(exp models.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	return ctx.event.Type == arg1Val, nil
 }
 
 func (ctx evalContext) eq(exp models.Expression) (val bool, err error) {

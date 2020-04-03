@@ -7,10 +7,26 @@ import (
 )
 
 // Reference/Lookup methods
-func TestEvalGetEventType(t *testing.T) {
-	exp := models.Expression{Name: "getEventType"}
+func TestEvalCheckEventType(t *testing.T) {
+	exp := models.Expression{Name: "checkEventType", Data: []models.ExpressionArg{
+		models.ExpressionArg{DType: "str", Str: "ENTER"},
+	}}
 
-	t.Run("for enter", func(t *testing.T) {
+	t.Run("for matching", func(t *testing.T) {
+		evalContext := evalContext{
+			event: models.StudyEvent{Type: "ENTER"},
+		}
+		ret, err := ExpressionEval(exp, evalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected type or value: %s", ret)
+		}
+	})
+
+	t.Run("for not matching", func(t *testing.T) {
 		evalContext := evalContext{
 			event: models.StudyEvent{Type: "enter"},
 		}
@@ -19,8 +35,8 @@ func TestEvalGetEventType(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if ret.(string) != "enter" {
-			t.Errorf("unexpected type or str value: %s", ret)
+		if ret.(bool) {
+			t.Errorf("unexpected type or value: %s", ret)
 		}
 	})
 }
@@ -69,7 +85,7 @@ func TestEvalEq(t *testing.T) {
 
 	t.Run("for equal strings", func(t *testing.T) {
 		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
-			models.ExpressionArg{DType: "exp", Exp: models.Expression{Name: "getEventType"}},
+			models.ExpressionArg{DType: "str", Str: "enter"},
 			models.ExpressionArg{DType: "str", Str: "enter"},
 		}}
 		evalContext := evalContext{
@@ -87,7 +103,7 @@ func TestEvalEq(t *testing.T) {
 
 	t.Run("for not equal strings", func(t *testing.T) {
 		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
-			models.ExpressionArg{DType: "exp", Exp: models.Expression{Name: "getEventType"}},
+			models.ExpressionArg{DType: "str", Str: "enter"},
 			models.ExpressionArg{DType: "str", Str: "time..."},
 		}}
 		evalContext := evalContext{
