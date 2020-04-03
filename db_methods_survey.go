@@ -5,11 +5,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func addSurveyToDB(instanceID string, survey models.Survey) (newSurvey models.Survey, err error) {
+func addSurveyToDB(instanceID string, studyKey string, survey models.Survey) (newSurvey models.Survey, err error) {
 	ctx, cancel := getContext()
 	defer cancel()
 
-	res, err := collectionRefSurveys(instanceID).InsertOne(ctx, survey)
+	res, err := collectionRefStudySurveys(instanceID, studyKey).InsertOne(ctx, survey)
 	if err != nil {
 		return
 	}

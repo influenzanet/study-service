@@ -10,12 +10,24 @@ import (
 )
 
 // Collections
-func collectionRefSurveys(instanceID string) *mongo.Collection {
-	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studies").Collection("survey-definitions")
+func collectionRefStudyInfos(instanceID string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studyDB").Collection("study-infos")
 }
 
-func collectionRefReports(instanceID string, studyID string) *mongo.Collection {
-	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studies").Collection(studyID + "_reports")
+func collectionRefStudyParticipant(instanceID string, studyKey string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_participants")
+}
+
+func collectionRefStudySurveys(instanceID string, studyKey string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_surveys")
+}
+
+func collectionRefStudyMessageBoard(instanceID string, studyKey string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_messageBoard")
+}
+
+func collectionRefSurveyResponses(instanceID string, studyKey string) *mongo.Collection {
+	return dbClient.Database(conf.DB.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_surveyResponses")
 }
 
 // DB utils

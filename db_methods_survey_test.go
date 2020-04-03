@@ -26,7 +26,9 @@ func TestDbCreateSurvey(t *testing.T) {
 				},
 			},
 		}
-		_, err := addSurveyToDB(testInstanceID, testSurvey)
+		t.Error("define studyKey")
+		studyKey := "todo"
+		_, err := addSurveyToDB(testInstanceID, studyKey, testSurvey)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
