@@ -310,16 +310,132 @@ func TestActions(t *testing.T) {
 	})
 
 	// Report actions
+	participantState = models.ParticipantState{
+		ParticipantID: "participant1234",
+		Flags: models.ParticipantStateFlags{
+			Status: "test",
+		},
+		Reports: []models.SurveyItemResponse{
+			models.SurveyItemResponse{Key: "test.1"},
+			models.SurveyItemResponse{Key: "test.2.1"},
+			models.SurveyItemResponse{Key: "test.1"},
+		},
+	}
+	event = models.StudyEvent{
+		Type: "SUBMIT",
+		Response: models.SurveyResponse{
+			Key: "test",
+			Responses: []models.SurveyItemResponse{
+				models.SurveyItemResponse{Key: "test.1"},
+				models.SurveyItemResponse{Key: "test.2.1"},
+				models.SurveyItemResponse{Key: "test.2.3"},
+			},
+		},
+	}
+	t.Run("ADD_REPORT not existing key", func(t *testing.T) {
+		action := models.Expression{
+			Name: "ADD_REPORT",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "test.2.2"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) != 3 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+		}
+	})
+
 	t.Run("ADD_REPORT", func(t *testing.T) {
-		t.Error("test unimplemented")
+		action := models.Expression{
+			Name: "ADD_REPORT",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "test.2.1"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) != 4 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+		}
 	})
+
 	t.Run("REMOVE_ALL_REPORTS", func(t *testing.T) {
-		t.Error("test unimplemented")
+		action := models.Expression{
+			Name: "REMOVE_ALL_REPORTS",
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) > 0 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+		}
 	})
-	t.Run("REMOVE_REPORT_BY_KEY", func(t *testing.T) {
-		t.Error("test unimplemented")
+
+	t.Run("REMOVE_REPORT_BY_KEY first", func(t *testing.T) {
+		action := models.Expression{
+			Name: "REMOVE_REPORT_BY_KEY",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "test.1"},
+				models.ExpressionArg{DType: "str", Str: "first"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) != 2 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+			return
+		}
+		if newState.Reports[0].Key == "test.1" {
+			t.Errorf("unexpected first item key: %s", newState.Reports[0].Key)
+		}
 	})
+
+	t.Run("REMOVE_REPORT_BY_KEY last", func(t *testing.T) {
+		action := models.Expression{
+			Name: "REMOVE_REPORT_BY_KEY",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "test.1"},
+				models.ExpressionArg{DType: "str", Str: "last"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) != 2 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+			return
+		}
+		if newState.Reports[0].Key != "test.1" {
+			t.Errorf("unexpected first item key: %s", newState.Reports[0].Key)
+		}
+	})
+
 	t.Run("REMOVE_REPORTS_BY_KEY", func(t *testing.T) {
-		t.Error("test unimplemented")
+		action := models.Expression{
+			Name: "REMOVE_REPORTS_BY_KEY",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "test.1"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Reports) != 1 {
+			t.Errorf("unexpected number of reports: %d", len(newState.Reports))
+			return
+		}
+		if newState.Reports[0].Key != "test.2.1" {
+			t.Errorf("unexpected first item key: %s", newState.Reports[0].Key)
+		}
 	})
 }

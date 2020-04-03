@@ -24,13 +24,13 @@ func ActionEval(action models.Expression, oldState models.ParticipantState, even
 	case "REMOVE_SURVEYS_BY_KEY":
 		newState, err = removeSurveysByKey(action, oldState, event)
 	case "ADD_REPORT":
-		err = errors.New("not implemented")
+		newState, err = addReport(action, oldState, event)
 	case "REMOVE_ALL_REPORTS":
-		err = errors.New("not implemented")
+		newState, err = removeAllReports(action, oldState, event)
 	case "REMOVE_REPORT_BY_KEY":
-		err = errors.New("not implemented")
+		newState, err = removeReportByKey(action, oldState, event)
 	case "REMOVE_REPORTS_BY_KEY":
-		err = errors.New("not implemented")
+		newState, err = removeReportsByKey(action, oldState, event)
 	default:
 		err = errors.New("action name not known")
 	}
@@ -244,5 +244,134 @@ func removeSurveysByKey(action models.Expression, oldState models.ParticipantSta
 		}
 	}
 	newState.AssignedSurveys = as
+	return
+}
+
+// addReport finds and appends a SurveyItemResponse to the reports array
+func addReport(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("addReport must have exactly one argument")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	itemKey, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	for _, itemResp := range event.Response.Responses {
+		if itemResp.Key == itemKey {
+			newState.Reports = append(newState.Reports, itemResp)
+			break
+		}
+	}
+	return
+}
+
+// removeAllReports clears the reports array
+func removeAllReports(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) > 0 {
+		return newState, errors.New("removeAllReports must not have arguments")
+	}
+	newState.Reports = []models.SurveyItemResponse{}
+	return
+}
+
+// removeReportByKey removes the first or last appearance of the report with specific key
+func removeReportByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 2 {
+		return newState, errors.New("removeReportByKey must have exactly two arguments")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+	pos, err := evalContext.expressionArgResolver(action.Data[1])
+	if err != nil {
+		return newState, err
+	}
+
+	itemKey, ok1 := k.(string)
+	position, ok2 := pos.(string)
+
+	if !ok1 || !ok2 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	sr := []models.SurveyItemResponse{}
+	switch position {
+	case "first":
+		found := false
+		for _, surv := range newState.Reports {
+			if surv.Key == itemKey {
+				if !found {
+					found = true
+					continue
+				}
+			}
+			sr = append(sr, surv)
+		}
+	case "last":
+		ind := -1
+		for i, surv := range newState.Reports {
+			if surv.Key == itemKey {
+				ind = i
+			}
+		}
+		if ind < 0 {
+			sr = newState.Reports
+		} else {
+			sr = append(newState.Reports[:ind], newState.Reports[ind+1:]...)
+		}
+
+	default:
+		return newState, errors.New("position not known")
+	}
+	newState.Reports = sr
+	return
+}
+
+// removeReportsByKey removes all responses with a specific key
+func removeReportsByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("removeReportsByKey must have exactly one argument")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	itemKey, ok1 := k.(string)
+
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	sr := []models.SurveyItemResponse{}
+	for _, surv := range newState.Reports {
+		if surv.Key != itemKey {
+			sr = append(sr, surv)
+		}
+	}
+	newState.Reports = sr
 	return
 }
