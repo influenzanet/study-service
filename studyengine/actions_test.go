@@ -10,8 +10,9 @@ import (
 func TestActions(t *testing.T) {
 	participantState := models.ParticipantState{
 		ParticipantID: "participant1234",
-		Flags: models.ParticipantStateFlags{
-			Status: "test",
+		StudyStatus:   "active",
+		Flags: map[string]string{
+			"health": "test",
 		},
 	}
 	event := models.StudyEvent{
@@ -33,16 +34,14 @@ func TestActions(t *testing.T) {
 
 	t.Run("IFTHEN", func(t *testing.T) {
 		action2 := models.Expression{
-			Name: "UPDATE_FLAG",
+			Name: "UPDATE_STUDY_STATUS",
 			Data: []models.ExpressionArg{
-				models.ExpressionArg{DType: "str", Str: "status"},
 				models.ExpressionArg{DType: "str", Str: "testflag_cond"},
 			},
 		}
 		action3 := models.Expression{
-			Name: "UPDATE_FLAG",
+			Name: "UPDATE_STUDY_STATUS",
 			Data: []models.ExpressionArg{
-				models.ExpressionArg{DType: "str", Str: "status"},
 				models.ExpressionArg{DType: "str", Str: "testflag_cond2"},
 			},
 		}
@@ -57,8 +56,8 @@ func TestActions(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status == action2.Data[1].Str {
-			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.Flags.Status)
+		if newState.StudyStatus == action2.Data[0].Str {
+			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.StudyStatus)
 		}
 
 		action = models.Expression{
@@ -73,8 +72,8 @@ func TestActions(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status != action3.Data[1].Str {
-			t.Errorf("error -> expected: %s, have: %s", action3.Data[1].Str, newState.Flags.Status)
+		if newState.StudyStatus != action3.Data[0].Str {
+			t.Errorf("error -> expected: %s, have: %s", action3.Data[1].Str, newState.StudyStatus)
 		}
 	})
 
@@ -82,16 +81,39 @@ func TestActions(t *testing.T) {
 		action := models.Expression{
 			Name: "UPDATE_FLAG",
 			Data: []models.ExpressionArg{
-				models.ExpressionArg{DType: "str", Str: "status"},
-				models.ExpressionArg{DType: "str", Str: "test2"},
+				models.ExpressionArg{DType: "str", Str: "key"},
+				models.ExpressionArg{DType: "str", Str: "value"},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.Flags.Status != action.Data[1].Str {
-			t.Errorf("updated status error -> expected: %s, have: %s", action.Data[1].Str, newState.Flags.Status)
+		v, ok := newState.Flags["key"]
+		if !ok {
+			t.Error("could not find new flag")
+			return
+		}
+		if v != action.Data[1].Str {
+			t.Errorf("updated status error -> expected: %s, have: %s", action.Data[1].Str, v)
+		}
+	})
+
+	t.Run("REMOVE_FLAG", func(t *testing.T) {
+		action := models.Expression{
+			Name: "REMOVE_FLAG",
+			Data: []models.ExpressionArg{
+				models.ExpressionArg{DType: "str", Str: "health"},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		_, ok := newState.Flags["health"]
+		if ok {
+			t.Error("should not find value")
+			return
 		}
 	})
 
@@ -312,8 +334,9 @@ func TestActions(t *testing.T) {
 	// Report actions
 	participantState = models.ParticipantState{
 		ParticipantID: "participant1234",
-		Flags: models.ParticipantStateFlags{
-			Status: "test",
+		StudyStatus:   "active",
+		Flags: map[string]string{
+			"health": "test",
 		},
 		Reports: []models.SurveyItemResponse{
 			models.SurveyItemResponse{Key: "test.1"},

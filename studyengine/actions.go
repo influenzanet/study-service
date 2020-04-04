@@ -2,7 +2,6 @@ package studyengine
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/influenzanet/study-service/models"
@@ -19,8 +18,12 @@ func ActionEval(action models.Expression, oldState models.ParticipantState, even
 	switch action.Name {
 	case "IFTHEN":
 		newState, err = ifThenAction(action, oldState, event)
+	case "UPDATE_STUDY_STATUS":
+		newState, err = updateStudyStatusAction(action, oldState, event)
 	case "UPDATE_FLAG":
 		newState, err = updateFlagAction(action, oldState, event)
+	case "REMOVE_FLAG":
+		newState, err = removeFlagAction(action, oldState, event)
 	case "ADD_NEW_SURVEY":
 		newState, err = addNewSurveyAction(action, oldState, event)
 	case "REMOVE_ALL_SURVEYS":
@@ -89,6 +92,30 @@ func ifThenAction(action models.Expression, oldState models.ParticipantState, ev
 	return
 }
 
+// updateStudyStatusAction is used to update if user is active in the study
+func updateStudyStatusAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("updateStudyStatusAction must have exactly one argument")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	status, ok := k.(string)
+	if !ok {
+		return newState, errors.New("could not parse argument")
+	}
+
+	newState.StudyStatus = status
+	return
+}
+
 // updateFlagAction is used to update one of the string flags from the participant state
 func updateFlagAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
@@ -114,13 +141,34 @@ func updateFlagAction(action models.Expression, oldState models.ParticipantState
 		return newState, errors.New("could not parse key/value")
 	}
 
-	switch key {
-	case "status":
-		newState.Flags.Status = value
-	default:
-		return newState, fmt.Errorf("status key not known: %s", key)
+	if newState.Flags == nil {
+		newState.Flags = map[string]string{}
+	}
+	newState.Flags[key] = value
+	return
+}
+
+// removeFlagAction is used to update one of the string flags from the participant state
+func removeFlagAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("removeFlagAction must have exactly one argument")
+	}
+	evalContext := evalContext{
+		event:            event,
+		participantState: newState,
+	}
+	k, err := evalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
 	}
 
+	key, ok := k.(string)
+	if !ok {
+		return newState, errors.New("could not parse key")
+	}
+
+	delete(newState.Flags, key)
 	return
 }
 
