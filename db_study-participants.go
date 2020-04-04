@@ -3,16 +3,31 @@ package main
 import (
 	"github.com/influenzanet/study-service/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // findParticipantsByStudyStatusDB retrieve all participant states from a study by status (e.g. active)
-func findParticipantsByStudyStatusDB(instanceID string, studyKey string, studyStatus string) (pStates []models.ParticipantState, err error) {
+func findParticipantsByStudyStatusDB(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []models.ParticipantState, err error) {
 	ctx, cancel := getContext()
 	defer cancel()
 
 	filter := bson.M{"studyStatus": studyStatus}
-	cur, err := collectionRefStudyParticipant(instanceID, studyKey).Find(ctx, filter)
+
+	var opts *options.FindOptions
+	if useProjection {
+		projection := bson.D{
+			primitive.E{Key: "studyStatus", Value: 1},   // {"secretKey", 1},
+			primitive.E{Key: "participantID", Value: 1}, // {"secretKey", 1},
+		}
+		opts = options.Find().SetProjection(projection)
+	}
+
+	cur, err := collectionRefStudyParticipant(instanceID, studyKey).Find(
+		ctx,
+		filter,
+		opts,
+	)
 
 	if err != nil {
 		return pStates, err
