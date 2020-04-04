@@ -26,7 +26,7 @@ func dropTestDB() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := dbClient.Database(conf.DB.DBNamePrefix + testInstanceID + "_studies").Drop(ctx)
+	err := dbClient.Database(conf.DB.DBNamePrefix + testInstanceID + "_studyDB").Drop(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
