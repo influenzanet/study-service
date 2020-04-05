@@ -408,6 +408,7 @@ type StudyServiceApiClient interface {
 	GetAssignedSurvey(ctx context.Context, in *GetSurveyRequest, opts ...grpc.CallOption) (*SurveyAndContext, error)
 	SubmitStatusReport(ctx context.Context, in *StatusReportRequest, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	SubmitResponse(ctx context.Context, in *SubmitResponseReq, opts ...grpc.CallOption) (*Status, error)
+	// Study management
 	AddSurveyToStudy(ctx context.Context, in *AddSurveyReq, opts ...grpc.CallOption) (*SurveyVersion, error)
 }
 
@@ -491,6 +492,7 @@ type StudyServiceApiServer interface {
 	GetAssignedSurvey(context.Context, *GetSurveyRequest) (*SurveyAndContext, error)
 	SubmitStatusReport(context.Context, *StatusReportRequest) (*AssignedSurveys, error)
 	SubmitResponse(context.Context, *SubmitResponseReq) (*Status, error)
+	// Study management
 	AddSurveyToStudy(context.Context, *AddSurveyReq) (*SurveyVersion, error)
 }
 

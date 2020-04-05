@@ -17,10 +17,14 @@ type Config struct {
 		MaxPoolSize     uint64
 		IdleConnTimeout int
 	}
+	Study struct {
+		GlobalSecret string
+	}
 }
 
 func initConfig() {
 	conf.Port = os.Getenv("STUDY_SERVICE_LISTEN_PORT")
+	conf.Study.GlobalSecret = os.Getenv("STUDY_GLOBAL_SECRET")
 	getDBConfig()
 }
 

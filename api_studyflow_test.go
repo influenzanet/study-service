@@ -7,6 +7,26 @@ import (
 	"github.com/influenzanet/study-service/api"
 )
 
+func TestCheckIfParticipantExists(t *testing.T) {
+	// TODO: setup
+	t.Run("with existing participant", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+	t.Run("with not existing participant", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
+func TestGetAndPerformStudyRules(t *testing.T) {
+	// TODO: setup study rules
+	t.Run("ENTER event", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+	t.Run("SUBMIT event", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
 func TestEnterStudyEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
@@ -31,6 +51,10 @@ func TestEnterStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("correct values", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+
+	t.Run("existing participant (user) id", func(t *testing.T) {
 		t.Error("test unimplemented")
 	})
 }

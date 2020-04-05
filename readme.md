@@ -17,6 +17,7 @@ export DB_IDLE_CONN_TIMEOUT=45 # terminate idle connection after seconds
 export DB_MAX_POOL_SIZE=8
 export DB_DB_NAME_PREFIX="<DB_PREFIX>" # DB names will be then > <DB_PREFIX>+"hard-coded-db-name-as-we-need-it"
 export STUDY_SERVICE_LISTEN_PORT=5203
+export STUDY_GLOBAL_SECRET="<global secret key - part 1 to encrypt userID>"
 
 go test  ./...
 ```
