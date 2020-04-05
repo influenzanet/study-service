@@ -34,3 +34,11 @@ func (s *studyServiceServer) AddSurveyToStudy(ctx context.Context, req *api.AddS
 		Published:        createdSurvey.Current.Published,
 	}, nil
 }
+
+func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.StudyReferenceReq) (*api.SurveyInfoResp, error) {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
