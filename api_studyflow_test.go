@@ -5,15 +5,39 @@ import (
 	"testing"
 
 	"github.com/influenzanet/study-service/api"
+	"github.com/influenzanet/study-service/models"
 )
 
 func TestCheckIfParticipantExists(t *testing.T) {
-	// TODO: setup
+	// Test setup
+	testStudyKey := "teststudy_checkifparticipantexists"
+
+	pStates := []models.ParticipantState{
+		models.ParticipantState{
+			ParticipantID: "1",
+			StudyStatus:   "active",
+		},
+	}
+
+	for _, ps := range pStates {
+		_, err := saveParticipantStateDB(testInstanceID, testStudyKey, ps)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	// Tests
 	t.Run("with existing participant", func(t *testing.T) {
-		t.Error("test unimplemented")
+		if !checkIfParticipantExists(testInstanceID, testStudyKey, "1") {
+			t.Error("should be true if participant exists")
+		}
 	})
+
 	t.Run("with not existing participant", func(t *testing.T) {
-		t.Error("test unimplemented")
+		if checkIfParticipantExists(testInstanceID, testStudyKey, "2") {
+			t.Error("should be false if participant does not exist")
+		}
 	})
 }
 

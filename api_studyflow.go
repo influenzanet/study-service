@@ -32,6 +32,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	// Init state and perform rules
 	pState := models.ParticipantState{
 		ParticipantID: participantID,
+		StudyStatus:   "active",
 	}
 
 	// perform study rules/actions
@@ -82,7 +83,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 	return nil, status.Error(codes.Unimplemented, "unimplmented")
 }
 
-func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.Status, error) {
+func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.AssignedSurveys, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
