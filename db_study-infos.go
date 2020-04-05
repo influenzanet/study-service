@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/influenzanet/study-service/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -102,6 +103,24 @@ func getStudyMembers(instanceID string, studyKey string) (members []models.Study
 	return study.Members, nil
 }
 
+func getStudyRules(instanceID string, studyKey string) (rules []models.Expression, err error) {
+	projection := bson.D{
+		primitive.E{Key: "rules", Value: 1}, // {"members", 1},
+	}
+
+	var study models.Study
+	if err = collectionRefStudyInfos(instanceID).FindOne(
+		context.Background(),
+		bson.D{
+			primitive.E{Key: "key", Value: studyKey}, //{"studyKey", studyKey},
+		},
+		options.FindOne().SetProjection(projection),
+	).Decode(&study); err != nil {
+		return []models.Expression{}, err
+	}
+	return study.Rules, nil
+}
+
 // saveParticipantStateDB creates or replaces the participant states in the DB
 func createStudyInDB(instanceID string, study models.Study) (models.Study, error) {
 	ctx, cancel := getContext()
@@ -109,7 +128,7 @@ func createStudyInDB(instanceID string, study models.Study) (models.Study, error
 
 	filter := bson.M{"key": study.Key}
 	if res := collectionRefStudyInfos(instanceID).FindOne(ctx, filter); res.Err() == nil {
-		return study, errors.New("studyKey already used: %studyKey")
+		return study, fmt.Errorf("studyKey already used: %s", study.Key)
 	}
 
 	res, err := collectionRefStudyInfos(instanceID).InsertOne(ctx, study)

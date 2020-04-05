@@ -8,6 +8,7 @@ type Study struct {
 	SecretKey string             `bson:"secretKey"`
 	Status    string             `bson:"status"`
 	Members   []StudyMember      `bson:"members"` // users with access to manage study
+	Rules     []Expression       `bson:"rules"`   // defining how the study should run
 }
 
 type StudyMember struct {

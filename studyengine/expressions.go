@@ -45,10 +45,12 @@ func (ctx evalContext) expressionArgResolver(arg models.ExpressionArg) (interfac
 	switch arg.DType {
 	case "num":
 		return arg.Num, nil
+	case "exp":
+		return ExpressionEval(arg.Exp, ctx)
 	case "str":
 		return arg.Str, nil
 	default:
-		return ExpressionEval(arg.Exp, ctx)
+		return arg.Str, nil
 	}
 }
 

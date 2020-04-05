@@ -1,9 +1,8 @@
 package main
 
 import (
-	"errors"
-
 	"github.com/influenzanet/study-service/models"
+	"github.com/influenzanet/study-service/studyengine"
 	"github.com/influenzanet/study-service/utils"
 )
 
@@ -21,6 +20,17 @@ func checkIfParticipantExists(instanceID string, studyKey string, participantID 
 }
 
 func getAndPerformStudyRules(instanceID string, studyKey string, pState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+	newState = pState
+	rules, err := getStudyRules(instanceID, studyKey)
+	if err != nil {
+		return
+	}
+	for _, rule := range rules {
+		newState, err = studyengine.ActionEval(rule, newState, event)
+		if err != nil {
+			return
+		}
+	}
 
-	return newState, errors.New("unimplemented")
+	return newState, nil
 }

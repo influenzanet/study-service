@@ -102,7 +102,22 @@ func TestDbUpdateStudyInfos(t *testing.T) {
 
 func TestDbGetStudyInfos(t *testing.T) {
 	testStudies := []models.Study{
-		models.Study{Key: "test1", SecretKey: "testsecret", Status: "active", Members: []models.StudyMember{
+		models.Study{
+			Key:       "testg1",
+			SecretKey: "testsecret",
+			Status:    "active",
+			Members: []models.StudyMember{
+				models.StudyMember{
+					UserID: "testuser",
+					Role:   "maintainer",
+				},
+			},
+			Rules: []models.Expression{
+				models.Expression{Name: "IFTHEN"}, // These here are not complete and won't be evaluated in this test
+				models.Expression{Name: "TEST"},
+			},
+		},
+		models.Study{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []models.StudyMember{
 			models.StudyMember{
 				UserID: "testuser",
 				Role:   "maintainer",
@@ -136,6 +151,36 @@ func TestDbGetStudyInfos(t *testing.T) {
 		}
 		if len(members) != 1 {
 			t.Errorf("unexpected number of members: %d", len(members))
+		}
+	})
+
+	t.Run("Get studies by status", func(t *testing.T) {
+		studies, err := getStudiesByStatus(testInstanceID, "inactive", true)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(studies) != 1 {
+			t.Errorf("unexpected number of studies: %d", len(studies))
+			return
+		}
+		if studies[0].Status != "" {
+			t.Error("should return only key and secretKey")
+		}
+	})
+
+	t.Run("Get study rule", func(t *testing.T) {
+		rules, err := getStudyRules(testInstanceID, testStudies[0].Key)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(rules) != 2 {
+			t.Errorf("unexpected number of rules: %d", len(rules))
+			return
+		}
+		if rules[0].Name != "IFTHEN" {
+			t.Error("wrong expression")
 		}
 	})
 }

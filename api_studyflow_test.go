@@ -42,12 +42,109 @@ func TestCheckIfParticipantExists(t *testing.T) {
 }
 
 func TestGetAndPerformStudyRules(t *testing.T) {
-	// TODO: setup study rules
+	testStudy := models.Study{
+		Key:       "studytocheckifrulesareworking",
+		SecretKey: "testsecret",
+		Rules: []models.Expression{
+			models.Expression{
+				Name: "IFTHEN",
+				Data: []models.ExpressionArg{
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "checkEventType",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "ENTER"},
+							},
+						},
+					},
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "UPDATE_FLAG",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "testKey"},
+								models.ExpressionArg{Str: "testValue"},
+							},
+						},
+					},
+				},
+			},
+			models.Expression{
+				Name: "IFTHEN",
+				Data: []models.ExpressionArg{
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "checkEventType",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "SUBMIT"},
+							},
+						},
+					},
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "UPDATE_FLAG",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "testKey"},
+								models.ExpressionArg{Str: "testValue2"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	testStudy, err := createStudyInDB(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pState := models.ParticipantState{
+		ParticipantID: "1",
+	}
+
 	t.Run("ENTER event", func(t *testing.T) {
-		t.Error("test unimplemented")
+		testEvent := models.StudyEvent{
+			Type: "ENTER",
+		}
+
+		pState, err = getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		v, ok := pState.Flags["testKey"]
+		if !ok {
+			t.Error("testKey not found")
+		}
+		if v != "testValue" {
+			t.Errorf("testValue not matches %s", v)
+		}
 	})
 	t.Run("SUBMIT event", func(t *testing.T) {
-		t.Error("test unimplemented")
+		testEvent := models.StudyEvent{
+			Type: "SUBMIT",
+			Response: models.SurveyResponse{
+				Key: "testsurvey",
+			},
+		}
+
+		pState, err = getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		v, ok := pState.Flags["testKey"]
+		if !ok {
+			t.Error("testKey not found")
+		}
+		if v != "testValue2" {
+			t.Errorf("testValue not matches %s", v)
+		}
 	})
 }
 
