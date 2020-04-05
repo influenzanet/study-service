@@ -280,6 +280,69 @@ func TestEnterStudyEndpoint(t *testing.T) {
 
 func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	s := studyServiceServer{}
+
+	studies := []models.Study{
+		models.Study{
+			Status:    "active",
+			Key:       "studyforassignedsurvey1",
+			SecretKey: "testsecret",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyforassignedsurvey2",
+			SecretKey: "testsecret2",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyforassignedsurvey3",
+			SecretKey: "testsecret3",
+		},
+	}
+
+	for _, study := range studies {
+		_, err := createStudyInDB(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testUserID := "234234laaabbb3423"
+
+	pid1, err := userIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := userIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pState1 := models.ParticipantState{
+		ParticipantID: pid1,
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s1"},
+		},
+	}
+	pState2 := models.ParticipantState{
+		ParticipantID: pid2,
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s1"},
+		},
+	}
+
+	_, err = saveParticipantStateDB(testInstanceID, "studyforassignedsurvey1", pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = saveParticipantStateDB(testInstanceID, "studyforassignedsurvey2", pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.GetAssignedSurveys(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -297,11 +360,21 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
-		t.Error("test unimplemented")
-	})
-
-	t.Run("correct values", func(t *testing.T) {
-		t.Error("test unimplemented")
+		resp, err := s.GetAssignedSurveys(context.Background(), &api.TokenInfos{
+			Id:         testUserID,
+			InstanceId: testInstanceID,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Surveys) != 2 {
+			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
+			return
+		}
+		if resp.Surveys[0].StudyKey != "studyforassignedsurvey1" || resp.Surveys[1].StudyKey != "studyforassignedsurvey2" {
+			t.Error(resp)
+		}
 	})
 }
 

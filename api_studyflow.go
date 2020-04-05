@@ -66,7 +66,32 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 	if utils.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplmented")
+
+	studies, err := getStudiesByStatus(req.InstanceId, "active", true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
+	}
+	for _, study := range studies {
+		participantID, err := utils.UserIDtoParticipantID(req.Id, conf.Study.GlobalSecret, study.SecretKey)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		pState, err := findParticipantStateDB(req.InstanceId, study.Key, participantID)
+		if err != nil {
+			continue
+		}
+		for _, as := range pState.AssignedSurveys {
+			cs := as.ToAPI()
+			cs.StudyKey = study.Key
+			resp.Surveys = append(resp.Surveys, cs)
+		}
+	}
+
+	return &resp, nil
 }
 
 func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.GetSurveyRequest) (*api.SurveyAndContext, error) {
