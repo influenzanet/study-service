@@ -151,6 +151,68 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 func TestEnterStudyEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
+	testStudy := models.Study{
+		Key:       "studyfortestingenterstudy",
+		SecretKey: "testsecret",
+		Rules: []models.Expression{
+			models.Expression{
+				Name: "IFTHEN",
+				Data: []models.ExpressionArg{
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "checkEventType",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "ENTER"},
+							},
+						},
+					},
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "ADD_NEW_SURVEY",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "testsurvey"},
+								models.ExpressionArg{DType: "num", Num: 0},
+								models.ExpressionArg{DType: "num", Num: 0},
+							},
+						},
+					},
+				},
+			},
+			models.Expression{
+				Name: "IFTHEN",
+				Data: []models.ExpressionArg{
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "checkEventType",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "SUBMIT"},
+							},
+						},
+					},
+					models.ExpressionArg{
+						DType: "exp",
+						Exp: models.Expression{
+							Name: "UPDATE_FLAG",
+							Data: []models.ExpressionArg{
+								models.ExpressionArg{Str: "testKey"},
+								models.ExpressionArg{Str: "testValue2"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	testStudy, err := createStudyInDB(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.EnterStudy(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -168,15 +230,51 @@ func TestEnterStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
-		t.Error("test unimplemented")
+		req := &api.EnterStudyRequest{
+			Token: &api.TokenInfos{
+				Id:         "testuser",
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudy.Key + "wrong",
+		}
+		_, err := s.EnterStudy(context.Background(), req)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
 	})
 
 	t.Run("correct values", func(t *testing.T) {
-		t.Error("test unimplemented")
+		req := &api.EnterStudyRequest{
+			Token: &api.TokenInfos{
+				Id:         "testuser",
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudy.Key,
+		}
+		resp, err := s.EnterStudy(context.Background(), req)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Surveys) != 1 {
+			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
+		}
 	})
 
 	t.Run("existing participant (user) id", func(t *testing.T) {
-		t.Error("test unimplemented")
+		req := &api.EnterStudyRequest{
+			Token: &api.TokenInfos{
+				Id:         "testuser",
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudy.Key,
+		}
+		_, err := s.EnterStudy(context.Background(), req)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
 	})
 }
 
