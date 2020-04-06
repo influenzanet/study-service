@@ -81,9 +81,10 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		pState, err := findParticipantStateDB(req.InstanceId, study.Key, participantID)
-		if err != nil {
+		if err != nil || pState.StudyStatus != "active" {
 			continue
 		}
+
 		for _, as := range pState.AssignedSurveys {
 			cs := as.ToAPI()
 			cs.StudyKey = study.Key
@@ -105,30 +106,109 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StatusSurvey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplmented")
+
+	studies, err := getStudiesByStatus(req.Token.InstanceId, "active", true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
+	}
+	for _, study := range studies {
+		participantID, err := utils.UserIDtoParticipantID(req.Token.Id, conf.Study.GlobalSecret, study.SecretKey)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		pState, err := findParticipantStateDB(req.Token.InstanceId, study.Key, participantID)
+		if err != nil {
+			continue
+		}
+		if pState.StudyStatus != "active" {
+			continue
+		}
+
+		// Save responses
+		response := models.SurveyResponseFromAPI(req.StatusSurvey)
+		err = addSurveyResponseToDB(req.Token.InstanceId, study.Key, response)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		// perform study rules/actions
+		currentEvent := models.StudyEvent{
+			Type:     "SUBMIT",
+			Response: response,
+		}
+		pState, err = getAndPerformStudyRules(req.Token.InstanceId, study.Key, pState, currentEvent)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		// save state back to DB
+		pState, err = saveParticipantStateDB(req.Token.InstanceId, study.Key, pState)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		for _, as := range pState.AssignedSurveys {
+			cs := as.ToAPI()
+			cs.StudyKey = study.Key
+			resp.Surveys = append(resp.Surveys, cs)
+		}
+	}
+	return &resp, nil
 }
 
 func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.AssignedSurveys, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplmented")
-	/*
 
+	// ParticipantID
+	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-		report := models.SurveyResponseReport{
-			By:          req.Token.Id,
-			For:         req.ProfileId,
-			SubmittedAt: time.Now().Unix(),
-			Responses:   models.SurveyItemResponseFromAPI(req.Responses),
-		}
+	pState, err := findParticipantStateDB(req.Token.InstanceId, req.StudyKey, participantID)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if pState.StudyStatus != "active" {
+		return nil, status.Error(codes.Internal, "user is not active in the current study")
+	}
 
-		if err := addSurveyResponseToDB(req.Token.InstanceId, req.StudyId, report); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return &api.Status{
-			Status: api.Status_NORMAL,
-			Msg:    "report successfully submitted",
-		}, nil
-	*/
+	// Save responses
+	response := models.SurveyResponseFromAPI(req.Response)
+	err = addSurveyResponseToDB(req.Token.InstanceId, req.StudyKey, response)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// perform study rules/actions
+	currentEvent := models.StudyEvent{
+		Type:     "SUBMIT",
+		Response: response,
+	}
+	pState, err = getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// save state back to DB
+	pState, err = saveParticipantStateDB(req.Token.InstanceId, req.StudyKey, pState)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Prepare response
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
+	}
+	for _, as := range pState.AssignedSurveys {
+		cs := as.ToAPI()
+		cs.StudyKey = req.StudyKey
+		resp.Surveys = append(resp.Surveys, cs)
+	}
+	return &resp, nil
 }

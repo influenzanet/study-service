@@ -321,12 +321,14 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	}
 	pState1 := models.ParticipantState{
 		ParticipantID: pid1,
+		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
 			models.AssignedSurvey{SurveyKey: "s1"},
 		},
 	}
 	pState2 := models.ParticipantState{
 		ParticipantID: pid2,
+		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
 			models.AssignedSurvey{SurveyKey: "s1"},
 		},
@@ -407,6 +409,71 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 
 func TestSubmitStatusReportEndpoint(t *testing.T) {
 	s := studyServiceServer{}
+
+	studies := []models.Study{
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitstatus1",
+			SecretKey: "testsecret",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitstatus2",
+			SecretKey: "testsecret2",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitstatus3",
+			SecretKey: "testsecret3",
+		},
+	}
+
+	for _, study := range studies {
+		_, err := createStudyInDB(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testUserID := "234234laaabbb3423aa"
+
+	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := userIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pState1 := models.ParticipantState{
+		ParticipantID: pid1,
+		StudyStatus:   "active",
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s1"},
+		},
+	}
+	pState2 := models.ParticipantState{
+		ParticipantID: pid2,
+		StudyStatus:   "paused",
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s2"},
+		},
+	}
+
+	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitstatus1", pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitstatus2", pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.SubmitStatusReport(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -423,17 +490,100 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 		}
 	})
 
-	t.Run("wrong study key", func(t *testing.T) {
-		t.Error("test unimplemented")
-	})
-
 	t.Run("correct values", func(t *testing.T) {
-		t.Error("test unimplemented")
+		resp, err := s.SubmitStatusReport(context.Background(), &api.StatusReportRequest{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+			},
+			StatusSurvey: &api.SurveyResponse{
+				Key: "t1",
+				Responses: []*api.SurveyItemResponse{
+					&api.SurveyItemResponse{Key: "1"},
+				},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Surveys) != 1 {
+			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
+			return
+		}
+		if resp.Surveys[0].SurveyKey != "s1" {
+			t.Errorf("unexpected survey key: %s", resp.Surveys[0].SurveyKey)
+		}
 	})
 }
 
 func TestSubmitResponseEndpoint(t *testing.T) {
 	s := studyServiceServer{}
+
+	studies := []models.Study{
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitsurvey1",
+			SecretKey: "testsecret",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitsurvey2",
+			SecretKey: "testsecret2",
+		},
+		models.Study{
+			Status:    "active",
+			Key:       "studyfor_submitsurvey3",
+			SecretKey: "testsecret3",
+		},
+	}
+
+	for _, study := range studies {
+		_, err := createStudyInDB(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testUserID := "234234laaabbb3423"
+
+	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pState1 := models.ParticipantState{
+		ParticipantID: pid1,
+		StudyStatus:   "active",
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s1"},
+		},
+	}
+	pState2 := models.ParticipantState{
+		ParticipantID: pid2,
+		StudyStatus:   "paused",
+		AssignedSurveys: []models.AssignedSurvey{
+			models.AssignedSurvey{SurveyKey: "s2"},
+		},
+	}
+
+	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitsurvey1", pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitsurvey2", pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -450,11 +600,34 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 		}
 	})
 
+	survResp := api.SurveyResponse{
+		Key: "sKey",
+		Responses: []*api.SurveyItemResponse{
+			&api.SurveyItemResponse{Key: "1"},
+		},
+	}
+
 	t.Run("wrong study key", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
+			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			StudyKey: "wrong_study",
+			Response: &survResp,
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("correct values", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
+			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			StudyKey: studies[0].Key,
+			Response: &survResp,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
 	})
 }
