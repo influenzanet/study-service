@@ -12,6 +12,7 @@ type SurveyResponse struct {
 	SubmittedFor string               `bson:"submittedFor"`
 	SubmittedAt  int64                `bson:"submittedAt"`
 	Responses    []SurveyItemResponse `bson:"responses"`
+	Context      map[string]string    `bson:"context"`
 }
 
 func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
@@ -25,6 +26,7 @@ func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
 		SubmittedFor: sr.SubmittedFor,
 		SubmittedAt:  sr.SubmittedAt,
 		Responses:    resp,
+		Context:      sr.Context,
 	}
 }
 
@@ -42,5 +44,6 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 		SubmittedFor: sr.SubmittedFor,
 		SubmittedAt:  sr.SubmittedAt,
 		Responses:    resp,
+		Context:      sr.Context,
 	}
 }
