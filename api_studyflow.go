@@ -99,7 +99,38 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Get
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplmented")
+	// ParticipantID
+	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Get survey definition
+	surveyDef, err := findSurveyDefDB(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	surveyContext, err := resolveContextRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.ContextRules)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	prefill, err := resolvePrefillRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.PrefillRules)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// empty irrelevant fields for this purpose
+	surveyDef.ContextRules = models.SurveyContextDef{}
+	surveyDef.PrefillRules = []models.Expression{}
+	surveyDef.History = []models.SurveyVersion{}
+
+	resp := api.SurveyAndContext{
+		Survey:  surveyDef.ToAPI(),
+		Context: surveyContext.ToAPI(),
+		Prefill: prefill.ToAPI(),
+	}
+	return &resp, nil
 }
 
 func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.StatusReportRequest) (*api.AssignedSurveys, error) {

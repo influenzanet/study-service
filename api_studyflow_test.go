@@ -384,6 +384,102 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	s := studyServiceServer{}
+
+	testStudyKey := "teststudy_for_get_assignedsurvey"
+	testUserID := "234234laaabbb3423"
+	studies := []models.Study{
+		models.Study{
+			Status:    "active",
+			Key:       testStudyKey,
+			SecretKey: "testsecret",
+		},
+	}
+
+	for _, study := range studies {
+		_, err := createStudyInDB(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	pid1, err := userIDToParticipantID(testInstanceID, testStudyKey, testUserID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	surveyResps := []models.SurveyResponse{
+		// mix participants and order for submittedAt
+		models.SurveyResponse{Key: "s1", SubmittedFor: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			models.SurveyItemResponse{Key: "s1.1"},
+			models.SurveyItemResponse{Key: "s1.2"},
+			models.SurveyItemResponse{Key: "s1.3"},
+		}},
+		models.SurveyResponse{Key: "s2", SubmittedFor: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			models.SurveyItemResponse{Key: "s2.1"},
+			models.SurveyItemResponse{Key: "s2.2"},
+			models.SurveyItemResponse{Key: "s2.3"},
+		}},
+		models.SurveyResponse{Key: "s1", SubmittedFor: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			models.SurveyItemResponse{Key: "s1.1"},
+			models.SurveyItemResponse{Key: "s1.2"},
+			models.SurveyItemResponse{Key: "s1.3"},
+		}},
+		models.SurveyResponse{Key: "s2", SubmittedFor: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			models.SurveyItemResponse{Key: "s2.1"},
+			models.SurveyItemResponse{Key: "s2.2"},
+			models.SurveyItemResponse{Key: "s2.3"},
+		}},
+	}
+	for _, sr := range surveyResps {
+		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+	}
+
+	testSurvey := models.Survey{
+		Current: models.SurveyVersion{
+			SurveyDefinition: models.SurveyItem{
+				Key: "t1",
+			},
+		},
+		ContextRules: models.SurveyContextDef{
+			Mode: models.ExpressionArg{Str: "test"},
+			PreviousResponses: []models.Expression{
+				models.Expression{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
+					models.ExpressionArg{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
+					models.ExpressionArg{Str: "s2"},
+				}},
+			},
+		},
+		PrefillRules: []models.Expression{
+			models.Expression{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+					models.ExpressionArg{Str: "s1"},
+					models.ExpressionArg{Str: "s1.1"},
+				},
+			},
+			models.Expression{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+					models.ExpressionArg{Str: "s2"},
+					models.ExpressionArg{Str: "s2.2"},
+				},
+			},
+			models.Expression{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+					models.ExpressionArg{Str: "s2"},
+					models.ExpressionArg{Str: "s2.4"},
+				},
+			},
+		},
+	}
+
+	_, err = addSurveyToDB(testInstanceID, testStudyKey, testSurvey)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.GetAssignedSurvey(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -401,11 +497,32 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
-		t.Error("test unimplemented")
+		_, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{
+			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			StudyKey:  "wrong",
+			SurveyKey: "t1",
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "")
+		if !ok {
+			t.Error(msg)
+		}
 	})
 
 	t.Run("correct values", func(t *testing.T) {
-		t.Error("test unimplemented")
+		resp, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{
+			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			StudyKey:  testStudyKey,
+			SurveyKey: "t1",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if resp.Context.Mode != "test" {
+			t.Error("wrong mode")
+		}
+		if resp.Survey.Current.SurveyDefinition.Key != "t1" {
+			t.Error("wrong survey key")
+		}
 	})
 }
 

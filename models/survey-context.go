@@ -7,6 +7,17 @@ type SurveyContext struct {
 	PreviousResponses []SurveyResponse
 }
 
+func (ctx SurveyContext) ToAPI() *api.SurveyContext {
+	previous := make([]*api.SurveyResponse, len(ctx.PreviousResponses))
+	for i, r := range ctx.PreviousResponses {
+		previous[i] = r.ToAPI()
+	}
+	return &api.SurveyContext{
+		Mode:              ctx.Mode,
+		PreviousResponses: previous,
+	}
+}
+
 type SurveyContextDef struct {
 	SurveyKey string `bson:"surveyKey"`
 
