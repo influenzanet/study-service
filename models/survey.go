@@ -6,11 +6,13 @@ import (
 )
 
 type Survey struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name        []LocalisedObject  `bson:"name"`
-	Description []LocalisedObject  `bson:"description"`
-	Current     SurveyVersion      `bson:"current"`
-	History     []SurveyVersion    `bson:"history"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name         []LocalisedObject  `bson:"name"`
+	Description  []LocalisedObject  `bson:"description"`
+	Current      SurveyVersion      `bson:"current"`
+	History      []SurveyVersion    `bson:"history"`
+	PrefillRules []Expression       `bson:"prefillRules"`
+	ContextRules SurveyContextDef   `bson:"contextRules"`
 }
 
 type SurveyVersion struct {
@@ -32,12 +34,18 @@ func (s Survey) ToAPI() *api.Survey {
 	for i, si := range s.Description {
 		description[i] = si.ToAPI()
 	}
+	prefills := make([]*api.Expression, len(s.PrefillRules))
+	for i, r := range s.PrefillRules {
+		prefills[i] = r.ToAPI()
+	}
 	return &api.Survey{
-		Id:          s.ID.Hex(),
-		Name:        name,
-		Description: description,
-		Current:     s.Current.ToAPI(),
-		History:     history,
+		Id:           s.ID.Hex(),
+		Name:         name,
+		Description:  description,
+		Current:      s.Current.ToAPI(),
+		History:      history,
+		PrefillRules: prefills,
+		ContextRules: s.ContextRules.ToAPI(),
 	}
 }
 
@@ -59,12 +67,18 @@ func SurveyFromAPI(s *api.Survey) Survey {
 	for i, si := range s.Description {
 		description[i] = LocalisedObjectFromAPI(si)
 	}
+	prefills := make([]Expression, len(s.PrefillRules))
+	for i, r := range s.PrefillRules {
+		prefills[i] = ExpressionFromAPI(r)
+	}
 	return Survey{
-		ID:          _id,
-		Name:        name,
-		Description: description,
-		Current:     SurveyVersionFromAPI(s.Current),
-		History:     history,
+		ID:           _id,
+		Name:         name,
+		Description:  description,
+		Current:      SurveyVersionFromAPI(s.Current),
+		History:      history,
+		PrefillRules: prefills,
+		ContextRules: SurveyContextDefFromAPI(s.ContextRules),
 	}
 }
 

@@ -30,3 +30,25 @@ func TestDbAddSurveyResponse(t *testing.T) {
 		}
 	})
 }
+
+func TestDbFindSurveyResponseForParticipant(t *testing.T) {
+	// TODO: filter for participant
+	// TODO: filter for date
+	// TODO: filter for key
+
+	t.Run("find last 2 surveys with key", func(t *testing.T) {
+		t.Error("test not implemented")
+	})
+
+	t.Run("find last 2 surveys without key", func(t *testing.T) {
+		t.Error("test not implemented")
+	})
+
+	t.Run("find surveys after timestamp with key", func(t *testing.T) {
+		t.Error("test not implemented")
+	})
+
+	t.Run("find surveys after timestamp without key", func(t *testing.T) {
+		t.Error("test not implemented")
+	})
+}
