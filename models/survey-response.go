@@ -6,13 +6,12 @@ import (
 )
 
 type SurveyResponse struct {
-	ID           primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
-	Key          string               `bson:"key"`
-	SubmittedBy  string               `bson:"submittedBy"`
-	SubmittedFor string               `bson:"submittedFor"`
-	SubmittedAt  int64                `bson:"submittedAt"`
-	Responses    []SurveyItemResponse `bson:"responses"`
-	Context      map[string]string    `bson:"context"`
+	ID            primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
+	Key           string               `bson:"key"`
+	ParticipantID string               `bson:"participantID"`
+	SubmittedAt   int64                `bson:"submittedAt"`
+	Responses     []SurveyItemResponse `bson:"responses"`
+	Context       map[string]string    `bson:"context"`
 }
 
 func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
@@ -21,12 +20,11 @@ func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
 		resp[i] = r.ToAPI()
 	}
 	return &api.SurveyResponse{
-		Key:          sr.Key,
-		SubmittedBy:  sr.SubmittedBy,
-		SubmittedFor: sr.SubmittedFor,
-		SubmittedAt:  sr.SubmittedAt,
-		Responses:    resp,
-		Context:      sr.Context,
+		Key:           sr.Key,
+		ParticipantId: sr.ParticipantID,
+		SubmittedAt:   sr.SubmittedAt,
+		Responses:     resp,
+		Context:       sr.Context,
 	}
 }
 
@@ -39,11 +37,10 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 		resp[i] = SurveyItemResponseFromAPI(r)
 	}
 	return SurveyResponse{
-		Key:          sr.Key,
-		SubmittedBy:  sr.SubmittedBy,
-		SubmittedFor: sr.SubmittedFor,
-		SubmittedAt:  sr.SubmittedAt,
-		Responses:    resp,
-		Context:      sr.Context,
+		Key:           sr.Key,
+		ParticipantID: sr.ParticipantId,
+		SubmittedAt:   sr.SubmittedAt,
+		Responses:     resp,
+		Context:       sr.Context,
 	}
 }

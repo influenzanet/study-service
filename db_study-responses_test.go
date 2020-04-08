@@ -38,16 +38,16 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 
 	surveyResps := []models.SurveyResponse{
 		// mix participants and order for submittedAt
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-30 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u2", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", SubmittedFor: "u2", SubmittedAt: time.Now().Add(-7 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", SubmittedFor: "u1", SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-30 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s2", ParticipantID: "u2", SubmittedAt: time.Now().Add(-7 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix()},
+		models.SurveyResponse{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
 		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)

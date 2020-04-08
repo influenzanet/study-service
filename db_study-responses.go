@@ -31,7 +31,7 @@ func findSurveyResponsesInDB(instanceID string, studyKey string, query responseQ
 	if query.ParticipantID == "" {
 		return responses, errors.New("participant id must be defined")
 	}
-	filter := bson.M{"submittedFor": query.ParticipantID}
+	filter := bson.M{"participantID": query.ParticipantID}
 
 	opts := &options.FindOptions{
 		Sort: bson.D{

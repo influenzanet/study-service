@@ -17,7 +17,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.Id)
+	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -100,7 +100,7 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Get
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.Id)
+	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -146,20 +146,24 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.Token.Id, conf.Study.GlobalSecret, study.SecretKey)
+		participantID, err := utils.UserIDtoParticipantID(req.Token.ProfilId, conf.Study.GlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+
 		pState, err := findParticipantStateDB(req.Token.InstanceId, study.Key, participantID)
 		if err != nil {
+			log.Println(err)
 			continue
 		}
+
 		if pState.StudyStatus != "active" {
 			continue
 		}
 
 		// Save responses
 		response := models.SurveyResponseFromAPI(req.StatusSurvey)
+		response.ParticipantID = participantID
 		err = addSurveyResponseToDB(req.Token.InstanceId, study.Key, response)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
@@ -196,7 +200,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.Id)
+	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -211,6 +215,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 
 	// Save responses
 	response := models.SurveyResponseFromAPI(req.Response)
+	response.ParticipantID = participantID
 	err = addSurveyResponseToDB(req.Token.InstanceId, req.StudyKey, response)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
