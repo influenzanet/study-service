@@ -12,6 +12,7 @@ type Study struct {
 	Status    string             `bson:"status"`
 	Members   []StudyMember      `bson:"members"` // users with access to manage study
 	Rules     []Expression       `bson:"rules"`   // defining how the study should run
+	Props     StudyProps         `bson:"props"`
 }
 
 type StudyMember struct {
@@ -42,6 +43,7 @@ func (s Study) ToAPI() *api.Study {
 		Status:    s.Status,
 		Members:   members,
 		Rules:     rules,
+		Props:     s.Props.ToAPI(),
 	}
 }
 
@@ -65,6 +67,7 @@ func StudyFromAPI(s *api.Study) Study {
 		Status:    s.Status,
 		Members:   members,
 		Rules:     rules,
+		Props:     StudyPropsFromAPI(s.Props),
 	}
 }
 
