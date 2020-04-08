@@ -10,6 +10,31 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStudyRequest) (*api.Study, error) {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.Study == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+		return nil, status.Error(codes.Unauthenticated, "not authorized to create a study")
+	}
+
+	study := models.StudyFromAPI(req.Study)
+	study.Members = []models.StudyMember{
+		models.StudyMember{
+			Role:     "owner",
+			UserID:   req.Token.Id,
+			UserName: utils.GetUsernameFromToken(req.Token),
+		},
+	}
+
+	cStudy, err := createStudyInDB(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return cStudy.ToAPI(), nil
+}
+
 func (s *studyServiceServer) AddSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.SurveyVersion, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Survey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
