@@ -614,6 +614,7 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 			Token: &api.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
+				ProfilId:   testUserID,
 			},
 			StatusSurvey: &api.SurveyResponse{
 				Key:           "t1",
@@ -742,7 +743,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
-			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
 			StudyKey: studies[0].Key,
 			Response: &survResp,
 		})
