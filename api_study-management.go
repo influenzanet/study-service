@@ -64,6 +64,22 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
+	surveys, err := findAllSurveyDefsForStudyDB(req.Token.InstanceId, req.StudyKey, true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	infos := make([]*api.SurveyInfoResp_SurveyInfo, len(surveys))
+	for i, s := range surveys {
+		apiS := s.ToAPI()
+		infos[i] = &api.SurveyInfoResp_SurveyInfo{
+			Key:         s.Current.SurveyDefinition.Key,
+			Name:        apiS.Name,
+			Description: apiS.Description,
+		}
+	}
 
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	resp := api.SurveyInfoResp{
+		Infos: infos,
+	}
+	return &resp, nil
 }

@@ -79,3 +79,56 @@ func TestDbFindSurveyDefinition(t *testing.T) {
 		}
 	})
 }
+
+func TestDbFindAllSurveyDefinitions(t *testing.T) {
+	testSurvey := models.Survey{
+		Current: models.SurveyVersion{
+			Published: time.Now().Unix(),
+			SurveyDefinition: models.SurveyItem{
+				Key: "s1",
+				Items: []models.SurveyItem{
+					models.SurveyItem{
+						Key:     "Q1",
+						Follows: []string{"ST"},
+						Condition: models.Expression{
+							Name: "testmethod",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	studyKey := "test-study-key-for-find-all-surveys"
+	_, err := addSurveyToDB(testInstanceID, studyKey, testSurvey)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	testSurvey.Current.SurveyDefinition.Key = "erw"
+	_, err = addSurveyToDB(testInstanceID, studyKey, testSurvey)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("not existing study", func(t *testing.T) {
+		surveys, err := findAllSurveyDefsForStudyDB(testInstanceID, "wrong", true)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(surveys) > 0 {
+			t.Errorf("unexpected number of surveys: %d", len(surveys))
+		}
+	})
+
+	t.Run("existing study with surveys", func(t *testing.T) {
+		surveys, err := findAllSurveyDefsForStudyDB(testInstanceID, studyKey, true)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(surveys) != 2 {
+			t.Errorf("unexpected number of surveys: %d", len(surveys))
+		}
+	})
+}
