@@ -367,6 +367,7 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 		resp, err := s.GetAssignedSurveys(context.Background(), &api.TokenInfos{
 			Id:         testUserID,
 			InstanceId: testInstanceID,
+			ProfilId:   testUserID,
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())

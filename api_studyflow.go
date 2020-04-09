@@ -76,7 +76,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.Id, conf.Study.GlobalSecret, study.SecretKey)
+		participantID, err := utils.UserIDtoParticipantID(req.ProfilId, conf.Study.GlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
