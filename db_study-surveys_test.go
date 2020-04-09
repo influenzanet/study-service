@@ -7,7 +7,7 @@ import (
 	"github.com/influenzanet/study-service/models"
 )
 
-func TestDbAddSurveyAndContextDef(t *testing.T) {
+func TestDbSaveSurveyAndContextDef(t *testing.T) {
 	t.Run("Testing create survey", func(t *testing.T) {
 		testSurvey := models.Survey{
 			Current: models.SurveyVersion{
@@ -28,7 +28,7 @@ func TestDbAddSurveyAndContextDef(t *testing.T) {
 		}
 
 		studyKey := "test-study-key"
-		_, err := addSurveyToDB(testInstanceID, studyKey, testSurvey)
+		_, err := saveSurveyToDB(testInstanceID, studyKey, testSurvey)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -56,7 +56,7 @@ func TestDbFindSurveyDefinition(t *testing.T) {
 	}
 
 	studyKey := "test-study-key"
-	_, err := addSurveyToDB(testInstanceID, studyKey, testSurvey)
+	_, err := saveSurveyToDB(testInstanceID, studyKey, testSurvey)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -100,13 +100,13 @@ func TestDbFindAllSurveyDefinitions(t *testing.T) {
 	}
 
 	studyKey := "test-study-key-for-find-all-surveys"
-	_, err := addSurveyToDB(testInstanceID, studyKey, testSurvey)
+	_, err := saveSurveyToDB(testInstanceID, studyKey, testSurvey)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
 	testSurvey.Current.SurveyDefinition.Key = "erw"
-	_, err = addSurveyToDB(testInstanceID, studyKey, testSurvey)
+	_, err = saveSurveyToDB(testInstanceID, studyKey, testSurvey)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return

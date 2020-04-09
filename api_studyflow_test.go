@@ -476,7 +476,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err = addSurveyToDB(testInstanceID, testStudyKey, testSurvey)
+	_, err = saveSurveyToDB(testInstanceID, testStudyKey, testSurvey)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}

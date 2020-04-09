@@ -92,11 +92,28 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 
 }
 
-func TestAddSurveyToStudyEndpoint(t *testing.T) {
+func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
+	testUser := "testuser"
+	testStudy := models.Study{
+		Key: "testStudy_for_save_survey",
+		Members: []models.StudyMember{
+			models.StudyMember{
+				UserID: testUser,
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := createStudyInDB(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
-		_, err := s.AddSurveyToStudy(context.Background(), nil)
+		_, err := s.SaveSurveyToStudy(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -104,15 +121,65 @@ func TestAddSurveyToStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.AddSurveyToStudy(context.Background(), &api.AddSurveyReq{})
+		_, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
 		}
 	})
 
+	t.Run("with wrong user role", func(t *testing.T) {
+		testSurvey := api.Survey{
+			Current: &api.SurveyVersion{
+				SurveyDefinition: &api.SurveyItem{
+					Key: "testkey",
+				},
+			},
+		}
+		_, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER",
+					"username": "testuserwrong",
+				},
+			},
+			StudyKey: testStudy.Key,
+			Survey:   &testSurvey,
+		})
+		if err == nil {
+			t.Error("should fail")
+		}
+	})
+
 	t.Run("with new survey to add", func(t *testing.T) {
-		t.Error("test unimplemented")
+		testSurvey := api.Survey{
+			Current: &api.SurveyVersion{
+				SurveyDefinition: &api.SurveyItem{
+					Key: "testkey",
+				},
+			},
+		}
+		resp, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
+			Token: &api.TokenInfos{
+				Id:         "testuser",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER",
+					"username": "testusername",
+				},
+			},
+			StudyKey: testStudy.Key,
+			Survey:   &testSurvey,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if resp.SurveyDefinition.Key != "testkey" {
+			t.Error("unexpected survey key")
+		}
 	})
 }
 
@@ -127,7 +194,7 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
 	}
 	for _, s := range testSurveys {
-		_, err := addSurveyToDB(testInstanceID, testStudyKey, s)
+		_, err := saveSurveyToDB(testInstanceID, testStudyKey, s)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return

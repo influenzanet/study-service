@@ -35,7 +35,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	return cStudy.ToAPI(), nil
 }
 
-func (s *studyServiceServer) AddSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.SurveyVersion, error) {
+func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.SurveyVersion, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Survey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -49,7 +49,7 @@ func (s *studyServiceServer) AddSurveyToStudy(ctx context.Context, req *api.AddS
 	}
 
 	newSurvey := models.SurveyFromAPI(req.Survey)
-	createdSurvey, err := addSurveyToDB(req.Token.InstanceId, req.StudyKey, newSurvey)
+	createdSurvey, err := saveSurveyToDB(req.Token.InstanceId, req.StudyKey, newSurvey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

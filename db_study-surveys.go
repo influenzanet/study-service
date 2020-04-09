@@ -7,18 +7,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func addSurveyToDB(instanceID string, studyKey string, survey models.Survey) (newSurvey models.Survey, err error) {
+func saveSurveyToDB(instanceID string, studyKey string, survey models.Survey) (models.Survey, error) {
 	ctx, cancel := getContext()
 	defer cancel()
 
-	res, err := collectionRefStudySurveys(instanceID, studyKey).InsertOne(ctx, survey)
-	if err != nil {
-		return
-	}
+	filter := bson.M{"current.surveyDefinition.key": survey.Current.SurveyDefinition.Key}
 
-	newSurvey = survey
-	newSurvey.ID = res.InsertedID.(primitive.ObjectID)
-	return
+	upsert := true
+	rd := options.After
+	options := options.FindOneAndReplaceOptions{
+		Upsert:         &upsert,
+		ReturnDocument: &rd,
+	}
+	elem := models.Survey{}
+	err := collectionRefStudySurveys(instanceID, studyKey).FindOneAndReplace(
+		ctx, filter, survey, &options,
+	).Decode(&elem)
+	return elem, err
 }
 
 func findSurveyDefDB(instanceID string, studyKey string, surveyKey string) (models.Survey, error) {
