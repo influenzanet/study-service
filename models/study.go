@@ -6,13 +6,14 @@ import (
 )
 
 type Study struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Key       string             `bson:"key"`
-	SecretKey string             `bson:"secretKey"`
-	Status    string             `bson:"status"`
-	Members   []StudyMember      `bson:"members"` // users with access to manage study
-	Rules     []Expression       `bson:"rules"`   // defining how the study should run
-	Props     StudyProps         `bson:"props"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Key            string             `bson:"key"`
+	SecretKey      string             `bson:"secretKey"`
+	Status         string             `bson:"status"`
+	Members        []StudyMember      `bson:"members"` // users with access to manage study
+	Rules          []Expression       `bson:"rules"`   // defining how the study should run
+	Props          StudyProps         `bson:"props"`
+	NextTimerEvent int64              `bson:"nextTimerEventAfter"`
 }
 
 type StudyMember struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/influenzanet/study-service/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -180,4 +181,23 @@ func updateStudyInfoInDB(instanceID string, study models.Study) (models.Study, e
 	}
 	err := collectionRefStudyInfos(instanceID).FindOneAndReplace(ctx, filter, study, &fro).Decode(&elem)
 	return elem, err
+}
+
+func shouldPerformTimerEvent(instanceID string, studyKey string, timerEventFrequency int64) error {
+	ctx, cancel := getContext()
+	defer cancel()
+
+	filter := bson.M{
+		"key":                 studyKey,
+		"nextTimerEventAfter": bson.M{"$lt": time.Now().Unix()},
+	}
+	update := bson.M{"$set": bson.M{"nextTimerEventAfter": time.Now().Unix() + timerEventFrequency}}
+	res, err := collectionRefStudyInfos(instanceID).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	if res.ModifiedCount < 1 {
+		return errors.New("not modified")
+	}
+	return nil
 }

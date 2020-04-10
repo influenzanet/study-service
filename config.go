@@ -18,14 +18,37 @@ type Config struct {
 		IdleConnTimeout int
 	}
 	Study struct {
-		GlobalSecret string
+		GlobalSecret               string
+		TimerEventFrequency        int64 // how often the timer event should be performed (only from one instance of the service) - seconds
+		TimerEventCheckIntervalMin int   // approx. how often this serice should check if to perform the timer event - seconds
+		TimerEventCheckIntervalVar int   // range of the uniform random distribution - varying the check interval to avoid a steady collisions
 	}
 }
 
 func initConfig() {
 	conf.Port = os.Getenv("STUDY_SERVICE_LISTEN_PORT")
-	conf.Study.GlobalSecret = os.Getenv("STUDY_GLOBAL_SECRET")
+	getStudyConfig()
 	getDBConfig()
+}
+
+func getStudyConfig() {
+	conf.Study.GlobalSecret = os.Getenv("STUDY_GLOBAL_SECRET")
+
+	freq, err := strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_FREQUENCY"))
+	if err != nil {
+		log.Fatal("STUDY_TIMER_EVENT_FREQUENCY: " + err.Error())
+	}
+	conf.Study.TimerEventFrequency = int64(freq)
+
+	conf.Study.TimerEventCheckIntervalMin, err = strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN"))
+	if err != nil {
+		log.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN: " + err.Error())
+	}
+
+	conf.Study.TimerEventCheckIntervalVar, err = strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_CHECK_INTERVAL_VAR"))
+	if err != nil {
+		log.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL: " + err.Error())
+	}
 }
 
 func getDBConfig() {
