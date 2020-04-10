@@ -6,19 +6,25 @@ import (
 )
 
 type Survey struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name         []LocalisedObject  `bson:"name"`
-	Description  []LocalisedObject  `bson:"description"`
-	Current      SurveyVersion      `bson:"current"`
-	History      []SurveyVersion    `bson:"history"`
-	PrefillRules []Expression       `bson:"prefillRules"`
-	ContextRules SurveyContextDef   `bson:"contextRules"`
+	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name            []LocalisedObject  `bson:"name"`
+	Description     []LocalisedObject  `bson:"description"`
+	Current         SurveyVersion      `bson:"current"`
+	History         []SurveyVersion    `bson:"history"`
+	PrefillRules    []Expression       `bson:"prefillRules"`
+	ContextRules    SurveyContextDef   `bson:"contextRules"`
+	MaxItemsPerPage *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
 }
 
 type SurveyVersion struct {
 	Published        int64      `bson:"published"`
 	UnPublished      int64      `bson:"unpublished"`
 	SurveyDefinition SurveyItem `bson:"surveyDefinition"`
+}
+
+type MaxItemsPerPage struct {
+	Large int32 `bson:"large"`
+	Small int32 `bson:"small"`
 }
 
 func (s Survey) ToAPI() *api.Survey {
@@ -38,7 +44,7 @@ func (s Survey) ToAPI() *api.Survey {
 	for i, r := range s.PrefillRules {
 		prefills[i] = r.ToAPI()
 	}
-	return &api.Survey{
+	as := &api.Survey{
 		Id:           s.ID.Hex(),
 		Name:         name,
 		Description:  description,
@@ -47,6 +53,10 @@ func (s Survey) ToAPI() *api.Survey {
 		PrefillRules: prefills,
 		ContextRules: s.ContextRules.ToAPI(),
 	}
+	if s.MaxItemsPerPage != nil {
+		as.MaxItemsPerPage = s.MaxItemsPerPage.ToAPI()
+	}
+	return as
 }
 
 func SurveyFromAPI(s *api.Survey) Survey {
@@ -72,13 +82,14 @@ func SurveyFromAPI(s *api.Survey) Survey {
 		prefills[i] = ExpressionFromAPI(r)
 	}
 	return Survey{
-		ID:           _id,
-		Name:         name,
-		Description:  description,
-		Current:      SurveyVersionFromAPI(s.Current),
-		History:      history,
-		PrefillRules: prefills,
-		ContextRules: SurveyContextDefFromAPI(s.ContextRules),
+		ID:              _id,
+		Name:            name,
+		Description:     description,
+		Current:         SurveyVersionFromAPI(s.Current),
+		History:         history,
+		PrefillRules:    prefills,
+		ContextRules:    SurveyContextDefFromAPI(s.ContextRules),
+		MaxItemsPerPage: MaxItemsPerPageFromAPI(s.MaxItemsPerPage),
 	}
 }
 
@@ -98,5 +109,22 @@ func SurveyVersionFromAPI(sv *api.SurveyVersion) SurveyVersion {
 		Published:        sv.Published,
 		UnPublished:      sv.Unpublished,
 		SurveyDefinition: SurveyItemFromAPI(sv.SurveyDefinition),
+	}
+}
+
+func (s MaxItemsPerPage) ToAPI() *api.MaxItemsPerPage {
+	return &api.MaxItemsPerPage{
+		Large: s.Large,
+		Small: s.Small,
+	}
+}
+
+func MaxItemsPerPageFromAPI(s *api.MaxItemsPerPage) *MaxItemsPerPage {
+	if s == nil {
+		return &MaxItemsPerPage{}
+	}
+	return &MaxItemsPerPage{
+		Large: s.Large,
+		Small: s.Small,
 	}
 }
