@@ -446,7 +446,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 			},
 		},
 		ContextRules: &models.SurveyContextDef{
-			Mode: models.ExpressionArg{Str: "test"},
+			Mode: &models.ExpressionArg{Str: "test"},
 			PreviousResponses: []models.Expression{
 				models.Expression{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
 					models.ExpressionArg{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
@@ -786,7 +786,7 @@ func TestResolveContextRules(t *testing.T) {
 
 	t.Run("resolve mode string arg", func(t *testing.T) {
 		testRules := models.SurveyContextDef{
-			Mode: models.ExpressionArg{Str: "test"},
+			Mode: &models.ExpressionArg{Str: "test"},
 		}
 		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, testRules)
 		if err != nil {

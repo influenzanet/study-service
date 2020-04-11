@@ -19,9 +19,9 @@ type SurveyItem struct {
 	SelectionMethod *Expression  `bson:"selectionMethod,omitempty"`
 
 	// Question attributes ->
-	Type        string        `bson:"type,omitempty"`
-	Components  ItemComponent `bson:"components,omitempty"`
-	Validations []Validation  `bson:"validations,omitempty"`
+	Type        string         `bson:"type,omitempty"`
+	Components  *ItemComponent `bson:"components,omitempty"`
+	Validations []Validation   `bson:"validations,omitempty"`
 }
 
 func (s SurveyItem) ToAPI() *api.SurveyItem {
@@ -34,9 +34,13 @@ func (s SurveyItem) ToAPI() *api.SurveyItem {
 	for i, si := range s.Validations {
 		validations[i] = si.ToAPI()
 	}
+	id := ""
+	if !s.ID.IsZero() {
+		id = s.ID.Hex()
+	}
 
 	return &api.SurveyItem{
-		Id:              s.ID.Hex(),
+		Id:              id,
 		Key:             s.Key,
 		Follows:         s.Follows,
 		Condition:       s.Condition.ToAPI(),

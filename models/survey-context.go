@@ -19,8 +19,8 @@ func (ctx SurveyContext) ToAPI() *api.SurveyContext {
 }
 
 type SurveyContextDef struct {
-	Mode              ExpressionArg `bson:"mode"`
-	PreviousResponses []Expression  `bson:"previousResponses"`
+	Mode              *ExpressionArg `bson:"mode"`
+	PreviousResponses []Expression   `bson:"previousResponses"`
 }
 
 func (cd SurveyContextDef) ToAPI() *api.SurveyContextDef {

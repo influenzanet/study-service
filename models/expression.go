@@ -19,7 +19,10 @@ type ExpressionArg struct {
 	Num   float64    `bson:"num"`
 }
 
-func (e ExpressionArg) ToAPI() *api.ExpressionArg {
+func (e *ExpressionArg) ToAPI() *api.ExpressionArg {
+	if e == nil {
+		return nil
+	}
 	eargs := &api.ExpressionArg{}
 	if len(e.Exp.Name) > 0 {
 		eargs.Data = &api.ExpressionArg_Exp{Exp: e.Exp.ToAPI()}
@@ -47,10 +50,10 @@ func (e *Expression) ToAPI() *api.Expression {
 	}
 }
 
-func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
+func ExpressionArgFromAPI(e *api.ExpressionArg) *ExpressionArg {
 	newEA := ExpressionArg{}
 	if e == nil {
-		return newEA
+		return nil
 	}
 
 	switch x := e.Data.(type) {
@@ -66,7 +69,7 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
 		log.Printf("api.ExpressionArg has unexpected type %T", x)
 	}
 	newEA.DType = e.Dtype
-	return newEA
+	return &newEA
 }
 
 func ExpressionFromAPI(e *api.Expression) *Expression {
@@ -79,7 +82,7 @@ func ExpressionFromAPI(e *api.Expression) *Expression {
 
 	exp.Data = make([]ExpressionArg, len(e.Data))
 	for i, ea := range e.Data {
-		exp.Data[i] = ExpressionArgFromAPI(ea)
+		exp.Data[i] = *ExpressionArgFromAPI(ea)
 	}
 	return &exp
 }

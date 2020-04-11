@@ -40,14 +40,16 @@ func getAndPerformStudyRules(instanceID string, studyKey string, pState models.P
 
 func resolveContextRules(instanceID string, studyKey string, participantID string, rules models.SurveyContextDef) (sCtx models.SurveyContext, err error) {
 	// mode:
-	modeRule := rules.Mode
-	switch modeRule.DType {
-	case "exp":
-		return sCtx, errors.New("expression arg type not supported yet")
-	case "str":
-		sCtx.Mode = modeRule.Str
-	default:
-		sCtx.Mode = modeRule.Str
+	if rules.Mode != nil {
+		modeRule := rules.Mode
+		switch modeRule.DType {
+		case "exp":
+			return sCtx, errors.New("expression arg type not supported yet")
+		case "str":
+			sCtx.Mode = modeRule.Str
+		default:
+			sCtx.Mode = modeRule.Str
+		}
 	}
 
 	// previous responses:

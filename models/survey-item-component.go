@@ -15,14 +15,17 @@ type ItemComponent struct {
 	Order *Expression     `bson:"order,omitempty"`
 
 	// response compontent
-	Dtype      string              `bson:"dtype,omitempty"`
-	Properties ComponentProperties `bson:"properties,omitempty"`
+	Dtype      string               `bson:"dtype,omitempty"`
+	Properties *ComponentProperties `bson:"properties,omitempty"`
 
 	Style       []Style           `bson:"style,omitempty"`
 	Description []LocalisedObject `bson:"description"`
 }
 
-func (comp ItemComponent) ToAPI() *api.ItemComponent {
+func (comp *ItemComponent) ToAPI() *api.ItemComponent {
+	if comp == nil {
+		return nil
+	}
 	content := make([]*api.LocalisedObject, len(comp.Content))
 	for i, si := range comp.Content {
 		content[i] = si.ToAPI()
@@ -60,9 +63,9 @@ func (comp ItemComponent) ToAPI() *api.ItemComponent {
 	return apiComp
 }
 
-func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
+func ItemComponentFromAPI(comp *api.ItemComponent) *ItemComponent {
 	if comp == nil {
-		return ItemComponent{}
+		return nil
 	}
 	content := make([]LocalisedObject, len(comp.Content))
 	for i, si := range comp.Content {
@@ -74,7 +77,7 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 	}
 	items := make([]ItemComponent, len(comp.Items))
 	for i, si := range comp.Items {
-		items[i] = ItemComponentFromAPI(si)
+		items[i] = *ItemComponentFromAPI(si)
 	}
 
 	style := make([]Style, len(comp.Style))
@@ -99,7 +102,7 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 		exp := ExpressionFromAPI(comp.Order)
 		dbComp.Order = exp
 	}
-	return dbComp
+	return &dbComp
 }
 
 type Style struct {
@@ -125,13 +128,16 @@ func StyleFromAPI(st *api.ItemComponent_Style) Style {
 }
 
 type ComponentProperties struct {
-	Min           ExpressionArg `bson:"min"`
-	Max           ExpressionArg `bson:"max"`
-	StepSize      ExpressionArg `bson:"stepSize"`
-	DateInputMode ExpressionArg `bson:"dateInputMode"`
+	Min           *ExpressionArg `bson:"min"`
+	Max           *ExpressionArg `bson:"max"`
+	StepSize      *ExpressionArg `bson:"stepSize"`
+	DateInputMode *ExpressionArg `bson:"dateInputMode"`
 }
 
-func (s ComponentProperties) ToAPI() *api.ItemComponent_Properties {
+func (s *ComponentProperties) ToAPI() *api.ItemComponent_Properties {
+	if s == nil {
+		return nil
+	}
 	return &api.ItemComponent_Properties{
 		Min:           s.Min.ToAPI(),
 		Max:           s.Max.ToAPI(),
@@ -140,11 +146,11 @@ func (s ComponentProperties) ToAPI() *api.ItemComponent_Properties {
 	}
 }
 
-func ComponentPropertiesFromAPI(st *api.ItemComponent_Properties) ComponentProperties {
+func ComponentPropertiesFromAPI(st *api.ItemComponent_Properties) *ComponentProperties {
 	if st == nil {
-		return ComponentProperties{}
+		return nil
 	}
-	return ComponentProperties{
+	return &ComponentProperties{
 		Min:           ExpressionArgFromAPI(st.Min),
 		Max:           ExpressionArgFromAPI(st.Max),
 		StepSize:      ExpressionArgFromAPI(st.StepSize),
@@ -176,7 +182,7 @@ func LocalisedObjectFromAPI(o *api.LocalisedObject) LocalisedObject {
 	}
 	parts := make([]ExpressionArg, len(o.Parts))
 	for i, si := range o.Parts {
-		parts[i] = ExpressionArgFromAPI(si)
+		parts[i] = *ExpressionArgFromAPI(si)
 	}
 
 	return LocalisedObject{
