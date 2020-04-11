@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/influenzanet/study-service/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,6 +26,18 @@ func saveSurveyToDB(instanceID string, studyKey string, survey models.Survey) (m
 		ctx, filter, survey, &options,
 	).Decode(&elem)
 	return elem, err
+}
+
+func removeSurveyFromStudyDB(instanceID string, studyKey string, surveyKey string) error {
+	ctx, cancel := getContext()
+	defer cancel()
+
+	filter := bson.M{"current.surveyDefinition.key": surveyKey}
+	res, err := collectionRefStudySurveys(instanceID, studyKey).DeleteOne(ctx, filter)
+	if res.DeletedCount < 1 {
+		err = errors.New("not found")
+	}
+	return err
 }
 
 func findSurveyDefDB(instanceID string, studyKey string, surveyKey string) (models.Survey, error) {

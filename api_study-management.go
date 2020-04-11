@@ -60,6 +60,27 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	}, nil
 }
 
+func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.Status, error) {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	members, err := getStudyMembers(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if !utils.CheckIfMember(req.Token.Id, members, []string{"maintainer", "owner"}) {
+		return nil, status.Error(codes.Unauthenticated, "not authorized to access this study")
+	}
+	err = removeSurveyFromStudyDB(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &api.Status{
+		Msg: "survey removed",
+	}, nil
+}
+
 func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.StudyReferenceReq) (*api.SurveyInfoResp, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")

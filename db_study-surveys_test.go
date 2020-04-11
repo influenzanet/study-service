@@ -36,6 +36,56 @@ func TestDbSaveSurveyAndContextDef(t *testing.T) {
 	})
 }
 
+func TestDbRemoveSurveyFromStudy(t *testing.T) {
+	testSurvey := models.Survey{
+		Current: models.SurveyVersion{
+			Published: time.Now().Unix(),
+			SurveyDefinition: models.SurveyItem{
+				Key: "s1",
+				Items: []models.SurveyItem{
+					models.SurveyItem{
+						Key:     "Q1",
+						Follows: []string{"ST"},
+						Condition: models.Expression{
+							Name: "testmethod",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	studyKey := "test-for-db-removing-survey"
+	_, err := saveSurveyToDB(testInstanceID, studyKey, testSurvey)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with not existing key", func(t *testing.T) {
+		err := removeSurveyFromStudyDB(testInstanceID, studyKey, "wrong")
+		if err == nil {
+			t.Error("should return error")
+		}
+	})
+
+	t.Run("Test removing survey definition from study", func(t *testing.T) {
+		err := removeSurveyFromStudyDB(testInstanceID, studyKey, testSurvey.Current.SurveyDefinition.Key)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		surveys, err := findAllSurveyDefsForStudyDB(testInstanceID, studyKey, true)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(surveys) > 0 {
+			t.Errorf("unexpected number of surveys: %d", len(surveys))
+		}
+	})
+}
+
 func TestDbFindSurveyDefinition(t *testing.T) {
 	testSurvey := models.Survey{
 		Current: models.SurveyVersion{

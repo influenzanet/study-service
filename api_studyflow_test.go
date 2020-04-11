@@ -490,7 +490,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{})
+		_, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -498,7 +498,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
-		_, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{
+		_, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
 			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
 			StudyKey:  "wrong",
 			SurveyKey: "t1",
@@ -510,7 +510,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	})
 
 	t.Run("correct values", func(t *testing.T) {
-		resp, err := s.GetAssignedSurvey(context.Background(), &api.GetSurveyRequest{
+		resp, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
 			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
 			StudyKey:  testStudyKey,
 			SurveyKey: "t1",

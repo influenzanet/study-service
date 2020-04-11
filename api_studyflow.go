@@ -95,7 +95,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 	return &resp, nil
 }
 
-func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.GetSurveyRequest) (*api.SurveyAndContext, error) {
+func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.SurveyReferenceRequest) (*api.SurveyAndContext, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
