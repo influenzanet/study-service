@@ -7,8 +7,8 @@ type ItemComponent struct {
 	Role             string            `bson:"role"`
 	Key              string            `bson:"key"`
 	Content          []LocalisedObject `bson:"content"`
-	DisplayCondition Expression        `bson:"displayCondition"`
-	Disabled         Expression        `bson:"disabled"`
+	DisplayCondition *Expression       `bson:"displayCondition"`
+	Disabled         *Expression       `bson:"disabled"`
 
 	// group component
 	Items []ItemComponent `bson:"items,omitempty"`
@@ -97,7 +97,7 @@ func ItemComponentFromAPI(comp *api.ItemComponent) ItemComponent {
 	}
 	if comp.Order != nil {
 		exp := ExpressionFromAPI(comp.Order)
-		dbComp.Order = &exp
+		dbComp.Order = exp
 	}
 	return dbComp
 }

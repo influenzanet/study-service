@@ -177,7 +177,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if resp.SurveyDefinition.Key != "testkey" {
+		if resp.Current.SurveyDefinition.Key != "testkey" {
 			t.Error("unexpected survey key")
 		}
 	})

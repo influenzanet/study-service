@@ -32,7 +32,10 @@ func (e ExpressionArg) ToAPI() *api.ExpressionArg {
 	return eargs
 }
 
-func (e Expression) ToAPI() *api.Expression {
+func (e *Expression) ToAPI() *api.Expression {
+	if e == nil {
+		return nil
+	}
 	data := make([]*api.ExpressionArg, len(e.Data))
 	for i, ea := range e.Data {
 		data[i] = ea.ToAPI()
@@ -52,7 +55,7 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
 
 	switch x := e.Data.(type) {
 	case *api.ExpressionArg_Exp:
-		newEA.Exp = ExpressionFromAPI(x.Exp)
+		newEA.Exp = *ExpressionFromAPI(x.Exp)
 	case *api.ExpressionArg_Str:
 		newEA.Str = x.Str
 	case *api.ExpressionArg_Num:
@@ -66,10 +69,10 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) ExpressionArg {
 	return newEA
 }
 
-func ExpressionFromAPI(e *api.Expression) Expression {
+func ExpressionFromAPI(e *api.Expression) *Expression {
 	exp := Expression{}
 	if e == nil {
-		return exp
+		return nil
 	}
 	exp.Name = e.Name
 	exp.ReturnType = e.ReturnType
@@ -78,7 +81,7 @@ func ExpressionFromAPI(e *api.Expression) Expression {
 	for i, ea := range e.Data {
 		exp.Data[i] = ExpressionArgFromAPI(ea)
 	}
-	return exp
+	return &exp
 }
 
 func (exp ExpressionArg) IsExpression() bool {

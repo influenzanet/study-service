@@ -58,7 +58,7 @@ func StudyFromAPI(s *api.Study) Study {
 	}
 	rules := make([]Expression, len(s.Rules))
 	for i, r := range s.Rules {
-		rules[i] = ExpressionFromAPI(r)
+		rules[i] = *ExpressionFromAPI(r)
 	}
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 	return Study{

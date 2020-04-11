@@ -7,12 +7,12 @@ import (
 
 type Survey struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name            []LocalisedObject  `bson:"name"`
-	Description     []LocalisedObject  `bson:"description"`
+	Name            []LocalisedObject  `bson:"name,omitempty"`
+	Description     []LocalisedObject  `bson:"description,omitempty"`
 	Current         SurveyVersion      `bson:"current"`
-	History         []SurveyVersion    `bson:"history"`
-	PrefillRules    []Expression       `bson:"prefillRules"`
-	ContextRules    SurveyContextDef   `bson:"contextRules"`
+	History         []SurveyVersion    `bson:"history,omitempty"`
+	PrefillRules    []Expression       `bson:"prefillRules,omitempty"`
+	ContextRules    *SurveyContextDef  `bson:"contextRules,omitempty"`
 	MaxItemsPerPage *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
 }
 
@@ -51,7 +51,9 @@ func (s Survey) ToAPI() *api.Survey {
 		Current:      s.Current.ToAPI(),
 		History:      history,
 		PrefillRules: prefills,
-		ContextRules: s.ContextRules.ToAPI(),
+	}
+	if s.ContextRules != nil {
+		as.ContextRules = s.ContextRules.ToAPI()
 	}
 	if s.MaxItemsPerPage != nil {
 		as.MaxItemsPerPage = s.MaxItemsPerPage.ToAPI()
@@ -79,7 +81,7 @@ func SurveyFromAPI(s *api.Survey) Survey {
 	}
 	prefills := make([]Expression, len(s.PrefillRules))
 	for i, r := range s.PrefillRules {
-		prefills[i] = ExpressionFromAPI(r)
+		prefills[i] = *ExpressionFromAPI(r)
 	}
 	return Survey{
 		ID:              _id,
@@ -121,7 +123,7 @@ func (s MaxItemsPerPage) ToAPI() *api.MaxItemsPerPage {
 
 func MaxItemsPerPageFromAPI(s *api.MaxItemsPerPage) *MaxItemsPerPage {
 	if s == nil {
-		return &MaxItemsPerPage{}
+		return nil
 	}
 	return &MaxItemsPerPage{
 		Large: s.Large,

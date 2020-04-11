@@ -24,6 +24,6 @@ func ValidationFromAPI(v *api.Validation) Validation {
 	return Validation{
 		Key:  v.Key,
 		Type: v.Type,
-		Rule: ExpressionFromAPI(v.Rule),
+		Rule: *ExpressionFromAPI(v.Rule),
 	}
 }

@@ -445,7 +445,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 				Key: "t1",
 			},
 		},
-		ContextRules: models.SurveyContextDef{
+		ContextRules: &models.SurveyContextDef{
 			Mode: models.ExpressionArg{Str: "test"},
 			PreviousResponses: []models.Expression{
 				models.Expression{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{

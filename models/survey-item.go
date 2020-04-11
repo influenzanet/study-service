@@ -8,18 +8,18 @@ import (
 type SurveyItem struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Key         string             `bson:"key"`
-	Follows     []string           `bson:"follows"`
-	Condition   Expression         `bson:"condition"`
-	Priority    float32            `bson:"priority"`
-	Version     int32              `bson:"version"`
-	VersionTags []string           `bson:"versionTags"`
+	Follows     []string           `bson:"follows,omitempty"`
+	Condition   *Expression        `bson:"condition,omitempty"`
+	Priority    float32            `bson:"priority,omitempty"`
+	Version     int32              `bson:"version,omitempty"`
+	VersionTags []string           `bson:"versionTags,omitempty"`
 
 	// Question group attributes ->
 	Items           []SurveyItem `bson:"items,omitempty"`
-	SelectionMethod Expression   `bson:"selectionMethod"`
+	SelectionMethod *Expression  `bson:"selectionMethod,omitempty"`
 
 	// Question attributes ->
-	Type        string        `bson:"type"`
+	Type        string        `bson:"type,omitempty"`
 	Components  ItemComponent `bson:"components,omitempty"`
 	Validations []Validation  `bson:"validations,omitempty"`
 }
