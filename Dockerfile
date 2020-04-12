@@ -1,4 +1,4 @@
-FROM phev8/go-dep-builder:latest as builder
+FROM golang:1.14-alpine as builder
 RUN apk update && apk add --no-cache git ca-certificates && update-ca-certificates
 RUN mkdir -p /go/src/github.com/influenzanet/study-service
 ENV GO111MODULE=on
