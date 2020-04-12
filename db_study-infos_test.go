@@ -11,7 +11,7 @@ func TestDbCreateStudyInfos(t *testing.T) {
 		Key:       "testStudyKey1",
 		SecretKey: "supersecret",
 		Members: []models.StudyMember{
-			models.StudyMember{
+			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
@@ -38,14 +38,14 @@ func TestDbCreateStudyInfos(t *testing.T) {
 
 func TestDbUpdateStudyInfos(t *testing.T) {
 	testStudies := []models.Study{
-		models.Study{Key: "test1", Status: "active", Members: []models.StudyMember{
-			models.StudyMember{
+		{Key: "test1", Status: "active", Members: []models.StudyMember{
+			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
 		}},
-		models.Study{Key: "test2", Status: "active", Members: []models.StudyMember{
-			models.StudyMember{
+		{Key: "test2", Status: "active", Members: []models.StudyMember{
+			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
@@ -102,23 +102,23 @@ func TestDbUpdateStudyInfos(t *testing.T) {
 
 func TestDbGetStudyInfos(t *testing.T) {
 	testStudies := []models.Study{
-		models.Study{
+		{
 			Key:       "testg1",
 			SecretKey: "testsecret",
 			Status:    "active",
 			Members: []models.StudyMember{
-				models.StudyMember{
+				{
 					UserID: "testuser",
 					Role:   "maintainer",
 				},
 			},
 			Rules: []models.Expression{
-				models.Expression{Name: "IFTHEN"}, // These here are not complete and won't be evaluated in this test
-				models.Expression{Name: "TEST"},
+				{Name: "IFTHEN"}, // These here are not complete and won't be evaluated in this test
+				{Name: "TEST"},
 			},
 		},
-		models.Study{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []models.StudyMember{
-			models.StudyMember{
+		{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []models.StudyMember{
+			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},

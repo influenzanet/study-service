@@ -8,11 +8,11 @@ import (
 
 func TestMembershipChecker(t *testing.T) {
 	members := []models.StudyMember{
-		models.StudyMember{
+		{
 			UserID: "testuser",
 			Role:   "testrole",
 		},
-		models.StudyMember{
+		{
 			UserID: "testuser2",
 			Role:   "testrole",
 		},

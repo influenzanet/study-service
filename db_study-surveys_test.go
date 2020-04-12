@@ -15,7 +15,7 @@ func TestDbSaveSurveyAndContextDef(t *testing.T) {
 				SurveyDefinition: models.SurveyItem{
 					Key: "ST",
 					Items: []models.SurveyItem{
-						models.SurveyItem{
+						{
 							Key:     "Q1",
 							Follows: []string{"ST"},
 							Condition: &models.Expression{
@@ -43,7 +43,7 @@ func TestDbRemoveSurveyFromStudy(t *testing.T) {
 			SurveyDefinition: models.SurveyItem{
 				Key: "s1",
 				Items: []models.SurveyItem{
-					models.SurveyItem{
+					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
 						Condition: &models.Expression{
@@ -93,7 +93,7 @@ func TestDbFindSurveyDefinition(t *testing.T) {
 			SurveyDefinition: models.SurveyItem{
 				Key: "s1",
 				Items: []models.SurveyItem{
-					models.SurveyItem{
+					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
 						Condition: &models.Expression{
@@ -137,7 +137,7 @@ func TestDbFindAllSurveyDefinitions(t *testing.T) {
 			SurveyDefinition: models.SurveyItem{
 				Key: "s1",
 				Items: []models.SurveyItem{
-					models.SurveyItem{
+					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
 						Condition: &models.Expression{

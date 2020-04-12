@@ -21,7 +21,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 
 	study := models.StudyFromAPI(req.Study)
 	study.Members = []models.StudyMember{
-		models.StudyMember{
+		{
 			Role:     "owner",
 			UserID:   req.Token.Id,
 			UserName: utils.GetUsernameFromToken(req.Token),

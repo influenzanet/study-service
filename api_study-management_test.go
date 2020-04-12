@@ -99,7 +99,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 	testStudy := models.Study{
 		Key: "testStudy_for_save_survey",
 		Members: []models.StudyMember{
-			models.StudyMember{
+			{
 				UserID: testUser,
 				Role:   "maintainer",
 			},
@@ -191,7 +191,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	testStudy := models.Study{
 		Key: testStudyKey,
 		Members: []models.StudyMember{
-			models.StudyMember{
+			{
 				UserID: testUser,
 				Role:   "maintainer",
 			},
@@ -205,9 +205,9 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	}
 
 	testSurveys := []models.Survey{
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
 	}
 	for _, s := range testSurveys {
 		_, err := saveSurveyToDB(testInstanceID, testStudyKey, s)
@@ -291,9 +291,9 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 	testStudyKey := "testStudyfor_finding_all_surveys"
 
 	testSurveys := []models.Survey{
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
-		models.Survey{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
+		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
 	}
 	for _, s := range testSurveys {
 		_, err := saveSurveyToDB(testInstanceID, testStudyKey, s)

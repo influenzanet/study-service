@@ -15,7 +15,7 @@ func TestCheckIfParticipantExists(t *testing.T) {
 	testStudyKey := "teststudy_checkifparticipantexists"
 
 	pStates := []models.ParticipantState{
-		models.ParticipantState{
+		{
 			ParticipantID: "1",
 			StudyStatus:   "active",
 		},
@@ -48,49 +48,49 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 		Key:       "studytocheckifrulesareworking",
 		SecretKey: "testsecret",
 		Rules: []models.Expression{
-			models.Expression{
+			{
 				Name: "IFTHEN",
 				Data: []models.ExpressionArg{
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "checkEventType",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "ENTER"},
+								{Str: "ENTER"},
 							},
 						},
 					},
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "testKey"},
-								models.ExpressionArg{Str: "testValue"},
+								{Str: "testKey"},
+								{Str: "testValue"},
 							},
 						},
 					},
 				},
 			},
-			models.Expression{
+			{
 				Name: "IFTHEN",
 				Data: []models.ExpressionArg{
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "checkEventType",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "SUBMIT"},
+								{Str: "SUBMIT"},
 							},
 						},
 					},
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "testKey"},
-								models.ExpressionArg{Str: "testValue2"},
+								{Str: "testKey"},
+								{Str: "testValue2"},
 							},
 						},
 					},
@@ -157,50 +157,50 @@ func TestEnterStudyEndpoint(t *testing.T) {
 		Key:       "studyfortestingenterstudy",
 		SecretKey: "testsecret",
 		Rules: []models.Expression{
-			models.Expression{
+			{
 				Name: "IFTHEN",
 				Data: []models.ExpressionArg{
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "checkEventType",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "ENTER"},
+								{Str: "ENTER"},
 							},
 						},
 					},
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "ADD_NEW_SURVEY",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "testsurvey"},
-								models.ExpressionArg{DType: "num", Num: 0},
-								models.ExpressionArg{DType: "num", Num: 0},
+								{Str: "testsurvey"},
+								{DType: "num", Num: 0},
+								{DType: "num", Num: 0},
 							},
 						},
 					},
 				},
 			},
-			models.Expression{
+			{
 				Name: "IFTHEN",
 				Data: []models.ExpressionArg{
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "checkEventType",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "SUBMIT"},
+								{Str: "SUBMIT"},
 							},
 						},
 					},
-					models.ExpressionArg{
+					{
 						DType: "exp",
 						Exp: models.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []models.ExpressionArg{
-								models.ExpressionArg{Str: "testKey"},
-								models.ExpressionArg{Str: "testValue2"},
+								{Str: "testKey"},
+								{Str: "testValue2"},
 							},
 						},
 					},
@@ -284,17 +284,17 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
 	studies := []models.Study{
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyforassignedsurvey1",
 			SecretKey: "testsecret",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyforassignedsurvey2",
 			SecretKey: "testsecret2",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyforassignedsurvey3",
 			SecretKey: "testsecret3",
@@ -325,14 +325,14 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 		ParticipantID: pid1,
 		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s1"},
+			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := models.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s1"},
+			{SurveyKey: "s1"},
 		},
 	}
 
@@ -389,7 +389,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	testStudyKey := "teststudy_for_get_assignedsurvey"
 	testUserID := "234234laaabbb3423"
 	studies := []models.Study{
-		models.Study{
+		{
 			Status:    "active",
 			Key:       testStudyKey,
 			SecretKey: "testsecret",
@@ -411,25 +411,24 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	}
 	surveyResps := []models.SurveyResponse{
 		// mix participants and order for submittedAt
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s1.1"},
-			models.SurveyItemResponse{Key: "s1.2"},
-			models.SurveyItemResponse{Key: "s1.3"},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s1.1"},
+			{Key: "s1.2"},
+			{Key: "s1.3"},
 		}},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s2.1"},
-			models.SurveyItemResponse{Key: "s2.2"},
-			models.SurveyItemResponse{Key: "s2.3"},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s2.1"},
+			{Key: "s2.2"},
 		}},
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s1.1"},
-			models.SurveyItemResponse{Key: "s1.2"},
-			models.SurveyItemResponse{Key: "s1.3"},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s1.1"},
+			{Key: "s1.2"},
+			{Key: "s1.3"},
 		}},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s2.1"},
-			models.SurveyItemResponse{Key: "s2.2"},
-			models.SurveyItemResponse{Key: "s2.3"},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s2.1"},
+			{Key: "s2.2"},
+			{Key: "s2.3"},
 		}},
 	}
 	for _, sr := range surveyResps {
@@ -448,29 +447,29 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		ContextRules: &models.SurveyContextDef{
 			Mode: &models.ExpressionArg{Str: "test"},
 			PreviousResponses: []models.Expression{
-				models.Expression{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
-					models.ExpressionArg{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
-					models.ExpressionArg{Str: "s2"},
+				{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
+					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
+					{Str: "s2"},
 				}},
 			},
 		},
 		PrefillRules: []models.Expression{
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s1"},
-					models.ExpressionArg{Str: "s1.1"},
+					{Str: "s1"},
+					{Str: "s1.1"},
 				},
 			},
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s2"},
-					models.ExpressionArg{Str: "s2.2"},
+					{Str: "s2"},
+					{Str: "s2.2"},
 				},
 			},
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s2"},
-					models.ExpressionArg{Str: "s2.4"},
+					{Str: "s2"},
+					{Str: "s2.4"},
 				},
 			},
 		},
@@ -531,17 +530,17 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
 	studies := []models.Study{
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitstatus1",
 			SecretKey: "testsecret",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitstatus2",
 			SecretKey: "testsecret2",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitstatus3",
 			SecretKey: "testsecret3",
@@ -572,14 +571,14 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 		ParticipantID: pid1,
 		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s1"},
+			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := models.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "paused",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s2"},
+			{SurveyKey: "s2"},
 		},
 	}
 
@@ -621,7 +620,7 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 				Key:           "t1",
 				ParticipantId: pid1,
 				Responses: []*api.SurveyItemResponse{
-					&api.SurveyItemResponse{Key: "1"},
+					{Key: "1"},
 				},
 			},
 		})
@@ -643,17 +642,17 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 	s := studyServiceServer{}
 
 	studies := []models.Study{
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitsurvey1",
 			SecretKey: "testsecret",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitsurvey2",
 			SecretKey: "testsecret2",
 		},
-		models.Study{
+		{
 			Status:    "active",
 			Key:       "studyfor_submitsurvey3",
 			SecretKey: "testsecret3",
@@ -684,14 +683,14 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 		ParticipantID: pid1,
 		StudyStatus:   "active",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s1"},
+			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := models.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "paused",
 		AssignedSurveys: []models.AssignedSurvey{
-			models.AssignedSurvey{SurveyKey: "s2"},
+			{SurveyKey: "s2"},
 		},
 	}
 
@@ -726,7 +725,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 		Key:           "sKey",
 		ParticipantId: pid1,
 		Responses: []*api.SurveyItemResponse{
-			&api.SurveyItemResponse{Key: "1"},
+			{Key: "1"},
 		},
 	}
 
@@ -766,16 +765,15 @@ func TestResolveContextRules(t *testing.T) {
 	}
 	surveyResps := []models.SurveyResponse{
 		// mix participants and order for submittedAt
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-30 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", ParticipantID: "u2", SubmittedAt: time.Now().Add(-7 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix()},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix()},
+		{Key: "s2", ParticipantID: "u2", SubmittedAt: time.Now().Add(-7 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix()},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
 		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)
@@ -800,9 +798,9 @@ func TestResolveContextRules(t *testing.T) {
 	t.Run("find old responses since", func(t *testing.T) {
 		testRules := models.SurveyContextDef{
 			PreviousResponses: []models.Expression{
-				models.Expression{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
-					models.ExpressionArg{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
-					models.ExpressionArg{Str: "s2"},
+				{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
+					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
+					{Str: "s2"},
 				}},
 			},
 		}
@@ -818,8 +816,8 @@ func TestResolveContextRules(t *testing.T) {
 	t.Run("find all old responses ", func(t *testing.T) {
 		testRules := models.SurveyContextDef{
 			PreviousResponses: []models.Expression{
-				models.Expression{Name: "ALL_RESPONSES_SINCE", Data: []models.ExpressionArg{
-					models.ExpressionArg{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
+				{Name: "ALL_RESPONSES_SINCE", Data: []models.ExpressionArg{
+					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
 				}},
 			},
 		}
@@ -835,9 +833,9 @@ func TestResolveContextRules(t *testing.T) {
 	t.Run("find old responses by key", func(t *testing.T) {
 		testRules := models.SurveyContextDef{
 			PreviousResponses: []models.Expression{
-				models.Expression{Name: "LAST_RESPONSES_BY_KEY", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s1"},
-					models.ExpressionArg{DType: "num", Num: 1},
+				{Name: "LAST_RESPONSES_BY_KEY", Data: []models.ExpressionArg{
+					{Str: "s1"},
+					{DType: "num", Num: 1},
 				}},
 			},
 		}
@@ -866,25 +864,25 @@ func TestResolvePrefillRules(t *testing.T) {
 	}
 	surveyResps := []models.SurveyResponse{
 		// mix participants and order for submittedAt
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s1.1"},
-			models.SurveyItemResponse{Key: "s1.2"},
-			models.SurveyItemResponse{Key: "s1.3"},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s1.1"},
+			{Key: "s1.2"},
+			{Key: "s1.3"},
 		}},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s2.1"},
-			models.SurveyItemResponse{Key: "s2.2"},
-			models.SurveyItemResponse{Key: "s2.3"},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s2.1"},
+			{Key: "s2.2"},
+			{Key: "s2.3"},
 		}},
-		models.SurveyResponse{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s1.1"},
-			models.SurveyItemResponse{Key: "s1.2"},
-			models.SurveyItemResponse{Key: "s1.3"},
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+
+			{Key: "s1.2"},
+			{Key: "s1.3"},
 		}},
-		models.SurveyResponse{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
-			models.SurveyItemResponse{Key: "s2.1"},
-			models.SurveyItemResponse{Key: "s2.2"},
-			models.SurveyItemResponse{Key: "s2.3"},
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+			{Key: "s2.1"},
+			{Key: "s2.2"},
+			{Key: "s2.3"},
 		}},
 	}
 	for _, sr := range surveyResps {
@@ -896,22 +894,22 @@ func TestResolvePrefillRules(t *testing.T) {
 
 	t.Run("find last survey by type and extract items", func(t *testing.T) {
 		rules := []models.Expression{
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s1"},
-					models.ExpressionArg{Str: "s1.1"},
+					{Str: "s1"},
+					{Str: "s1.1"},
 				},
 			},
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s2"},
-					models.ExpressionArg{Str: "s2.2"},
+					{Str: "s2"},
+					{Str: "s2.2"},
 				},
 			},
-			models.Expression{
+			{
 				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
-					models.ExpressionArg{Str: "s2"},
-					models.ExpressionArg{Str: "s2.4"},
+					{Str: "s2"},
+					{Str: "s2.4"},
 				},
 			},
 		}

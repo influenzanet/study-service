@@ -76,19 +76,19 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	testStudyKey := "teststudy_findbystatus"
 
 	pStates := []models.ParticipantState{
-		models.ParticipantState{
+		{
 			ParticipantID: "1",
 			StudyStatus:   "active",
 		},
-		models.ParticipantState{
+		{
 			ParticipantID: "2",
 			StudyStatus:   "active",
 		},
-		models.ParticipantState{
+		{
 			ParticipantID: "3",
 			StudyStatus:   "inactive",
 		},
-		models.ParticipantState{
+		{
 			ParticipantID: "4",
 			StudyStatus:   "inactive",
 		},
