@@ -782,11 +782,21 @@ func TestResolveContextRules(t *testing.T) {
 		}
 	}
 
+	t.Run("resolve with nil", func(t *testing.T) {
+		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if sCtx.Mode != "" {
+			t.Errorf("unexpected mode: %s", sCtx.Mode)
+		}
+	})
+
 	t.Run("resolve mode string arg", func(t *testing.T) {
 		testRules := models.SurveyContextDef{
 			Mode: &models.ExpressionArg{Str: "test"},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, testRules)
+		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -804,7 +814,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, testRules)
+		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -821,7 +831,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, testRules)
+		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -839,7 +849,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, testRules)
+		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

@@ -38,7 +38,11 @@ func getAndPerformStudyRules(instanceID string, studyKey string, pState models.P
 	return newState, nil
 }
 
-func resolveContextRules(instanceID string, studyKey string, participantID string, rules models.SurveyContextDef) (sCtx models.SurveyContext, err error) {
+func resolveContextRules(instanceID string, studyKey string, participantID string, rules *models.SurveyContextDef) (sCtx models.SurveyContext, err error) {
+	if rules == nil {
+		return models.SurveyContext{}, nil
+	}
+
 	// mode:
 	if rules.Mode != nil {
 		modeRule := rules.Mode
