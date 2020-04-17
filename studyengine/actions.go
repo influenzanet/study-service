@@ -216,7 +216,7 @@ func addNewSurveyAction(action models.Expression, oldState models.ParticipantSta
 func removeAllSurveys(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) > 0 {
-		return newState, errors.New("addNewSurveyAction must not have arguments")
+		return newState, errors.New("removeAllSurveys must not have arguments")
 	}
 
 	newState.AssignedSurveys = []models.AssignedSurvey{}
