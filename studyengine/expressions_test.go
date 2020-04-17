@@ -41,6 +41,66 @@ func TestEvalCheckEventType(t *testing.T) {
 	})
 }
 
+func TestEvalCheckSurveyResponseKey(t *testing.T) {
+	exp := models.Expression{Name: "checkSurveyResponseKey", Data: []models.ExpressionArg{
+		{DType: "str", Str: "weekly"},
+	}}
+
+	t.Run("for no survey responses at all", func(t *testing.T) {
+		evalContext := evalContext{
+			event: models.StudyEvent{Type: "SUBMIT"},
+		}
+		ret, err := ExpressionEval(exp, evalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected type or value: %s", ret)
+		}
+	})
+
+	t.Run("not matching key", func(t *testing.T) {
+		evalContext := evalContext{
+			event: models.StudyEvent{
+				Type: "SUBMIT",
+				Response: models.SurveyResponse{
+					Key:       "intake",
+					Responses: []models.SurveyItemResponse{},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, evalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected type or value: %s", ret)
+		}
+	})
+
+	t.Run("for matching key", func(t *testing.T) {
+		evalContext := evalContext{
+			event: models.StudyEvent{
+				Type: "SUBMIT",
+				Response: models.SurveyResponse{
+					Key:       "weekly",
+					Responses: []models.SurveyItemResponse{},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, evalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected type or value: %s", ret)
+		}
+	})
+}
+
 func TestEvalGetParticipantState(t *testing.T) {
 	t.Run("with normal state", func(t *testing.T) { t.Error("test unimplemented") })
 }

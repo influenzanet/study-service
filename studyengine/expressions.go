@@ -18,6 +18,8 @@ func ExpressionEval(expression models.Expression, evalCtx evalContext) (val inte
 	switch expression.Name {
 	case "checkEventType":
 		val, err = evalCtx.checkEventType(expression)
+	case "checkSurveyResponseKey":
+		val, err = evalCtx.checkSurveyResponseKey(expression)
 	case "eq":
 		val, err = evalCtx.eq(expression)
 	case "lt":
@@ -70,6 +72,24 @@ func (ctx evalContext) checkEventType(exp models.Expression) (val bool, err erro
 	}
 
 	return ctx.event.Type == arg1Val, nil
+}
+
+// checkSurveyResponseKey compares the key of the submitted survey response (if any)
+func (ctx evalContext) checkSurveyResponseKey(exp models.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	return ctx.event.Response.Key == arg1Val, nil
 }
 
 func (ctx evalContext) eq(exp models.Expression) (val bool, err error) {
