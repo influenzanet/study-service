@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"github.com/influenzanet/study-service/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,7 +13,7 @@ import (
 func addSurveyResponseToDB(instanceID string, studyKey string, response models.SurveyResponse) error {
 	ctx, cancel := getContext()
 	defer cancel()
-
+	response.ArrivedAt = time.Now().Unix()
 	_, err := collectionRefSurveyResponses(instanceID, studyKey).InsertOne(ctx, response)
 	return err
 }

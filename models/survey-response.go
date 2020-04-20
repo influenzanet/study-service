@@ -10,6 +10,7 @@ type SurveyResponse struct {
 	Key           string               `bson:"key"`
 	ParticipantID string               `bson:"participantID"`
 	SubmittedAt   int64                `bson:"submittedAt"`
+	ArrivedAt     int64                `bson:"arrivedAt"`
 	Responses     []SurveyItemResponse `bson:"responses"`
 	Context       map[string]string    `bson:"context"`
 }
