@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/influenzanet/study-service/api"
 	"github.com/influenzanet/study-service/models"
@@ -32,6 +33,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	// Init state and perform rules
 	pState := models.ParticipantState{
 		ParticipantID: participantID,
+		EnteredAt:     time.Now().Unix(),
 		StudyStatus:   "active",
 	}
 

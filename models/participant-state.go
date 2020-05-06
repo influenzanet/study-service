@@ -6,7 +6,8 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 type ParticipantState struct {
 	ID              primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	ParticipantID   string               `bson:"participantID"` // reference to the study specific participant ID
-	StudyStatus     string               `bson:"studyStatus"`   // shows if participant is active in the study - possible values: "active", "inactive", "paused"
+	EnteredAt       int64                `bson:"enteredAt"`
+	StudyStatus     string               `bson:"studyStatus"` // shows if participant is active in the study - possible values: "active", "inactive", "paused"
 	Flags           map[string]string    `bson:"flags"`
 	AssignedSurveys []AssignedSurvey     `bson:"assignedSurveys"`
 	Reports         []SurveyItemResponse `bson:"reports"`
