@@ -3,8 +3,8 @@ syntax = "proto3";
 package inf.survey;
 option go_package = "github.com/influenzanet/study-service/pkg/api";
 
-import "expression.proto";
-import "survey-response.proto";
+import "api/expression.proto";
+import "api/survey-response.proto";
 
 message SurveyContext {
   string mode = 1;

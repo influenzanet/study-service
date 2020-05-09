@@ -3,9 +3,9 @@ syntax = "proto3";
 package inf.study_service;
 option go_package = "github.com/influenzanet/study-service/pkg/api";
 
-import "study.proto";
-import "survey.proto";
-import "survey-response.proto";
+import "api/study.proto";
+import "api/survey.proto";
+import "api/survey-response.proto";
 import "google/protobuf/empty.proto";
 
 service StudyServiceApi {
@@ -23,7 +23,7 @@ service StudyServiceApi {
   rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
   rpc SaveSurveyToStudy(AddSurveyReq)
       returns (inf.survey.Survey); // add or update
-  rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (inf.Status);
+  rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (ServiceStatus);
   rpc GetStudySurveyInfos(StudyReferenceReq) returns (SurveyInfoResp);
 
   // TODO: Update study // manage roles
