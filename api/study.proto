@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package inf.study;
+option go_package = "github.com/influenzanet/study-service/pkg/api";
+
+import "expression.proto";
+import "survey.proto";
+
+message Study {
+  string id = 1;  // db id
+  string key = 2; // user defined unique study identifier
+  string secret_key = 3;
+  string status = 4;
+
+  message Props {
+    repeated inf.survey.LocalisedObject name = 1;
+    repeated inf.survey.LocalisedObject description = 2;
+  }
+
+  message Member {
+    string user_id = 1;
+    string role = 2;
+    string username = 3;
+  }
+
+  Props props = 5;
+  repeated inf.expressions.Expression rules = 6;
+  repeated Member members = 7;
+}
+
+message AssignedSurvey {
+  string survey_key = 1;
+  int64 valid_from = 2;
+  int64 valid_until = 3;
+  string study_key = 4;
+}
+
+message AssignedSurveys { repeated AssignedSurvey surveys = 1; }

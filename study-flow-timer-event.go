@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/influenzanet/study-service/models"
-	"github.com/influenzanet/study-service/studyengine"
+	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/studyengine"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

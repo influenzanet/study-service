@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package inf.study_service;
+option go_package = "github.com/influenzanet/study-service/pkg/api";
+
+import "study.proto";
+import "survey.proto";
+import "survey-response.proto";
+import "google/protobuf/empty.proto";
+
+service StudyServiceApi {
+  rpc Status(google.protobuf.Empty) returns (ServiceStatus);
+
+  // Study flow
+  rpc EnterStudy(EnterStudyRequest) returns (inf.study.AssignedSurveys);
+  rpc GetAssignedSurveys(inf.TokenInfos) returns (inf.study.AssignedSurveys);
+  rpc GetAssignedSurvey(SurveyReferenceRequest) returns (SurveyAndContext);
+  rpc SubmitStatusReport(StatusReportRequest)
+      returns (inf.study.AssignedSurveys);
+  rpc SubmitResponse(SubmitResponseReq) returns (inf.study.AssignedSurveys);
+
+  // Study management
+  rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
+  rpc SaveSurveyToStudy(AddSurveyReq)
+      returns (inf.survey.Survey); // add or update
+  rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (inf.Status);
+  rpc GetStudySurveyInfos(StudyReferenceReq) returns (SurveyInfoResp);
+
+  // TODO: Update study // manage roles
+  // TODO: Archive study
+}
+
+message ServiceStatus {
+  enum StatusValue {
+    NORMAL = 0;
+    PROBLEM = 1;
+  }
+  StatusValue status = 1;
+  string msg = 2;
+  string version = 3;
+}
+
+message NewStudyRequest {
+  inf.TokenInfos token = 1;
+  inf.study.Study study = 2;
+}
+
+message SurveyAndContext {
+  inf.survey.Survey survey = 1;
+  inf.survey.SurveyContext context = 2;
+  inf.survey_response.SurveyResponse prefill = 3;
+}
+
+message StudyReferenceReq {
+  inf.TokenInfos token = 1;
+  string study_key = 2;
+}
+
+message SurveyInfoResp {
+  message SurveyInfo {
+    string key = 1;
+    repeated inf.survey.LocalisedObject name = 2;
+    repeated inf.survey.LocalisedObject description = 3;
+  }
+  repeated SurveyInfo infos = 1;
+}
+
+message AddSurveyReq {
+  inf.TokenInfos token = 1;
+  string study_key = 2;
+  inf.survey.Survey survey = 3;
+}
+
+message SubmitResponseReq {
+  inf.TokenInfos token = 1; // identifies the user who is submitting
+  string study_key = 2;
+  inf.survey_response.SurveyResponse response = 3;
+}
+
+message EnterStudyRequest {
+  inf.TokenInfos token = 1;
+  string study_key = 2;
+}
+
+message SurveyReferenceRequest {
+  inf.TokenInfos token = 1;
+  string study_key = 2;
+  string survey_key = 3;
+}
+
+message StatusReportRequest {
+  inf.TokenInfos token = 1;
+  inf.survey_response.SurveyResponse status_survey = 2;
+}

@@ -8,7 +8,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/influenzanet/study-service/api"
+	"github.com/influenzanet/study-service/pkg/api"
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
 )

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package inf.survey_response;
+option go_package = "github.com/influenzanet/study-service/pkg/api";
+
+message SurveyResponse {
+  string key = 1;
+  string participant_id = 2;
+  int64 submitted_at = 3;
+  repeated SurveyItemResponse responses = 4;
+  map<string, string> context =
+      5; // e.g. to store location and other context data
+}
+
+message SurveyItemResponse {
+  string key = 1; // reference to the item
+  ResponseMeta meta = 2;
+  // for item groups:
+  repeated SurveyItemResponse items = 3;
+  // for single items:
+  ResponseItem response = 4;
+}
+
+message ResponseItem {
+  string key = 1;
+  string value = 2;
+  string dtype = 3;
+  // For response option groups:
+  repeated ResponseItem items = 4;
+}
+
+message ResponseMeta {
+  int32 position = 1;
+  string locale_code = 2;
+  int32 version = 3;
+  // timestamps:
+  repeated int64 rendered = 4;
+  repeated int64 displayed = 5;
+  repeated int64 responded = 6;
+}
