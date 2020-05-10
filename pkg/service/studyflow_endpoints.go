@@ -1,13 +1,13 @@
-package main
+package service
 
 import (
 	"context"
 	"log"
 	"time"
 
-	"github.com/influenzanet/study-service/api"
-	"github.com/influenzanet/study-service/models"
-	"github.com/influenzanet/study-service/utils"
+	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -18,36 +18,36 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// Exists already?
-	exists := checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID)
+	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID)
 	if exists {
 		log.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
 	}
 
 	// Init state and perform rules
-	pState := models.ParticipantState{
+	pState := types.ParticipantState{
 		ParticipantID: participantID,
 		EnteredAt:     time.Now().Unix(),
 		StudyStatus:   "active",
 	}
 
 	// perform study rules/actions
-	currentEvent := models.StudyEvent{
+	currentEvent := types.StudyEvent{
 		Type: "ENTER",
 	}
-	pState, err = getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	pState, err = saveParticipantStateDB(req.Token.InstanceId, req.StudyKey, pState)
+	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -69,7 +69,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	studies, err := getStudiesByStatus(req.InstanceId, "active", true)
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -78,11 +78,11 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.ProfilId, conf.Study.GlobalSecret, study.SecretKey)
+		participantID, err := utils.UserIDtoParticipantID(req.ProfilId, s.StudyGlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-		pState, err := findParticipantStateDB(req.InstanceId, study.Key, participantID)
+		pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, study.Key, participantID)
 		if err != nil || pState.StudyStatus != "active" {
 			continue
 		}
@@ -102,30 +102,30 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// Get survey definition
-	surveyDef, err := findSurveyDefDB(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	surveyContext, err := resolveContextRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.ContextRules)
+	surveyContext, err := s.resolveContextRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.ContextRules)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	prefill, err := resolvePrefillRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.PrefillRules)
+	prefill, err := s.resolvePrefillRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.PrefillRules)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
-	surveyDef.PrefillRules = []models.Expression{}
-	surveyDef.History = []models.SurveyVersion{}
+	surveyDef.PrefillRules = []types.Expression{}
+	surveyDef.History = []types.SurveyVersion{}
 
 	resp := api.SurveyAndContext{
 		Survey:  surveyDef.ToAPI(),
@@ -142,7 +142,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	studies, err := getStudiesByStatus(req.Token.InstanceId, "active", true)
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.Token.InstanceId, "active", true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -150,12 +150,12 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.Token.ProfilId, conf.Study.GlobalSecret, study.SecretKey)
+		participantID, err := utils.UserIDtoParticipantID(req.Token.ProfilId, s.StudyGlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
-		pState, err := findParticipantStateDB(req.Token.InstanceId, study.Key, participantID)
+		pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, study.Key, participantID)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -166,25 +166,25 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		}
 
 		// Save responses
-		response := models.SurveyResponseFromAPI(req.StatusSurvey)
+		response := types.SurveyResponseFromAPI(req.StatusSurvey)
 		response.ParticipantID = participantID
-		err = addSurveyResponseToDB(req.Token.InstanceId, study.Key, response)
+		err = s.studyDBservice.AddSurveyResponse(req.Token.InstanceId, study.Key, response)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		// perform study rules/actions
-		currentEvent := models.StudyEvent{
+		currentEvent := types.StudyEvent{
 			Type:     "SUBMIT",
 			Response: response,
 		}
-		pState, err = getAndPerformStudyRules(req.Token.InstanceId, study.Key, pState, currentEvent)
+		pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, study.Key, pState, currentEvent)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		// save state back to DB
-		pState, err = saveParticipantStateDB(req.Token.InstanceId, study.Key, pState)
+		pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, study.Key, pState)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -204,12 +204,12 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	// ParticipantID
-	participantID, err := userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	pState, err := findParticipantStateDB(req.Token.InstanceId, req.StudyKey, participantID)
+	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -218,25 +218,25 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	// Save responses
-	response := models.SurveyResponseFromAPI(req.Response)
+	response := types.SurveyResponseFromAPI(req.Response)
 	response.ParticipantID = participantID
-	err = addSurveyResponseToDB(req.Token.InstanceId, req.StudyKey, response)
+	err = s.studyDBservice.AddSurveyResponse(req.Token.InstanceId, req.StudyKey, response)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// perform study rules/actions
-	currentEvent := models.StudyEvent{
+	currentEvent := types.StudyEvent{
 		Type:     "SUBMIT",
 		Response: response,
 	}
-	pState, err = getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	pState, err = saveParticipantStateDB(req.Token.InstanceId, req.StudyKey, pState)
+	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

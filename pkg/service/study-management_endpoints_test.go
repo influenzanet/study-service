@@ -1,15 +1,19 @@
-package main
+package service
 
 import (
 	"context"
 	"testing"
 
-	"github.com/influenzanet/study-service/api"
-	"github.com/influenzanet/study-service/models"
+	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestCreateNewStudyEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.CreateNewStudy(context.Background(), nil)
@@ -93,12 +97,16 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 }
 
 func TestSaveSurveyToStudyEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
 	testUser := "testuser"
-	testStudy := models.Study{
+	testStudy := types.Study{
 		Key: "testStudy_for_save_survey",
-		Members: []models.StudyMember{
+		Members: []types.StudyMember{
 			{
 				UserID: testUser,
 				Role:   "maintainer",
@@ -106,7 +114,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err := createStudyInDB(testInstanceID, testStudy)
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -184,13 +192,17 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 }
 
 func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
 	testStudyKey := "testStudyfor_removesurveys"
 	testUser := "testuser"
-	testStudy := models.Study{
+	testStudy := types.Study{
 		Key: testStudyKey,
-		Members: []models.StudyMember{
+		Members: []types.StudyMember{
 			{
 				UserID: testUser,
 				Role:   "maintainer",
@@ -198,19 +210,19 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err := createStudyInDB(testInstanceID, testStudy)
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
 
-	testSurveys := []models.Survey{
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
+	testSurveys := []types.Survey{
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
 	}
 	for _, s := range testSurveys {
-		_, err := saveSurveyToDB(testInstanceID, testStudyKey, s)
+		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -274,7 +286,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		surveys, err := findAllSurveyDefsForStudyDB(testInstanceID, testStudyKey, true)
+		surveys, err := testStudyDBService.FindAllSurveyDefsForStudy(testInstanceID, testStudyKey, true)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -286,17 +298,21 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 }
 
 func TestGetStudySurveyInfosEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
 	testStudyKey := "testStudyfor_finding_all_surveys"
 
-	testSurveys := []models.Survey{
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "1"}}},
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "3"}}},
-		{Current: models.SurveyVersion{SurveyDefinition: models.SurveyItem{Key: "2"}}},
+	testSurveys := []types.Survey{
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
 	}
 	for _, s := range testSurveys {
-		_, err := saveSurveyToDB(testInstanceID, testStudyKey, s)
+		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return

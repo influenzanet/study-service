@@ -3,13 +3,13 @@ package studydb
 import (
 	"errors"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) SaveSurvey(instanceID string, studyKey string, survey models.Survey) (models.Survey, error) {
+func (dbService *StudyDBService) SaveSurvey(instanceID string, studyKey string, survey types.Survey) (types.Survey, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -21,7 +21,7 @@ func (dbService *StudyDBService) SaveSurvey(instanceID string, studyKey string, 
 		Upsert:         &upsert,
 		ReturnDocument: &rd,
 	}
-	elem := models.Survey{}
+	elem := types.Survey{}
 	err := dbService.collectionRefStudySurveys(instanceID, studyKey).FindOneAndReplace(
 		ctx, filter, survey, &options,
 	).Decode(&elem)
@@ -40,18 +40,18 @@ func (dbService *StudyDBService) RemoveSurveyFromStudy(instanceID string, studyK
 	return err
 }
 
-func (dbService *StudyDBService) FindSurveyDef(instanceID string, studyKey string, surveyKey string) (models.Survey, error) {
+func (dbService *StudyDBService) FindSurveyDef(instanceID string, studyKey string, surveyKey string) (types.Survey, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
 	filter := bson.M{"current.surveyDefinition.key": surveyKey}
 
-	elem := models.Survey{}
+	elem := types.Survey{}
 	err := dbService.collectionRefStudySurveys(instanceID, studyKey).FindOne(ctx, filter).Decode(&elem)
 	return elem, err
 }
 
-func (dbService *StudyDBService) FindAllSurveyDefsForStudy(instanceID string, studyKey string, onlyInfos bool) (surveys []models.Survey, err error) {
+func (dbService *StudyDBService) FindAllSurveyDefsForStudy(instanceID string, studyKey string, onlyInfos bool) (surveys []types.Survey, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -78,9 +78,9 @@ func (dbService *StudyDBService) FindAllSurveyDefsForStudy(instanceID string, st
 	}
 	defer cur.Close(ctx)
 
-	surveys = []models.Survey{}
+	surveys = []types.Survey{}
 	for cur.Next(ctx) {
-		var result models.Survey
+		var result types.Survey
 		err := cur.Decode(&result)
 		if err != nil {
 			return surveys, err

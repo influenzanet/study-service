@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -16,7 +16,7 @@ type GlobalDBService struct {
 	DBNamePrefix string
 }
 
-func NewGlobalDBService(configs models.DBConfig) *GlobalDBService {
+func NewGlobalDBService(configs types.DBConfig) *GlobalDBService {
 	var err error
 	dbClient, err := mongo.NewClient(
 		options.Client().ApplyURI(configs.URI),

@@ -3,18 +3,18 @@ package studyengine
 import (
 	"testing"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 // Reference/Lookup methods
 func TestEvalCheckEventType(t *testing.T) {
-	exp := models.Expression{Name: "checkEventType", Data: []models.ExpressionArg{
+	exp := types.Expression{Name: "checkEventType", Data: []types.ExpressionArg{
 		{DType: "str", Str: "ENTER"},
 	}}
 
 	t.Run("for matching", func(t *testing.T) {
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "ENTER"},
+			event: types.StudyEvent{Type: "ENTER"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -28,7 +28,7 @@ func TestEvalCheckEventType(t *testing.T) {
 
 	t.Run("for not matching", func(t *testing.T) {
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "enter"},
+			event: types.StudyEvent{Type: "enter"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -42,13 +42,13 @@ func TestEvalCheckEventType(t *testing.T) {
 }
 
 func TestEvalCheckSurveyResponseKey(t *testing.T) {
-	exp := models.Expression{Name: "checkSurveyResponseKey", Data: []models.ExpressionArg{
+	exp := types.Expression{Name: "checkSurveyResponseKey", Data: []types.ExpressionArg{
 		{DType: "str", Str: "weekly"},
 	}}
 
 	t.Run("for no survey responses at all", func(t *testing.T) {
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "SUBMIT"},
+			event: types.StudyEvent{Type: "SUBMIT"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -62,11 +62,11 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 
 	t.Run("not matching key", func(t *testing.T) {
 		evalContext := evalContext{
-			event: models.StudyEvent{
+			event: types.StudyEvent{
 				Type: "SUBMIT",
-				Response: models.SurveyResponse{
+				Response: types.SurveyResponse{
 					Key:       "intake",
-					Responses: []models.SurveyItemResponse{},
+					Responses: []types.SurveyItemResponse{},
 				},
 			},
 		}
@@ -82,11 +82,11 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 
 	t.Run("for matching key", func(t *testing.T) {
 		evalContext := evalContext{
-			event: models.StudyEvent{
+			event: types.StudyEvent{
 				Type: "SUBMIT",
-				Response: models.SurveyResponse{
+				Response: types.SurveyResponse{
 					Key:       "weekly",
-					Responses: []models.SurveyItemResponse{},
+					Responses: []types.SurveyItemResponse{},
 				},
 			},
 		}
@@ -108,12 +108,12 @@ func TestEvalGetParticipantState(t *testing.T) {
 // Comparisons
 func TestEvalEq(t *testing.T) {
 	t.Run("for eq numbers", func(t *testing.T) {
-		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "eq", Data: []types.ExpressionArg{
 			{DType: "num", Num: 23},
 			{DType: "num", Num: 23},
 		}}
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "TIMER"},
+			event: types.StudyEvent{Type: "TIMER"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -126,12 +126,12 @@ func TestEvalEq(t *testing.T) {
 	})
 
 	t.Run("for not equal numbers", func(t *testing.T) {
-		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "eq", Data: []types.ExpressionArg{
 			{DType: "num", Num: 13},
 			{DType: "num", Num: 23},
 		}}
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "enter"},
+			event: types.StudyEvent{Type: "enter"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -144,12 +144,12 @@ func TestEvalEq(t *testing.T) {
 	})
 
 	t.Run("for equal strings", func(t *testing.T) {
-		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "eq", Data: []types.ExpressionArg{
 			{DType: "str", Str: "enter"},
 			{DType: "str", Str: "enter"},
 		}}
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "enter"},
+			event: types.StudyEvent{Type: "enter"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -162,12 +162,12 @@ func TestEvalEq(t *testing.T) {
 	})
 
 	t.Run("for not equal strings", func(t *testing.T) {
-		exp := models.Expression{Name: "eq", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "eq", Data: []types.ExpressionArg{
 			{DType: "str", Str: "enter"},
 			{DType: "str", Str: "time..."},
 		}}
 		evalContext := evalContext{
-			event: models.StudyEvent{Type: "enter"},
+			event: types.StudyEvent{Type: "enter"},
 		}
 		ret, err := ExpressionEval(exp, evalContext)
 		if err != nil {
@@ -182,7 +182,7 @@ func TestEvalEq(t *testing.T) {
 
 func TestEvalLT(t *testing.T) {
 	t.Run("2 < 2", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
@@ -198,7 +198,7 @@ func TestEvalLT(t *testing.T) {
 	})
 
 	t.Run("2 < 1", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
@@ -214,7 +214,7 @@ func TestEvalLT(t *testing.T) {
 	})
 
 	t.Run("1 < 2", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
@@ -230,7 +230,7 @@ func TestEvalLT(t *testing.T) {
 	})
 
 	t.Run("a < b", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
@@ -246,7 +246,7 @@ func TestEvalLT(t *testing.T) {
 	})
 
 	t.Run("b < b", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
@@ -262,7 +262,7 @@ func TestEvalLT(t *testing.T) {
 	})
 
 	t.Run("b < a", func(t *testing.T) {
-		exp := models.Expression{Name: "lt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
@@ -280,7 +280,7 @@ func TestEvalLT(t *testing.T) {
 
 func TestEvalLTE(t *testing.T) {
 	t.Run("2 <= 2", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
@@ -296,7 +296,7 @@ func TestEvalLTE(t *testing.T) {
 	})
 
 	t.Run("2 <= 1", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
@@ -312,7 +312,7 @@ func TestEvalLTE(t *testing.T) {
 	})
 
 	t.Run("1 <= 2", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
@@ -328,7 +328,7 @@ func TestEvalLTE(t *testing.T) {
 	})
 
 	t.Run("a <= b", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
@@ -344,7 +344,7 @@ func TestEvalLTE(t *testing.T) {
 	})
 
 	t.Run("b <= b", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
@@ -360,7 +360,7 @@ func TestEvalLTE(t *testing.T) {
 	})
 
 	t.Run("b <= a", func(t *testing.T) {
-		exp := models.Expression{Name: "lte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "lte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
@@ -378,7 +378,7 @@ func TestEvalLTE(t *testing.T) {
 
 func TestEvalGT(t *testing.T) {
 	t.Run("2 > 2", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
@@ -394,7 +394,7 @@ func TestEvalGT(t *testing.T) {
 	})
 
 	t.Run("2 > 1", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
@@ -410,7 +410,7 @@ func TestEvalGT(t *testing.T) {
 	})
 
 	t.Run("1 > 2", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
@@ -426,7 +426,7 @@ func TestEvalGT(t *testing.T) {
 	})
 
 	t.Run("a > b", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
@@ -442,7 +442,7 @@ func TestEvalGT(t *testing.T) {
 	})
 
 	t.Run("b > b", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
@@ -458,7 +458,7 @@ func TestEvalGT(t *testing.T) {
 	})
 
 	t.Run("b > a", func(t *testing.T) {
-		exp := models.Expression{Name: "gt", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gt", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
@@ -476,7 +476,7 @@ func TestEvalGT(t *testing.T) {
 
 func TestEvalGTE(t *testing.T) {
 	t.Run("2 >= 2", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
@@ -492,7 +492,7 @@ func TestEvalGTE(t *testing.T) {
 	})
 
 	t.Run("2 >= 1", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
@@ -508,7 +508,7 @@ func TestEvalGTE(t *testing.T) {
 	})
 
 	t.Run("1 >= 2", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
@@ -524,7 +524,7 @@ func TestEvalGTE(t *testing.T) {
 	})
 
 	t.Run("a >= b", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
@@ -540,7 +540,7 @@ func TestEvalGTE(t *testing.T) {
 	})
 
 	t.Run("b >= b", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
@@ -556,7 +556,7 @@ func TestEvalGTE(t *testing.T) {
 	})
 
 	t.Run("b >= a", func(t *testing.T) {
-		exp := models.Expression{Name: "gte", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "gte", Data: []types.ExpressionArg{
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
@@ -575,7 +575,7 @@ func TestEvalGTE(t *testing.T) {
 // Logic operators
 func TestEvalAND(t *testing.T) {
 	t.Run("0 && 0 ", func(t *testing.T) {
-		exp := models.Expression{Name: "and", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "and", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 0},
 		}}
@@ -591,7 +591,7 @@ func TestEvalAND(t *testing.T) {
 	})
 
 	t.Run("1 && 0 ", func(t *testing.T) {
-		exp := models.Expression{Name: "and", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "and", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 0},
 		}}
@@ -607,7 +607,7 @@ func TestEvalAND(t *testing.T) {
 	})
 
 	t.Run("0 && 1 ", func(t *testing.T) {
-		exp := models.Expression{Name: "and", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "and", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 1},
 		}}
@@ -623,7 +623,7 @@ func TestEvalAND(t *testing.T) {
 	})
 
 	t.Run("1 && 1 ", func(t *testing.T) {
-		exp := models.Expression{Name: "and", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "and", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 1},
 		}}
@@ -641,7 +641,7 @@ func TestEvalAND(t *testing.T) {
 
 func TestEvalOR(t *testing.T) {
 	t.Run("0 || 0 ", func(t *testing.T) {
-		exp := models.Expression{Name: "or", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "or", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 0},
 		}}
@@ -657,7 +657,7 @@ func TestEvalOR(t *testing.T) {
 	})
 
 	t.Run("1 || 0 ", func(t *testing.T) {
-		exp := models.Expression{Name: "or", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "or", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 0},
 		}}
@@ -673,7 +673,7 @@ func TestEvalOR(t *testing.T) {
 	})
 
 	t.Run("0 || 1 ", func(t *testing.T) {
-		exp := models.Expression{Name: "or", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "or", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 1},
 		}}
@@ -689,7 +689,7 @@ func TestEvalOR(t *testing.T) {
 	})
 
 	t.Run("1 || 1 ", func(t *testing.T) {
-		exp := models.Expression{Name: "or", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "or", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 1},
 		}}
@@ -707,7 +707,7 @@ func TestEvalOR(t *testing.T) {
 
 func TestEvalNOT(t *testing.T) {
 	t.Run("0", func(t *testing.T) {
-		exp := models.Expression{Name: "not", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "not", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 		}}
 		evalContext := evalContext{}
@@ -721,7 +721,7 @@ func TestEvalNOT(t *testing.T) {
 		}
 	})
 	t.Run("1", func(t *testing.T) {
-		exp := models.Expression{Name: "not", Data: []models.ExpressionArg{
+		exp := types.Expression{Name: "not", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 		}}
 		evalContext := evalContext{}

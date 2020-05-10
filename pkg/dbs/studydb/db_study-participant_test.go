@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestDbParticipantStateTest(t *testing.T) {
 	testStudyKey := "teststudy234234"
 
-	testPState := models.ParticipantState{
+	testPState := types.ParticipantState{
 		ParticipantID: "testPID0990",
 		StudyStatus:   "active",
 		Flags: map[string]string{
@@ -75,7 +75,7 @@ func TestDbParticipantStateTest(t *testing.T) {
 func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	testStudyKey := "teststudy_findbystatus"
 
-	pStates := []models.ParticipantState{
+	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
 			StudyStatus:   "active",
@@ -135,4 +135,11 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 		}
 	})
 
+}
+
+func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
+	t.Error("unimplemented")
+	// add two test participants
+	// define callback with adding flags to them
+	// check if flags there
 }

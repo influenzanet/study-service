@@ -3,11 +3,11 @@ package utils
 import (
 	"testing"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestMembershipChecker(t *testing.T) {
-	members := []models.StudyMember{
+	members := []types.StudyMember{
 		{
 			UserID: "testuser",
 			Role:   "testrole",

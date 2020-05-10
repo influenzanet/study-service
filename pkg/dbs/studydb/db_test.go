@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 var testDBService *StudyDBService
@@ -47,7 +47,7 @@ func setupTestDBService() {
 		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
 	testDBService = NewStudyDBService(
-		models.DBConfig{
+		types.DBConfig{
 			URI:             URI,
 			Timeout:         Timeout,
 			IdleConnTimeout: IdleConnTimeout,

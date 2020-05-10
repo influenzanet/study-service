@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) GetStudyByStudyKey(instanceID string, studyKey string) (study models.Study, err error) {
+func (dbService *StudyDBService) GetStudyByStudyKey(instanceID string, studyKey string) (study types.Study, err error) {
 	if err = dbService.collectionRefStudyInfos(instanceID).FindOne(
 		context.Background(),
 		bson.D{
@@ -25,7 +25,7 @@ func (dbService *StudyDBService) GetStudyByStudyKey(instanceID string, studyKey 
 	return
 }
 
-func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status string, onlyKeys bool) (studies []models.Study, err error) {
+func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status string, onlyKeys bool) (studies []types.Study, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -51,9 +51,9 @@ func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status st
 	}
 	defer cur.Close(ctx)
 
-	studies = []models.Study{}
+	studies = []types.Study{}
 	for cur.Next(ctx) {
-		var result models.Study
+		var result types.Study
 		err := cur.Decode(&result)
 		if err != nil {
 			return studies, err
@@ -73,7 +73,7 @@ func (dbService *StudyDBService) GetStudySecretKey(instanceID string, studyKey s
 		primitive.E{Key: "secretKey", Value: 1}, // {"secretKey", 1},
 	}
 
-	var study models.Study
+	var study types.Study
 	if err = dbService.collectionRefStudyInfos(instanceID).FindOne(
 		context.Background(),
 		bson.D{
@@ -86,12 +86,12 @@ func (dbService *StudyDBService) GetStudySecretKey(instanceID string, studyKey s
 	return study.SecretKey, nil
 }
 
-func (dbService *StudyDBService) GetStudyMembers(instanceID string, studyKey string) (members []models.StudyMember, err error) {
+func (dbService *StudyDBService) GetStudyMembers(instanceID string, studyKey string) (members []types.StudyMember, err error) {
 	projection := bson.D{
 		primitive.E{Key: "members", Value: 1}, // {"members", 1},
 	}
 
-	var study models.Study
+	var study types.Study
 	if err = dbService.collectionRefStudyInfos(instanceID).FindOne(
 		context.Background(),
 		bson.D{
@@ -99,17 +99,17 @@ func (dbService *StudyDBService) GetStudyMembers(instanceID string, studyKey str
 		},
 		options.FindOne().SetProjection(projection),
 	).Decode(&study); err != nil {
-		return []models.StudyMember{}, err
+		return []types.StudyMember{}, err
 	}
 	return study.Members, nil
 }
 
-func (dbService *StudyDBService) GetStudyRules(instanceID string, studyKey string) (rules []models.Expression, err error) {
+func (dbService *StudyDBService) GetStudyRules(instanceID string, studyKey string) (rules []types.Expression, err error) {
 	projection := bson.D{
 		primitive.E{Key: "rules", Value: 1}, // {"members", 1},
 	}
 
-	var study models.Study
+	var study types.Study
 	if err = dbService.collectionRefStudyInfos(instanceID).FindOne(
 		context.Background(),
 		bson.D{
@@ -117,13 +117,13 @@ func (dbService *StudyDBService) GetStudyRules(instanceID string, studyKey strin
 		},
 		options.FindOne().SetProjection(projection),
 	).Decode(&study); err != nil {
-		return []models.Expression{}, err
+		return []types.Expression{}, err
 	}
 	return study.Rules, nil
 }
 
 // saveParticipantStateDB creates or replaces the participant states in the DB
-func (dbService *StudyDBService) CreateStudy(instanceID string, study models.Study) (models.Study, error) {
+func (dbService *StudyDBService) CreateStudy(instanceID string, study types.Study) (types.Study, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -169,11 +169,11 @@ func (dbService *StudyDBService) UpdateStudyStatus(instanceID string, studyKey s
 	return err
 }
 
-func (dbService *StudyDBService) UpdateStudyInfo(instanceID string, study models.Study) (models.Study, error) {
+func (dbService *StudyDBService) UpdateStudyInfo(instanceID string, study types.Study) (types.Study, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	elem := models.Study{}
+	elem := types.Study{}
 	filter := bson.M{"key": study.Key}
 	rd := options.After
 	fro := options.FindOneAndReplaceOptions{

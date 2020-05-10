@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
-func ActionEval(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	if event.Type == "SUBMIT" {
 		oldState, err = updateLastSubmissionForSurvey(oldState, event)
 		if err != nil {
@@ -47,7 +47,7 @@ func ActionEval(action models.Expression, oldState models.ParticipantState, even
 	return
 }
 
-func updateLastSubmissionForSurvey(oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func updateLastSubmissionForSurvey(oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if event.Response.Key == "" {
 		return newState, errors.New("no response key found")
@@ -59,7 +59,7 @@ func updateLastSubmissionForSurvey(oldState models.ParticipantState, event model
 	return
 }
 
-func checkCondition(condition models.ExpressionArg, evalContext evalContext) bool {
+func checkCondition(condition types.ExpressionArg, evalContext evalContext) bool {
 	if !condition.IsExpression() {
 		return condition.Num != 0
 	}
@@ -69,7 +69,7 @@ func checkCondition(condition models.ExpressionArg, evalContext evalContext) boo
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have exactly one argument")
@@ -93,7 +93,7 @@ func ifThenAction(action models.Expression, oldState models.ParticipantState, ev
 }
 
 // updateStudyStatusAction is used to update if user is active in the study
-func updateStudyStatusAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func updateStudyStatusAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("updateStudyStatusAction must have exactly one argument")
@@ -117,7 +117,7 @@ func updateStudyStatusAction(action models.Expression, oldState models.Participa
 }
 
 // updateFlagAction is used to update one of the string flags from the participant state
-func updateFlagAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func updateFlagAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("updateFlagAction must have exactly two arguments")
@@ -149,7 +149,7 @@ func updateFlagAction(action models.Expression, oldState models.ParticipantState
 }
 
 // removeFlagAction is used to update one of the string flags from the participant state
-func removeFlagAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeFlagAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeFlagAction must have exactly one argument")
@@ -173,7 +173,7 @@ func removeFlagAction(action models.Expression, oldState models.ParticipantState
 }
 
 // addNewSurveyAction appends a new AssignedSurvey for the participant state
-func addNewSurveyAction(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func addNewSurveyAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 3 {
 		return newState, errors.New("addNewSurveyAction must have exactly three arguments")
@@ -203,7 +203,7 @@ func addNewSurveyAction(action models.Expression, oldState models.ParticipantSta
 		return newState, errors.New("could not parse arguments")
 	}
 
-	newSurvey := models.AssignedSurvey{
+	newSurvey := types.AssignedSurvey{
 		SurveyKey:  surveyKey,
 		ValidFrom:  int64(validFrom),
 		ValidUntil: int64(validUntil),
@@ -213,18 +213,18 @@ func addNewSurveyAction(action models.Expression, oldState models.ParticipantSta
 }
 
 // removeAllSurveys clear the assigned survey list
-func removeAllSurveys(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeAllSurveys(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) > 0 {
 		return newState, errors.New("removeAllSurveys must not have arguments")
 	}
 
-	newState.AssignedSurveys = []models.AssignedSurvey{}
+	newState.AssignedSurveys = []types.AssignedSurvey{}
 	return
 }
 
 // removeSurveyByKey removes the first or last occurence of a survey
-func removeSurveyByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeSurveyByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeSurveyByKey must have exactly two arguments")
@@ -249,7 +249,7 @@ func removeSurveyByKey(action models.Expression, oldState models.ParticipantStat
 		return newState, errors.New("could not parse arguments")
 	}
 
-	as := []models.AssignedSurvey{}
+	as := []types.AssignedSurvey{}
 	switch position {
 	case "first":
 		found := false
@@ -283,7 +283,7 @@ func removeSurveyByKey(action models.Expression, oldState models.ParticipantStat
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeSurveysByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeSurveysByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeSurveysByKey must have exactly one argument")
@@ -303,7 +303,7 @@ func removeSurveysByKey(action models.Expression, oldState models.ParticipantSta
 		return newState, errors.New("could not parse arguments")
 	}
 
-	as := []models.AssignedSurvey{}
+	as := []types.AssignedSurvey{}
 	for _, surv := range newState.AssignedSurveys {
 		if surv.SurveyKey != surveyKey {
 			as = append(as, surv)
@@ -314,7 +314,7 @@ func removeSurveysByKey(action models.Expression, oldState models.ParticipantSta
 }
 
 // addReport finds and appends a SurveyItemResponse to the reports array
-func addReport(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func addReport(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("addReport must have exactly one argument")
@@ -343,17 +343,17 @@ func addReport(action models.Expression, oldState models.ParticipantState, event
 }
 
 // removeAllReports clears the reports array
-func removeAllReports(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeAllReports(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) > 0 {
 		return newState, errors.New("removeAllReports must not have arguments")
 	}
-	newState.Reports = []models.SurveyItemResponse{}
+	newState.Reports = []types.SurveyItemResponse{}
 	return
 }
 
 // removeReportByKey removes the first or last appearance of the report with specific key
-func removeReportByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeReportByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeReportByKey must have exactly two arguments")
@@ -378,7 +378,7 @@ func removeReportByKey(action models.Expression, oldState models.ParticipantStat
 		return newState, errors.New("could not parse arguments")
 	}
 
-	sr := []models.SurveyItemResponse{}
+	sr := []types.SurveyItemResponse{}
 	switch position {
 	case "first":
 		found := false
@@ -412,7 +412,7 @@ func removeReportByKey(action models.Expression, oldState models.ParticipantStat
 }
 
 // removeReportsByKey removes all responses with a specific key
-func removeReportsByKey(action models.Expression, oldState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func removeReportsByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeReportsByKey must have exactly one argument")
@@ -432,7 +432,7 @@ func removeReportsByKey(action models.Expression, oldState models.ParticipantSta
 		return newState, errors.New("could not parse arguments")
 	}
 
-	sr := []models.SurveyItemResponse{}
+	sr := []types.SurveyItemResponse{}
 	for _, surv := range newState.Reports {
 		if surv.Key != itemKey {
 			sr = append(sr, surv)

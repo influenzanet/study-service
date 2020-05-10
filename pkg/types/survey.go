@@ -1,7 +1,7 @@
-package models
+package types
 
 import (
-	api "github.com/influenzanet/study-service/api"
+	api "github.com/influenzanet/study-service/pkg/api"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) AddSurveyResponse(instanceID string, studyKey string, response models.SurveyResponse) error {
+func (dbService *StudyDBService) AddSurveyResponse(instanceID string, studyKey string, response types.SurveyResponse) error {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 	response.ArrivedAt = time.Now().Unix()
@@ -18,14 +18,14 @@ func (dbService *StudyDBService) AddSurveyResponse(instanceID string, studyKey s
 	return err
 }
 
-type responseQuery struct {
+type ResponseQuery struct {
 	ParticipantID string
 	SurveyKey     string
 	Limit         int64
 	Since         int64
 }
 
-func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey string, query responseQuery) (responses []models.SurveyResponse, err error) {
+func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey string, query ResponseQuery) (responses []types.SurveyResponse, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -63,9 +63,9 @@ func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey
 	}
 	defer cur.Close(ctx)
 
-	responses = []models.SurveyResponse{}
+	responses = []types.SurveyResponse{}
 	for cur.Next(ctx) {
-		var result models.SurveyResponse
+		var result types.SurveyResponse
 		err := cur.Decode(&result)
 		if err != nil {
 			return responses, err

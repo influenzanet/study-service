@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"context"
@@ -6,15 +6,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/api"
-	"github.com/influenzanet/study-service/models"
+	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestCheckIfParticipantExists(t *testing.T) {
 	// Test setup
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 	testStudyKey := "teststudy_checkifparticipantexists"
 
-	pStates := []models.ParticipantState{
+	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
 			StudyStatus:   "active",
@@ -22,7 +27,7 @@ func TestCheckIfParticipantExists(t *testing.T) {
 	}
 
 	for _, ps := range pStates {
-		_, err := saveParticipantStateDB(testInstanceID, testStudyKey, ps)
+		_, err := testStudyDBService.SaveParticipantState(testInstanceID, testStudyKey, ps)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -31,40 +36,46 @@ func TestCheckIfParticipantExists(t *testing.T) {
 
 	// Tests
 	t.Run("with existing participant", func(t *testing.T) {
-		if !checkIfParticipantExists(testInstanceID, testStudyKey, "1") {
+		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1") {
 			t.Error("should be true if participant exists")
 		}
 	})
 
 	t.Run("with not existing participant", func(t *testing.T) {
-		if checkIfParticipantExists(testInstanceID, testStudyKey, "2") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2") {
 			t.Error("should be false if participant does not exist")
 		}
 	})
 }
 
 func TestGetAndPerformStudyRules(t *testing.T) {
-	testStudy := models.Study{
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudy := types.Study{
 		Key:       "studytocheckifrulesareworking",
 		SecretKey: "testsecret",
-		Rules: []models.Expression{
+		Rules: []types.Expression{
 			{
 				Name: "IFTHEN",
-				Data: []models.ExpressionArg{
+				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "checkEventType",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "ENTER"},
 							},
 						},
 					},
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "UPDATE_FLAG",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "testKey"},
 								{Str: "testValue"},
 							},
@@ -74,21 +85,21 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 			},
 			{
 				Name: "IFTHEN",
-				Data: []models.ExpressionArg{
+				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "checkEventType",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "SUBMIT"},
 							},
 						},
 					},
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "UPDATE_FLAG",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "testKey"},
 								{Str: "testValue2"},
 							},
@@ -99,22 +110,22 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 		},
 	}
 
-	testStudy, err := createStudyInDB(testInstanceID, testStudy)
+	testStudy, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
 
-	pState := models.ParticipantState{
+	pState := types.ParticipantState{
 		ParticipantID: "1",
 	}
 
 	t.Run("ENTER event", func(t *testing.T) {
-		testEvent := models.StudyEvent{
+		testEvent := types.StudyEvent{
 			Type: "ENTER",
 		}
 
-		pState, err = getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		pState, err = s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -128,14 +139,14 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 		}
 	})
 	t.Run("SUBMIT event", func(t *testing.T) {
-		testEvent := models.StudyEvent{
+		testEvent := types.StudyEvent{
 			Type: "SUBMIT",
-			Response: models.SurveyResponse{
+			Response: types.SurveyResponse{
 				Key: "testsurvey",
 			},
 		}
 
-		pState, err = getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		pState, err = s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -151,29 +162,33 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 }
 
 func TestEnterStudyEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
-	testStudy := models.Study{
+	testStudy := types.Study{
 		Key:       "studyfortestingenterstudy",
 		SecretKey: "testsecret",
-		Rules: []models.Expression{
+		Rules: []types.Expression{
 			{
 				Name: "IFTHEN",
-				Data: []models.ExpressionArg{
+				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "checkEventType",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "ENTER"},
 							},
 						},
 					},
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "ADD_NEW_SURVEY",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "testsurvey"},
 								{DType: "num", Num: 0},
 								{DType: "num", Num: 0},
@@ -184,21 +199,21 @@ func TestEnterStudyEndpoint(t *testing.T) {
 			},
 			{
 				Name: "IFTHEN",
-				Data: []models.ExpressionArg{
+				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "checkEventType",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "SUBMIT"},
 							},
 						},
 					},
 					{
 						DType: "exp",
-						Exp: models.Expression{
+						Exp: types.Expression{
 							Name: "UPDATE_FLAG",
-							Data: []models.ExpressionArg{
+							Data: []types.ExpressionArg{
 								{Str: "testKey"},
 								{Str: "testValue2"},
 							},
@@ -209,7 +224,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 		},
 	}
 
-	testStudy, err := createStudyInDB(testInstanceID, testStudy)
+	testStudy, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -281,9 +296,13 @@ func TestEnterStudyEndpoint(t *testing.T) {
 }
 
 func TestGetAssignedSurveysEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
-	studies := []models.Study{
+	studies := []types.Study{
 		{
 			Status:    "active",
 			Key:       "studyforassignedsurvey1",
@@ -302,7 +321,7 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	}
 
 	for _, study := range studies {
-		_, err := createStudyInDB(testInstanceID, study)
+		_, err := s.studyDBservice.CreateStudy(testInstanceID, study)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -311,37 +330,37 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := userIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := userIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
+	pid2, err := s.userIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pState1 := models.ParticipantState{
+	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
 		StudyStatus:   "active",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
-	pState2 := models.ParticipantState{
+	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "active",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 
-	_, err = saveParticipantStateDB(testInstanceID, "studyforassignedsurvey1", pState1)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyforassignedsurvey1", pState1)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	_, err = saveParticipantStateDB(testInstanceID, "studyforassignedsurvey2", pState2)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyforassignedsurvey2", pState2)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -384,11 +403,15 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 }
 
 func TestGetAssignedSurveyEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
 	testStudyKey := "teststudy_for_get_assignedsurvey"
 	testUserID := "234234laaabbb3423"
-	studies := []models.Study{
+	studies := []types.Study{
 		{
 			Status:    "active",
 			Key:       testStudyKey,
@@ -397,77 +420,77 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	}
 
 	for _, study := range studies {
-		_, err := createStudyInDB(testInstanceID, study)
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
 	}
 
-	pid1, err := userIDToParticipantID(testInstanceID, testStudyKey, testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, testStudyKey, testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	surveyResps := []models.SurveyResponse{
+	surveyResps := []types.SurveyResponse{
 		// mix participants and order for submittedAt
-		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s1.1"},
 			{Key: "s1.2"},
 			{Key: "s1.3"},
 		}},
-		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s2.1"},
 			{Key: "s2.2"},
 		}},
-		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s1.1"},
 			{Key: "s1.2"},
 			{Key: "s1.3"},
 		}},
-		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s2.1"},
 			{Key: "s2.2"},
 			{Key: "s2.3"},
 		}},
 	}
 	for _, sr := range surveyResps {
-		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)
+		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 	}
 
-	testSurvey := models.Survey{
-		Current: models.SurveyVersion{
-			SurveyDefinition: models.SurveyItem{
+	testSurvey := types.Survey{
+		Current: types.SurveyVersion{
+			SurveyDefinition: types.SurveyItem{
 				Key: "t1",
 			},
 		},
-		ContextRules: &models.SurveyContextDef{
-			Mode: &models.ExpressionArg{Str: "test"},
-			PreviousResponses: []models.Expression{
-				{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
+		ContextRules: &types.SurveyContextDef{
+			Mode: &types.ExpressionArg{Str: "test"},
+			PreviousResponses: []types.Expression{
+				{Name: "RESPONSES_SINCE_BY_KEY", Data: []types.ExpressionArg{
 					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
 					{Str: "s2"},
 				}},
 			},
 		},
-		PrefillRules: []models.Expression{
+		PrefillRules: []types.Expression{
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s1"},
 					{Str: "s1.1"},
 				},
 			},
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s2"},
 					{Str: "s2.2"},
 				},
 			},
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s2"},
 					{Str: "s2.4"},
 				},
@@ -475,7 +498,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		},
 	}
 
-	_, err = saveSurveyToDB(testInstanceID, testStudyKey, testSurvey)
+	_, err = testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, testSurvey)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
@@ -527,9 +550,13 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 }
 
 func TestSubmitStatusReportEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
-	studies := []models.Study{
+	studies := []types.Study{
 		{
 			Status:    "active",
 			Key:       "studyfor_submitstatus1",
@@ -548,7 +575,7 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 	}
 
 	for _, study := range studies {
-		_, err := createStudyInDB(testInstanceID, study)
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -557,37 +584,37 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423aa"
 
-	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := userIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
+	pid2, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pState1 := models.ParticipantState{
+	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
 		StudyStatus:   "active",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
-	pState2 := models.ParticipantState{
+	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "paused",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s2"},
 		},
 	}
 
-	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitstatus1", pState1)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitstatus1", pState1)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitstatus2", pState2)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitstatus2", pState2)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -639,9 +666,13 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 }
 
 func TestSubmitResponseEndpoint(t *testing.T) {
-	s := studyServiceServer{}
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
-	studies := []models.Study{
+	studies := []types.Study{
 		{
 			Status:    "active",
 			Key:       "studyfor_submitsurvey1",
@@ -660,7 +691,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 	}
 
 	for _, study := range studies {
-		_, err := createStudyInDB(testInstanceID, study)
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -669,37 +700,37 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
+	pid2, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pState1 := models.ParticipantState{
+	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
 		StudyStatus:   "active",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
-	pState2 := models.ParticipantState{
+	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
 		StudyStatus:   "paused",
-		AssignedSurveys: []models.AssignedSurvey{
+		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s2"},
 		},
 	}
 
-	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitsurvey1", pState1)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitsurvey1", pState1)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	_, err = saveParticipantStateDB(testInstanceID, "studyfor_submitsurvey2", pState2)
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitsurvey2", pState2)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -755,15 +786,20 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 }
 
 func TestResolveContextRules(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 	testStudyKey := "teststudy_forresolvecontext"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	surveyResps := []models.SurveyResponse{
+	surveyResps := []types.SurveyResponse{
 		// mix participants and order for submittedAt
 		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
 		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
@@ -776,14 +812,14 @@ func TestResolveContextRules(t *testing.T) {
 		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
-		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)
+		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 	}
 
 	t.Run("resolve with nil", func(t *testing.T) {
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, nil)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -793,10 +829,10 @@ func TestResolveContextRules(t *testing.T) {
 	})
 
 	t.Run("resolve mode string arg", func(t *testing.T) {
-		testRules := models.SurveyContextDef{
-			Mode: &models.ExpressionArg{Str: "test"},
+		testRules := types.SurveyContextDef{
+			Mode: &types.ExpressionArg{Str: "test"},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -806,15 +842,15 @@ func TestResolveContextRules(t *testing.T) {
 	})
 
 	t.Run("find old responses since", func(t *testing.T) {
-		testRules := models.SurveyContextDef{
-			PreviousResponses: []models.Expression{
-				{Name: "RESPONSES_SINCE_BY_KEY", Data: []models.ExpressionArg{
+		testRules := types.SurveyContextDef{
+			PreviousResponses: []types.Expression{
+				{Name: "RESPONSES_SINCE_BY_KEY", Data: []types.ExpressionArg{
 					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
 					{Str: "s2"},
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -824,14 +860,14 @@ func TestResolveContextRules(t *testing.T) {
 	})
 
 	t.Run("find all old responses ", func(t *testing.T) {
-		testRules := models.SurveyContextDef{
-			PreviousResponses: []models.Expression{
-				{Name: "ALL_RESPONSES_SINCE", Data: []models.ExpressionArg{
+		testRules := types.SurveyContextDef{
+			PreviousResponses: []types.Expression{
+				{Name: "ALL_RESPONSES_SINCE", Data: []types.ExpressionArg{
 					{DType: "num", Num: float64(time.Now().Add(-20 * time.Hour * 24).Unix())},
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -841,15 +877,15 @@ func TestResolveContextRules(t *testing.T) {
 	})
 
 	t.Run("find old responses by key", func(t *testing.T) {
-		testRules := models.SurveyContextDef{
-			PreviousResponses: []models.Expression{
-				{Name: "LAST_RESPONSES_BY_KEY", Data: []models.ExpressionArg{
+		testRules := types.SurveyContextDef{
+			PreviousResponses: []types.Expression{
+				{Name: "LAST_RESPONSES_BY_KEY", Data: []types.ExpressionArg{
 					{Str: "s1"},
 					{DType: "num", Num: 1},
 				}},
 			},
 		}
-		sCtx, err := resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -864,66 +900,71 @@ func TestResolveContextRules(t *testing.T) {
 }
 
 func TestResolvePrefillRules(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 	testStudyKey := "teststudy_forresolveprefills"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	surveyResps := []models.SurveyResponse{
+	surveyResps := []types.SurveyResponse{
 		// mix participants and order for submittedAt
-		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-6 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s1.1"},
 			{Key: "s1.2"},
 			{Key: "s1.3"},
 		}},
-		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-5 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s2.1"},
 			{Key: "s2.2"},
 			{Key: "s2.3"},
 		}},
-		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s1", ParticipantID: pid1, SubmittedAt: time.Now().Add(-15 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 
 			{Key: "s1.2"},
 			{Key: "s1.3"},
 		}},
-		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []models.SurveyItemResponse{
+		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix(), Responses: []types.SurveyItemResponse{
 			{Key: "s2.1"},
 			{Key: "s2.2"},
 			{Key: "s2.3"},
 		}},
 	}
 	for _, sr := range surveyResps {
-		err := addSurveyResponseToDB(testInstanceID, testStudyKey, sr)
+		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 	}
 
 	t.Run("find last survey by type and extract items", func(t *testing.T) {
-		rules := []models.Expression{
+		rules := []types.Expression{
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s1"},
 					{Str: "s1.1"},
 				},
 			},
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s2"},
 					{Str: "s2.2"},
 				},
 			},
 			{
-				Name: "GET_LAST_SURVEY_ITEM", Data: []models.ExpressionArg{
+				Name: "GET_LAST_SURVEY_ITEM", Data: []types.ExpressionArg{
 					{Str: "s2"},
 					{Str: "s2.4"},
 				},
 			},
 		}
-		prefill, err := resolvePrefillRules(testInstanceID, testStudyKey, pid1, rules)
+		prefill, err := s.resolvePrefillRules(testInstanceID, testStudyKey, pid1, rules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

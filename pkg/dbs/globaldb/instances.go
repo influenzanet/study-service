@@ -1,11 +1,11 @@
 package globaldb
 
 import (
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (dbService *GlobalDBService) GetAllInstances() ([]models.Instance, error) {
+func (dbService *GlobalDBService) GetAllInstances() ([]types.Instance, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -16,13 +16,13 @@ func (dbService *GlobalDBService) GetAllInstances() ([]models.Instance, error) {
 	)
 
 	if err != nil {
-		return []models.Instance{}, err
+		return []types.Instance{}, err
 	}
 	defer cur.Close(ctx)
 
-	instances := []models.Instance{}
+	instances := []types.Instance{}
 	for cur.Next(ctx) {
-		var result models.Instance
+		var result types.Instance
 		err := cur.Decode(&result)
 		if err != nil {
 			return instances, err

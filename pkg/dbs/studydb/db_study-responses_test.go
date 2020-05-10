@@ -5,20 +5,20 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestDbAddSurveyResponse(t *testing.T) {
 	testStudy := "testosaveresponse"
-	testResp := models.SurveyResponse{
+	testResp := types.SurveyResponse{
 		Key: "test",
 		Context: map[string]string{
 			"test": "test",
 		},
-		Responses: []models.SurveyItemResponse{
+		Responses: []types.SurveyItemResponse{
 			{
 				Key: "testosaveresponse.2",
-				Response: &models.ResponseItem{
+				Response: &types.ResponseItem{
 					Key:   "a",
 					Value: "testv",
 				},
@@ -36,7 +36,7 @@ func TestDbAddSurveyResponse(t *testing.T) {
 func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	testStudyKey := "teststudy_for_finding_responses"
 
-	surveyResps := []models.SurveyResponse{
+	surveyResps := []types.SurveyResponse{
 		// mix participants and order for submittedAt
 		{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-30 * time.Hour * 24).Unix()},
 		{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
@@ -57,7 +57,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	}
 
 	t.Run("not existing participant", func(t *testing.T) {
-		q := responseQuery{
+		q := ResponseQuery{
 			ParticipantID: "u3",
 		}
 		responses, err := testDBService.FindSurveyResponses(testInstanceID, testStudyKey, q)
@@ -70,7 +70,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	})
 
 	t.Run("find last 2 surveys with key", func(t *testing.T) {
-		q := responseQuery{
+		q := ResponseQuery{
 			ParticipantID: "u1",
 			SurveyKey:     "s1",
 			Limit:         2,
@@ -89,7 +89,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	})
 
 	t.Run("find last 2 surveys without key", func(t *testing.T) {
-		q := responseQuery{
+		q := ResponseQuery{
 			ParticipantID: "u1",
 			Limit:         2,
 		}
@@ -107,7 +107,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	})
 
 	t.Run("find surveys after timestamp with key", func(t *testing.T) {
-		q := responseQuery{
+		q := ResponseQuery{
 			ParticipantID: "u1",
 			SurveyKey:     "s2",
 			Since:         time.Now().Add(-20 * time.Hour * 24).Unix(),
@@ -126,7 +126,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 	})
 
 	t.Run("find surveys after timestamp without key", func(t *testing.T) {
-		q := responseQuery{
+		q := ResponseQuery{
 			ParticipantID: "u1",
 			Since:         time.Now().Add(-20 * time.Hour * 24).Unix(),
 		}

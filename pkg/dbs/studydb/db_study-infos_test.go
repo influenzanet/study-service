@@ -3,14 +3,14 @@ package studydb
 import (
 	"testing"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestDbCreateStudyInfos(t *testing.T) {
-	testStudy := models.Study{
+	testStudy := types.Study{
 		Key:       "testStudyKey1",
 		SecretKey: "supersecret",
-		Members: []models.StudyMember{
+		Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
@@ -37,14 +37,14 @@ func TestDbCreateStudyInfos(t *testing.T) {
 }
 
 func TestDbUpdateStudyInfos(t *testing.T) {
-	testStudies := []models.Study{
-		{Key: "test1", Status: "active", Members: []models.StudyMember{
+	testStudies := []types.Study{
+		{Key: "test1", Status: "active", Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
 		}},
-		{Key: "test2", Status: "active", Members: []models.StudyMember{
+		{Key: "test2", Status: "active", Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
@@ -101,23 +101,23 @@ func TestDbUpdateStudyInfos(t *testing.T) {
 }
 
 func TestDbGetStudyInfos(t *testing.T) {
-	testStudies := []models.Study{
+	testStudies := []types.Study{
 		{
 			Key:       "testg1",
 			SecretKey: "testsecret",
 			Status:    "active",
-			Members: []models.StudyMember{
+			Members: []types.StudyMember{
 				{
 					UserID: "testuser",
 					Role:   "maintainer",
 				},
 			},
-			Rules: []models.Expression{
+			Rules: []types.Expression{
 				{Name: "IFTHEN"}, // These here are not complete and won't be evaluated in this test
 				{Name: "TEST"},
 			},
 		},
-		{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []models.StudyMember{
+		{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",

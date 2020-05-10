@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
-	"github.com/influenzanet/study-service/pkg/models"
 )
 
 const (
@@ -12,7 +11,8 @@ const (
 )
 
 type studyServiceServer struct {
-	clients         *models.APIClients
-	studyDBservice  *studydb.StudyDBService
-	globalDBService *globaldb.GlobalDBService
+	// clients           *types.APIClients
+	studyDBservice    *studydb.StudyDBService
+	globalDBService   *globaldb.GlobalDBService
+	StudyGlobalSecret string
 }

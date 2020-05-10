@@ -1,9 +1,9 @@
-package models
+package types
 
 import (
 	"log"
 
-	api "github.com/influenzanet/study-service/api"
+	api "github.com/influenzanet/study-service/pkg/api"
 )
 
 type Expression struct {

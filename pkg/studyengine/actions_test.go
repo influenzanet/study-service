@@ -4,26 +4,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestActions(t *testing.T) {
-	participantState := models.ParticipantState{
+	participantState := types.ParticipantState{
 		ParticipantID: "participant1234",
 		StudyStatus:   "active",
 		Flags: map[string]string{
 			"health": "test",
 		},
 	}
-	event := models.StudyEvent{
+	event := types.StudyEvent{
 		Type: "SUBMIT",
-		Response: models.SurveyResponse{
+		Response: types.SurveyResponse{
 			Key: "test",
 		},
 	}
 
 	t.Run("with wrong action name", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "WRONG",
 		}
 		_, err := ActionEval(action, participantState, event)
@@ -33,21 +33,21 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("IFTHEN", func(t *testing.T) {
-		action2 := models.Expression{
+		action2 := types.Expression{
 			Name: "UPDATE_STUDY_STATUS",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testflag_cond"},
 			},
 		}
-		action3 := models.Expression{
+		action3 := types.Expression{
 			Name: "UPDATE_STUDY_STATUS",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testflag_cond2"},
 			},
 		}
-		action := models.Expression{
+		action := types.Expression{
 			Name: "IFTHEN",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "num", Num: 0},
 				{DType: "exp", Exp: action2},
 			},
@@ -60,9 +60,9 @@ func TestActions(t *testing.T) {
 			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.StudyStatus)
 		}
 
-		action = models.Expression{
+		action = types.Expression{
 			Name: "IFTHEN",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "num", Num: 1},
 				{DType: "exp", Exp: action2},
 				{DType: "exp", Exp: action3},
@@ -78,9 +78,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("UPDATE_FLAG", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "UPDATE_FLAG",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "key"},
 				{DType: "str", Str: "value"},
 			},
@@ -100,9 +100,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("REMOVE_FLAG", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "REMOVE_FLAG",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "health"},
 			},
 		}
@@ -120,9 +120,9 @@ func TestActions(t *testing.T) {
 	// Survey actions:
 	t.Run("ADD_NEW_SURVEY", func(t *testing.T) {
 		now := time.Now().Unix()
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_NEW_SURVEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
@@ -147,9 +147,9 @@ func TestActions(t *testing.T) {
 	t.Run("REMOVE_ALL_SURVEYS", func(t *testing.T) {
 		// Add surveys first
 		now := time.Now().Unix()
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_NEW_SURVEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
@@ -169,7 +169,7 @@ func TestActions(t *testing.T) {
 		}
 
 		// REMOVE_ALL_SURVEYS
-		action = models.Expression{
+		action = types.Expression{
 			Name: "REMOVE_ALL_SURVEYS",
 		}
 		newState, err = ActionEval(action, newState, event)
@@ -185,9 +185,9 @@ func TestActions(t *testing.T) {
 	t.Run("REMOVE_SURVEY_BY_KEY last", func(t *testing.T) {
 		// Add surveys first
 		now := time.Now().Unix()
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_NEW_SURVEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
@@ -213,9 +213,9 @@ func TestActions(t *testing.T) {
 		}
 
 		// REMOVE_SURVEY_BY_KEY
-		action = models.Expression{
+		action = types.Expression{
 			Name: "REMOVE_SURVEY_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "str", Str: "last"},
 			},
@@ -237,9 +237,9 @@ func TestActions(t *testing.T) {
 	t.Run("REMOVE_SURVEY_BY_KEY first", func(t *testing.T) {
 		// Add surveys first
 		now := time.Now().Unix()
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_NEW_SURVEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
@@ -265,9 +265,9 @@ func TestActions(t *testing.T) {
 		}
 
 		// REMOVE_SURVEY_BY_KEY
-		action = models.Expression{
+		action = types.Expression{
 			Name: "REMOVE_SURVEY_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "str", Str: "first"},
 			},
@@ -288,9 +288,9 @@ func TestActions(t *testing.T) {
 	t.Run("REMOVE_SURVEYS_BY_KEY", func(t *testing.T) {
 		// Add surveys first
 		now := time.Now().Unix()
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_NEW_SURVEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
@@ -315,9 +315,9 @@ func TestActions(t *testing.T) {
 		}
 
 		// REMOVE_SURVEYS_BY_KEY
-		action = models.Expression{
+		action = types.Expression{
 			Name: "REMOVE_SURVEYS_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testSurveyKey1"},
 			},
 		}
@@ -332,23 +332,23 @@ func TestActions(t *testing.T) {
 	})
 
 	// Report actions
-	participantState = models.ParticipantState{
+	participantState = types.ParticipantState{
 		ParticipantID: "participant1234",
 		StudyStatus:   "active",
 		Flags: map[string]string{
 			"health": "test",
 		},
-		Reports: []models.SurveyItemResponse{
+		Reports: []types.SurveyItemResponse{
 			{Key: "test.1"},
 			{Key: "test.2.1"},
 			{Key: "test.1"},
 		},
 	}
-	event = models.StudyEvent{
+	event = types.StudyEvent{
 		Type: "SUBMIT",
-		Response: models.SurveyResponse{
+		Response: types.SurveyResponse{
 			Key: "test",
-			Responses: []models.SurveyItemResponse{
+			Responses: []types.SurveyItemResponse{
 				{Key: "test.1"},
 				{Key: "test.2.1"},
 				{Key: "test.2.3"},
@@ -356,9 +356,9 @@ func TestActions(t *testing.T) {
 		},
 	}
 	t.Run("ADD_REPORT not existing key", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_REPORT",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "test.2.2"},
 			},
 		}
@@ -372,9 +372,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("ADD_REPORT", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "ADD_REPORT",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "test.2.1"},
 			},
 		}
@@ -388,7 +388,7 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("REMOVE_ALL_REPORTS", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "REMOVE_ALL_REPORTS",
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -401,9 +401,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("REMOVE_REPORT_BY_KEY first", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "REMOVE_REPORT_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "test.1"},
 				{DType: "str", Str: "first"},
 			},
@@ -422,9 +422,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("REMOVE_REPORT_BY_KEY last", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "REMOVE_REPORT_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "test.1"},
 				{DType: "str", Str: "last"},
 			},
@@ -443,9 +443,9 @@ func TestActions(t *testing.T) {
 	})
 
 	t.Run("REMOVE_REPORTS_BY_KEY", func(t *testing.T) {
-		action := models.Expression{
+		action := types.Expression{
 			Name: "REMOVE_REPORTS_BY_KEY",
-			Data: []models.ExpressionArg{
+			Data: []types.ExpressionArg{
 				{DType: "str", Str: "test.1"},
 			},
 		}

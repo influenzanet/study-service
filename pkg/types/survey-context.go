@@ -1,6 +1,6 @@
-package models
+package types
 
-import api "github.com/influenzanet/study-service/api"
+import api "github.com/influenzanet/study-service/pkg/api"
 
 type SurveyContext struct {
 	Mode              string

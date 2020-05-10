@@ -1,30 +1,31 @@
-package main
+package service
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/influenzanet/study-service/models"
-	"github.com/influenzanet/study-service/studyengine"
-	"github.com/influenzanet/study-service/utils"
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
+	"github.com/influenzanet/study-service/pkg/studyengine"
+	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func userIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
-	studySecret, err := getStudySecretKey(instanceID, studyKey)
+func (s *studyServiceServer) userIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
+	studySecret, err := s.studyDBservice.GetStudySecretKey(instanceID, studyKey)
 	if err != nil {
 		return "", err
 	}
-	return utils.UserIDtoParticipantID(userID, conf.Study.GlobalSecret, studySecret)
+	return utils.UserIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret)
 }
 
-func checkIfParticipantExists(instanceID string, studyKey string, participantID string) bool {
-	_, err := findParticipantStateDB(instanceID, studyKey, participantID)
+func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string) bool {
+	_, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
 	return err == nil
 }
 
-func getAndPerformStudyRules(instanceID string, studyKey string, pState models.ParticipantState, event models.StudyEvent) (newState models.ParticipantState, err error) {
+func (s *studyServiceServer) getAndPerformStudyRules(instanceID string, studyKey string, pState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = pState
-	rules, err := getStudyRules(instanceID, studyKey)
+	rules, err := s.studyDBservice.GetStudyRules(instanceID, studyKey)
 	if err != nil {
 		return
 	}
@@ -38,9 +39,9 @@ func getAndPerformStudyRules(instanceID string, studyKey string, pState models.P
 	return newState, nil
 }
 
-func resolveContextRules(instanceID string, studyKey string, participantID string, rules *models.SurveyContextDef) (sCtx models.SurveyContext, err error) {
+func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey string, participantID string, rules *types.SurveyContextDef) (sCtx types.SurveyContext, err error) {
 	if rules == nil {
-		return models.SurveyContext{}, nil
+		return types.SurveyContext{}, nil
 	}
 
 	// mode:
@@ -69,7 +70,7 @@ func resolveContextRules(instanceID string, studyKey string, participantID strin
 			if arg1 == "" || arg2 == 0 {
 				return sCtx, errors.New("LAST_RESPONSES_BY_KEY arguments have to be defined")
 			}
-			cResps, _ := findSurveyResponsesInDB(instanceID, studyKey, responseQuery{
+			cResps, _ := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
 				ParticipantID: participantID,
 				SurveyKey:     arg1,
 				Limit:         arg2,
@@ -80,7 +81,7 @@ func resolveContextRules(instanceID string, studyKey string, participantID strin
 				return sCtx, errors.New("ALL_RESPONSES_SINCE must have one argument")
 			}
 			arg1 := int64(rule.Data[0].Num)
-			cResps, _ := findSurveyResponsesInDB(instanceID, studyKey, responseQuery{
+			cResps, _ := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
 				ParticipantID: participantID,
 				Since:         arg1,
 			})
@@ -94,7 +95,7 @@ func resolveContextRules(instanceID string, studyKey string, participantID strin
 			if surveyKey == "" || since == 0 {
 				return sCtx, errors.New("RESPONSES_SINCE_BY_KEY arguments have to be defined")
 			}
-			cResps, _ := findSurveyResponsesInDB(instanceID, studyKey, responseQuery{
+			cResps, _ := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
 				ParticipantID: participantID,
 				SurveyKey:     surveyKey,
 				Since:         since,
@@ -107,7 +108,7 @@ func resolveContextRules(instanceID string, studyKey string, participantID strin
 	return sCtx, nil
 }
 
-func resolvePrefillRules(instanceID string, studyKey string, participantID string, rules []models.Expression) (prefills models.SurveyResponse, err error) {
+func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey string, participantID string, rules []types.Expression) (prefills types.SurveyResponse, err error) {
 	for _, rule := range rules {
 		switch rule.Name {
 		case "GET_LAST_SURVEY_ITEM":
@@ -116,7 +117,7 @@ func resolvePrefillRules(instanceID string, studyKey string, participantID strin
 			}
 			surveyKey := rule.Data[0].Str
 			itemKey := rule.Data[1].Str
-			resps, err := findSurveyResponsesInDB(instanceID, studyKey, responseQuery{
+			resps, err := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
 				ParticipantID: participantID,
 				SurveyKey:     surveyKey,
 				Limit:         1,

@@ -1,14 +1,14 @@
 package studydb
 
 import (
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // findParticipantsByStudyStatusDB retrieve all participant states from a study by status (e.g. active)
-func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []models.ParticipantState, err error) {
+func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -34,9 +34,9 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 	}
 	defer cur.Close(ctx)
 
-	pStates = []models.ParticipantState{}
+	pStates = []types.ParticipantState{}
 	for cur.Next(ctx) {
-		var result models.ParticipantState
+		var result types.ParticipantState
 		err := cur.Decode(&result)
 		if err != nil {
 			return pStates, err
@@ -52,19 +52,19 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 }
 
 // FindParticipantState retrieves the participant state for a given participant from a study
-func (dbService *StudyDBService) FindParticipantState(instanceID string, studyKey string, participantID string) (models.ParticipantState, error) {
+func (dbService *StudyDBService) FindParticipantState(instanceID string, studyKey string, participantID string) (types.ParticipantState, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
 	filter := bson.M{"participantID": participantID}
 
-	elem := models.ParticipantState{}
+	elem := types.ParticipantState{}
 	err := dbService.collectionRefStudyParticipant(instanceID, studyKey).FindOne(ctx, filter).Decode(&elem)
 	return elem, err
 }
 
 // SaveParticipantState creates or replaces the participant states in the DB
-func (dbService *StudyDBService) SaveParticipantState(instanceID string, studyKey string, pState models.ParticipantState) (models.ParticipantState, error) {
+func (dbService *StudyDBService) SaveParticipantState(instanceID string, studyKey string, pState types.ParticipantState) (types.ParticipantState, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -76,9 +76,44 @@ func (dbService *StudyDBService) SaveParticipantState(instanceID string, studyKe
 		Upsert:         &upsert,
 		ReturnDocument: &rd,
 	}
-	elem := models.ParticipantState{}
+	elem := types.ParticipantState{}
 	err := dbService.collectionRefStudyParticipant(instanceID, studyKey).FindOneAndReplace(
 		ctx, filter, pState, &options,
 	).Decode(&elem)
 	return elem, err
+}
+
+// FindParticipantState retrieves the participant state for a given participant from a study
+func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
+	instanceID string,
+	studyKey string,
+	cbk func(dbService *StudyDBService, p types.ParticipantState, instanceID string, studyKey string) error,
+) error {
+
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+	// Get all active participants
+
+	filter := bson.M{"studyStatus": "active"}
+	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(ctx, filter)
+	if err != nil {
+		return err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		// Update state of every participant
+		var pState types.ParticipantState
+		if err := cur.Decode(&pState); err != nil {
+			continue
+		}
+		// Perform callback:
+		if err := cbk(dbService, pState, instanceID, studyKey); err != nil {
+			continue
+		}
+	}
+	if err := cur.Err(); err != nil {
+		return err
+	}
+	return nil
 }

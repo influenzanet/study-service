@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 // evalContext contains all the data that can be looked up by expressions
 type evalContext struct {
-	event            models.StudyEvent
-	participantState models.ParticipantState
+	event            types.StudyEvent
+	participantState types.ParticipantState
 }
 
-func ExpressionEval(expression models.Expression, evalCtx evalContext) (val interface{}, err error) {
+func ExpressionEval(expression types.Expression, evalCtx evalContext) (val interface{}, err error) {
 	switch expression.Name {
 	case "checkEventType":
 		val, err = evalCtx.checkEventType(expression)
@@ -43,7 +43,7 @@ func ExpressionEval(expression models.Expression, evalCtx evalContext) (val inte
 	return
 }
 
-func (ctx evalContext) expressionArgResolver(arg models.ExpressionArg) (interface{}, error) {
+func (ctx evalContext) expressionArgResolver(arg types.ExpressionArg) (interface{}, error) {
 	switch arg.DType {
 	case "num":
 		return arg.Num, nil
@@ -57,7 +57,7 @@ func (ctx evalContext) expressionArgResolver(arg models.ExpressionArg) (interfac
 }
 
 // checkEventType compares the eventType with a string
-func (ctx evalContext) checkEventType(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) checkEventType(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -75,7 +75,7 @@ func (ctx evalContext) checkEventType(exp models.Expression) (val bool, err erro
 }
 
 // checkSurveyResponseKey compares the key of the submitted survey response (if any)
-func (ctx evalContext) checkSurveyResponseKey(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) checkSurveyResponseKey(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -92,7 +92,7 @@ func (ctx evalContext) checkSurveyResponseKey(exp models.Expression) (val bool, 
 	return ctx.event.Response.Key == arg1Val, nil
 }
 
-func (ctx evalContext) eq(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) eq(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -124,7 +124,7 @@ func (ctx evalContext) eq(exp models.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) lt(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) lt(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -156,7 +156,7 @@ func (ctx evalContext) lt(exp models.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) lte(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) lte(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -188,7 +188,7 @@ func (ctx evalContext) lte(exp models.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) gt(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) gt(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -220,7 +220,7 @@ func (ctx evalContext) gt(exp models.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) gte(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) gte(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -252,7 +252,7 @@ func (ctx evalContext) gte(exp models.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) and(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) and(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) < 2 {
 		return val, errors.New("should have at least two arguments")
 	}
@@ -276,7 +276,7 @@ func (ctx evalContext) and(exp models.Expression) (val bool, err error) {
 	return true, nil
 }
 
-func (ctx evalContext) or(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) or(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) < 2 {
 		return val, errors.New("should have at least two arguments")
 	}
@@ -300,7 +300,7 @@ func (ctx evalContext) or(exp models.Expression) (val bool, err error) {
 	return false, nil
 }
 
-func (ctx evalContext) not(exp models.Expression) (val bool, err error) {
+func (ctx evalContext) not(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("should have one argument")
 	}

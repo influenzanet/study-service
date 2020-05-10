@@ -1,4 +1,4 @@
-package models
+package types
 
 type StudyEvent struct {
 	Type     string         // what kind of event (TIMER, SUBMISSION, ENTER etc.)

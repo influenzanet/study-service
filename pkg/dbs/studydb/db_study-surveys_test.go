@@ -4,21 +4,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestDbSaveSurveyAndContextDef(t *testing.T) {
 	t.Run("Testing create survey", func(t *testing.T) {
-		testSurvey := models.Survey{
-			Current: models.SurveyVersion{
+		testSurvey := types.Survey{
+			Current: types.SurveyVersion{
 				Published: time.Now().Unix(),
-				SurveyDefinition: models.SurveyItem{
+				SurveyDefinition: types.SurveyItem{
 					Key: "ST",
-					Items: []models.SurveyItem{
+					Items: []types.SurveyItem{
 						{
 							Key:     "Q1",
 							Follows: []string{"ST"},
-							Condition: &models.Expression{
+							Condition: &types.Expression{
 								Name: "testmethod",
 							},
 						},
@@ -37,16 +37,16 @@ func TestDbSaveSurveyAndContextDef(t *testing.T) {
 }
 
 func TestDbRemoveSurveyFromStudy(t *testing.T) {
-	testSurvey := models.Survey{
-		Current: models.SurveyVersion{
+	testSurvey := types.Survey{
+		Current: types.SurveyVersion{
 			Published: time.Now().Unix(),
-			SurveyDefinition: models.SurveyItem{
+			SurveyDefinition: types.SurveyItem{
 				Key: "s1",
-				Items: []models.SurveyItem{
+				Items: []types.SurveyItem{
 					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
-						Condition: &models.Expression{
+						Condition: &types.Expression{
 							Name: "testmethod",
 						},
 					},
@@ -87,16 +87,16 @@ func TestDbRemoveSurveyFromStudy(t *testing.T) {
 }
 
 func TestDbFindSurveyDefinition(t *testing.T) {
-	testSurvey := models.Survey{
-		Current: models.SurveyVersion{
+	testSurvey := types.Survey{
+		Current: types.SurveyVersion{
 			Published: time.Now().Unix(),
-			SurveyDefinition: models.SurveyItem{
+			SurveyDefinition: types.SurveyItem{
 				Key: "s1",
-				Items: []models.SurveyItem{
+				Items: []types.SurveyItem{
 					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
-						Condition: &models.Expression{
+						Condition: &types.Expression{
 							Name: "testmethod",
 						},
 					},
@@ -131,16 +131,16 @@ func TestDbFindSurveyDefinition(t *testing.T) {
 }
 
 func TestDbFindAllSurveyDefinitions(t *testing.T) {
-	testSurvey := models.Survey{
-		Current: models.SurveyVersion{
+	testSurvey := types.Survey{
+		Current: types.SurveyVersion{
 			Published: time.Now().Unix(),
-			SurveyDefinition: models.SurveyItem{
+			SurveyDefinition: types.SurveyItem{
 				Key: "s1",
-				Items: []models.SurveyItem{
+				Items: []types.SurveyItem{
 					{
 						Key:     "Q1",
 						Follows: []string{"ST"},
-						Condition: &models.Expression{
+						Condition: &types.Expression{
 							Name: "testmethod",
 						},
 					},

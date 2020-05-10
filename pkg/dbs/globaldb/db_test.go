@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influenzanet/study-service/pkg/models"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 var testDBService *GlobalDBService
@@ -18,16 +18,23 @@ const (
 	testDBNamePrefix = "TEST_"
 )
 
+// Pre-Test Setup
+func TestMain(m *testing.M) {
+	setupTestDBService()
+	result := m.Run()
+	dropTestDB()
+	os.Exit(result)
+}
+
 func setupTestDBService() {
 	connStr := os.Getenv("GLOBAL_DB_CONNECTION_STR")
 	username := os.Getenv("GLOBAL_DB_USERNAME")
 	password := os.Getenv("GLOBAL_DB_PASSWORD")
-	prefix := os.Getenv("GLOBAL_DB_CONNECTION_PREFIX") // Used in test mode
+	prefix := os.Getenv("GLOBAL_DB_CONNECTION_PREFIX")
 	if connStr == "" || username == "" || password == "" {
 		log.Fatal("Couldn't read DB credentials.")
 	}
 	URI := fmt.Sprintf(`mongodb%s://%s:%s@%s`, prefix, username, password, connStr)
-
 	var err error
 	Timeout, err := strconv.Atoi(os.Getenv("DB_TIMEOUT"))
 	if err != nil {
@@ -43,7 +50,7 @@ func setupTestDBService() {
 		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
 	testDBService = NewGlobalDBService(
-		models.DBConfig{
+		types.DBConfig{
 			URI:             URI,
 			Timeout:         Timeout,
 			IdleConnTimeout: IdleConnTimeout,
@@ -62,12 +69,4 @@ func dropTestDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-// Pre-Test Setup
-func TestMain(m *testing.M) {
-	setupTestDBService()
-	result := m.Run()
-	dropTestDB()
-	os.Exit(result)
 }
