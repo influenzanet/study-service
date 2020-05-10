@@ -1,21 +1,12 @@
-package main
+package studytimer
 
 import (
 	"log"
 
-	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 )
-
-type StudyTimerService struct {
-	globalDBService            *globaldb.GlobalDBService
-	studyDBService             *studydb.StudyDBService
-	TimerEventFrequency        int64 // how often the timer event should be performed (only from one instance of the service) - seconds
-	TimerEventCheckIntervalMin int   // approx. how often this serice should check if to perform the timer event - seconds
-	TimerEventCheckIntervalVar int   // range of the uniform random distribution - varying the check interval to avoid a steady collisions
-}
 
 func (s *StudyTimerService) StudyTimerEvent() {
 	instances, err := s.globalDBService.GetAllInstances()
