@@ -3,6 +3,7 @@ syntax = "proto3";
 package inf.study_service;
 option go_package = "github.com/influenzanet/study-service/pkg/api";
 
+import "api/auth.proto";
 import "api/study.proto";
 import "api/survey.proto";
 import "api/survey-response.proto";
@@ -13,7 +14,8 @@ service StudyServiceApi {
 
   // Study flow
   rpc EnterStudy(EnterStudyRequest) returns (inf.study.AssignedSurveys);
-  rpc GetAssignedSurveys(inf.TokenInfos) returns (inf.study.AssignedSurveys);
+  rpc GetAssignedSurveys(inf.auth.TokenInfos)
+      returns (inf.study.AssignedSurveys);
   rpc GetAssignedSurvey(SurveyReferenceRequest) returns (SurveyAndContext);
   rpc SubmitStatusReport(StatusReportRequest)
       returns (inf.study.AssignedSurveys);
@@ -41,7 +43,7 @@ message ServiceStatus {
 }
 
 message NewStudyRequest {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   inf.study.Study study = 2;
 }
 
@@ -52,7 +54,7 @@ message SurveyAndContext {
 }
 
 message StudyReferenceReq {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   string study_key = 2;
 }
 
@@ -66,29 +68,29 @@ message SurveyInfoResp {
 }
 
 message AddSurveyReq {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   string study_key = 2;
   inf.survey.Survey survey = 3;
 }
 
 message SubmitResponseReq {
-  inf.TokenInfos token = 1; // identifies the user who is submitting
+  inf.auth.TokenInfos token = 1; // identifies the user who is submitting
   string study_key = 2;
   inf.survey_response.SurveyResponse response = 3;
 }
 
 message EnterStudyRequest {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   string study_key = 2;
 }
 
 message SurveyReferenceRequest {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   string study_key = 2;
   string survey_key = 3;
 }
 
 message StatusReportRequest {
-  inf.TokenInfos token = 1;
+  inf.auth.TokenInfos token = 1;
   inf.survey_response.SurveyResponse status_survey = 2;
 }
