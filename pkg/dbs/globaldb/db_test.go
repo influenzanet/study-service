@@ -15,7 +15,7 @@ import (
 var testDBService *GlobalDBService
 
 const (
-	testDBNamePrefix = "TEST_"
+	testDBNamePrefix = "INF_"
 )
 
 // Pre-Test Setup

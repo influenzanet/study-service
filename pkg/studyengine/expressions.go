@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -36,6 +37,8 @@ func ExpressionEval(expression types.Expression, evalCtx evalContext) (val inter
 		val, err = evalCtx.or(expression)
 	case "not":
 		val, err = evalCtx.not(expression)
+	case "timestampWithOffset":
+		val, err = evalCtx.timestampWithOffset(expression)
 	default:
 		err = fmt.Errorf("expression name not known: %s", expression.Name)
 		return
@@ -318,5 +321,19 @@ func (ctx evalContext) not(exp types.Expression) (val bool, err error) {
 		}
 		return false, nil
 	}
+	return
+}
+
+func (ctx evalContext) timestampWithOffset(exp types.Expression) (t int64, err error) {
+	if len(exp.Data) != 1 {
+		return t, errors.New("should have one argument")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return t, err
+	}
+	delta := int64(arg1.(float64))
+	t = time.Now().Unix() + delta
 	return
 }
