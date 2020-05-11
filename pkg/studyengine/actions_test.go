@@ -49,7 +49,7 @@ func TestActions(t *testing.T) {
 			Name: "IFTHEN",
 			Data: []types.ExpressionArg{
 				{DType: "num", Num: 0},
-				{DType: "exp", Exp: action2},
+				{DType: "exp", Exp: &action2},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -64,8 +64,8 @@ func TestActions(t *testing.T) {
 			Name: "IFTHEN",
 			Data: []types.ExpressionArg{
 				{DType: "num", Num: 1},
-				{DType: "exp", Exp: action2},
-				{DType: "exp", Exp: action3},
+				{DType: "exp", Exp: &action2},
+				{DType: "exp", Exp: &action3},
 			},
 		}
 		newState, err = ActionEval(action, participantState, event)

@@ -64,7 +64,7 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "checkEventType",
 							Data: []types.ExpressionArg{
 								{Str: "ENTER"},
@@ -73,7 +73,7 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 					},
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []types.ExpressionArg{
 								{Str: "testKey"},
@@ -88,7 +88,7 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "checkEventType",
 							Data: []types.ExpressionArg{
 								{Str: "SUBMIT"},
@@ -97,7 +97,7 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 					},
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []types.ExpressionArg{
 								{Str: "testKey"},
@@ -177,7 +177,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "checkEventType",
 							Data: []types.ExpressionArg{
 								{Str: "ENTER"},
@@ -186,7 +186,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 					},
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "ADD_NEW_SURVEY",
 							Data: []types.ExpressionArg{
 								{Str: "testsurvey"},
@@ -202,7 +202,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 				Data: []types.ExpressionArg{
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "checkEventType",
 							Data: []types.ExpressionArg{
 								{Str: "SUBMIT"},
@@ -211,7 +211,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 					},
 					{
 						DType: "exp",
-						Exp: types.Expression{
+						Exp: &types.Expression{
 							Name: "UPDATE_FLAG",
 							Data: []types.ExpressionArg{
 								{Str: "testKey"},

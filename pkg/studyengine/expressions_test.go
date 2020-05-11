@@ -748,10 +748,12 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if ret.(int64) > time.Now().Unix()+11 || ret.(int64) < time.Now().Unix()+9 {
+		resTS := int64(ret.(float64))
+		if resTS > time.Now().Unix()+11 || resTS < time.Now().Unix()+9 {
 			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()+10)
 		}
 	})
+
 	t.Run("T - 10", func(t *testing.T) {
 		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
 			{DType: "num", Num: -10},
@@ -762,7 +764,8 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if ret.(int64) < time.Now().Unix()-11 || ret.(int64) > time.Now().Unix()-9 {
+		resTS := int64(ret.(float64))
+		if resTS < time.Now().Unix()-11 || resTS > time.Now().Unix()-9 {
 			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()-10)
 		}
 	})

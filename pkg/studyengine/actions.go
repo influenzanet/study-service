@@ -63,7 +63,7 @@ func checkCondition(condition types.ExpressionArg, evalContext evalContext) bool
 	if !condition.IsExpression() {
 		return condition.Num != 0
 	}
-	val, err := ExpressionEval(condition.Exp, evalContext)
+	val, err := ExpressionEval(*condition.Exp, evalContext)
 	bVal, ok := val.(bool)
 	return bVal && ok && err == nil
 }
@@ -83,7 +83,7 @@ func ifThenAction(action types.Expression, oldState types.ParticipantState, even
 	}
 	for _, action := range action.Data[1:] {
 		if action.IsExpression() {
-			newState, err = ActionEval(action.Exp, newState, event)
+			newState, err = ActionEval(*action.Exp, newState, event)
 			if err != nil {
 				return newState, err
 			}

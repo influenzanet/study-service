@@ -51,7 +51,7 @@ func (ctx evalContext) expressionArgResolver(arg types.ExpressionArg) (interface
 	case "num":
 		return arg.Num, nil
 	case "exp":
-		return ExpressionEval(arg.Exp, ctx)
+		return ExpressionEval(*arg.Exp, ctx)
 	case "str":
 		return arg.Str, nil
 	default:
@@ -324,7 +324,7 @@ func (ctx evalContext) not(exp types.Expression) (val bool, err error) {
 	return
 }
 
-func (ctx evalContext) timestampWithOffset(exp types.Expression) (t int64, err error) {
+func (ctx evalContext) timestampWithOffset(exp types.Expression) (t float64, err error) {
 	if len(exp.Data) != 1 {
 		return t, errors.New("should have one argument")
 	}
@@ -334,6 +334,6 @@ func (ctx evalContext) timestampWithOffset(exp types.Expression) (t int64, err e
 		return t, err
 	}
 	delta := int64(arg1.(float64))
-	t = time.Now().Unix() + delta
+	t = float64(time.Now().Unix() + delta)
 	return
 }

@@ -8,15 +8,15 @@ import (
 
 type Expression struct {
 	Name       string          `bson:"name"`
-	ReturnType string          `bson:"returnType"`
-	Data       []ExpressionArg `bson:"data"`
+	ReturnType string          `bson:"returnType,omitempty"`
+	Data       []ExpressionArg `bson:"data,omitempty"`
 }
 
 type ExpressionArg struct {
-	DType string     `bson:"dtype"`
-	Exp   Expression `bson:"exp"`
-	Str   string     `bson:"str"`
-	Num   float64    `bson:"num"`
+	DType string      `bson:"dtype"`
+	Exp   *Expression `bson:"exp,omitempty"`
+	Str   string      `bson:"str,omitempty"`
+	Num   float64     `bson:"num,omitempty"`
 }
 
 func (e *ExpressionArg) ToAPI() *api.ExpressionArg {
@@ -24,7 +24,7 @@ func (e *ExpressionArg) ToAPI() *api.ExpressionArg {
 		return nil
 	}
 	eargs := &api.ExpressionArg{}
-	if len(e.Exp.Name) > 0 {
+	if e.Exp != nil && len(e.Exp.Name) > 0 {
 		eargs.Data = &api.ExpressionArg_Exp{Exp: e.Exp.ToAPI()}
 	} else if len(e.Str) > 0 {
 		eargs.Data = &api.ExpressionArg_Str{Str: e.Str}
@@ -58,7 +58,7 @@ func ExpressionArgFromAPI(e *api.ExpressionArg) *ExpressionArg {
 
 	switch x := e.Data.(type) {
 	case *api.ExpressionArg_Exp:
-		newEA.Exp = *ExpressionFromAPI(x.Exp)
+		newEA.Exp = ExpressionFromAPI(x.Exp)
 	case *api.ExpressionArg_Str:
 		newEA.Str = x.Str
 	case *api.ExpressionArg_Num:
