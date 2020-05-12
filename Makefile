@@ -28,4 +28,3 @@ test:
 
 docker:
 	docker build -t  github.com/influenzanet/study-service:$(VERSION)  -f build/docker/Dockerfile $(DOCKER_OPTS) .
-	docker build $(DOCKER_OPTS) .
