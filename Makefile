@@ -1,7 +1,8 @@
-.PHONY: build test install-dev docker
+.PHONY: build test install-dev docker generate-api
 
-DOCKER_OPTS ?= --rm
 PROTO_BUILD_DIR = ./pkg
+DOCKER_OPTS ?= --rm
+VERSION := $(shell git describe --tags)
 
 help:
 	@echo "Service building targets"
@@ -9,6 +10,7 @@ help:
 	@echo "  test  : run test suites"
 	@echo "  docker: build docker image"
 	@echo "  install-dev: install dev dependencies"
+	@echo "  generate-api: compile protobuf files for go"
 	@echo "Env:"
 	@echo "  DOCKER_OPTS : default docker build options (default : $(DOCKER_OPTS))"
 	@echo "  TEST_ARGS : Arguments to pass to go test call"
@@ -25,4 +27,5 @@ test:
 	go test $(TEST_ARGS) ./...
 
 docker:
+	docker build -t  github.com/influenzanet/study-service:$(VERSION)  -f build/docker/Dockerfile $(DOCKER_OPTS) .
 	docker build $(DOCKER_OPTS) .
