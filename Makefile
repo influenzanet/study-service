@@ -5,7 +5,7 @@ PROTO_BUILD_DIR = ./pkg
 #TEST_ARGS = -v
 
 DOCKER_OPTS ?= --rm
-VERSION := $(shell git describe --tags)
+VERSION := $(shell git describe --tags --abbrev=0)
 
 help:
 	@echo "Service building targets"
@@ -29,4 +29,4 @@ test:
 	./test/test.sh $(TEST_ARGS)
 
 docker:
-	docker build -t  github.com/influenzanet/study-service:$(VERSION)  -f build/docker/Dockerfile $(DOCKER_OPTS) .
+	docker build -t github.com/influenzanet/study-service:$(VERSION)  -f build/docker/Dockerfile $(DOCKER_OPTS) .

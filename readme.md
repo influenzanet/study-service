@@ -20,7 +20,7 @@ To trigger the build process using the default docker file call:
 ```
 make docker
 ```
-This will use the current git state (last tag plus if commits since then the commit hash) to tag the docker image.
+This will use the most recent git tag to tag the docker image.
 
 #### Contribute:
 Feel free to create your own Dockerfile (e.g. compiling and deploying to specific target images), eventually others may need the same.
