@@ -1,0 +1,1 @@
+docker run --env-file study-service-env.list -p 5003:5003 github.com/influenzanet/study-service:$1
