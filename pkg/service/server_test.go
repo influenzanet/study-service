@@ -119,10 +119,6 @@ func dropTestDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = testGlobalDBService.DBClient.Database(testDBNamePrefix + "global-infos").Drop(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func shouldHaveGrpcErrorStatus(err error, expectedError string) (bool, string) {
