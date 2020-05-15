@@ -295,6 +295,180 @@ func TestEnterStudyEndpoint(t *testing.T) {
 	})
 }
 
+func TestPostponeSurveyEndpoint(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testUserID1 := "234234laaabbb3423"
+	testUserID2 := "234234laaabbb3424"
+
+	testStudy := types.Study{
+		Key:       "studyforpostponesurvey",
+		SecretKey: "testsecret",
+		Rules: []types.Expression{
+			{
+				Name: "IFTHEN",
+				Data: []types.ExpressionArg{
+					{
+						DType: "exp",
+						Exp: &types.Expression{
+							Name: "checkEventType",
+							Data: []types.ExpressionArg{
+								{Str: "SUBMIT"},
+							},
+						},
+					},
+					{
+						DType: "exp",
+						Exp: &types.Expression{
+							Name: "UPDATE_FLAG",
+							Data: []types.ExpressionArg{
+								{Str: "testKey"},
+								{Str: "testValue2"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	testStudy, err := s.studyDBservice.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudy.Key, testUserID1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudy.Key, testUserID2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pState1 := types.ParticipantState{
+		ParticipantID: pid1,
+		StudyStatus:   "active",
+		AssignedSurveys: []types.AssignedSurvey{
+			{SurveyKey: "s1"},
+		},
+	}
+	pState2 := types.ParticipantState{
+		ParticipantID: pid2,
+		StudyStatus:   "active",
+		AssignedSurveys: []types.AssignedSurvey{
+			{SurveyKey: "s1", ValidUntil: time.Now().Unix() + 3600},
+		},
+	}
+
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudy.Key, pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudy.Key, pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.PostponeSurvey(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.PostponeSurvey(context.Background(), &api.PostponeSurveyRequest{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("wrong study key", func(t *testing.T) {
+		req := &api.PostponeSurveyRequest{
+			Token: &api.TokenInfos{
+				Id:         testUserID1,
+				InstanceId: testInstanceID,
+				ProfilId:   testUserID1,
+			},
+			StudyKey: "wrong",
+		}
+		_, err := s.PostponeSurvey(context.Background(), req)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("without validUntil", func(t *testing.T) {
+		req := &api.PostponeSurveyRequest{
+			Token: &api.TokenInfos{
+				Id:         testUserID1,
+				InstanceId: testInstanceID,
+				ProfilId:   testUserID1,
+			},
+			StudyKey:  testStudy.Key,
+			SurveyKey: "s1",
+			Delay:     3600,
+		}
+		resp, err := s.PostponeSurvey(context.Background(), req)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Surveys) != 1 {
+			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
+			return
+		}
+		if resp.Surveys[0].ValidFrom < time.Now().Unix()+3599 {
+			t.Errorf("unexpected survey assigned: %s", resp.Surveys[0])
+			return
+		}
+
+	})
+
+	t.Run("with validUntil expired", func(t *testing.T) {
+		req := &api.PostponeSurveyRequest{
+			Token: &api.TokenInfos{
+				Id:         testUserID2,
+				InstanceId: testInstanceID,
+				ProfilId:   testUserID2,
+			},
+			StudyKey:  testStudy.Key,
+			SurveyKey: "s1",
+			Delay:     3600,
+		}
+		resp, err := s.PostponeSurvey(context.Background(), req)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Surveys) != 1 {
+			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
+			return
+		}
+		pState, err := s.studyDBservice.FindParticipantState(testInstanceID, testStudy.Key, pid2)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		f, ok := pState.Flags["testKey"]
+		if !ok || f != "testValue2" {
+			t.Errorf("unexpected pState: %s", pState.Flags)
+		}
+	})
+}
+
 func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
@@ -330,12 +504,12 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.userIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
+	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -427,7 +601,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		}
 	}
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, testStudyKey, testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -584,12 +758,12 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423aa"
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
+	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -700,12 +874,12 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
+	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -794,7 +968,7 @@ func TestResolveContextRules(t *testing.T) {
 	testStudyKey := "teststudy_forresolvecontext"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -908,7 +1082,7 @@ func TestResolvePrefillRules(t *testing.T) {
 	testStudyKey := "teststudy_forresolveprefills"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.userIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return

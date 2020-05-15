@@ -16,8 +16,8 @@ func createHash(key string) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
-// UserIDtoParticipantID encrypts userID to be used as participant ID
-func UserIDtoParticipantID(userID string, globalSecret string, studySecret string) (string, error) {
+// ProfileIDtoParticipantID encrypts userID to be used as participant ID
+func ProfileIDtoParticipantID(userID string, globalSecret string, studySecret string) (string, error) {
 	key, err := createHash(globalSecret + studySecret)
 	if err != nil {
 		return "", err

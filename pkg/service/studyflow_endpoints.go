@@ -18,7 +18,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// ParticipantID
-	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -78,7 +78,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.ProfilId, s.StudyGlobalSecret, study.SecretKey)
+		participantID, err := utils.ProfileIDtoParticipantID(req.ProfilId, s.StudyGlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -102,7 +102,7 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	// ParticipantID
-	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -137,6 +137,70 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 	return &resp, nil
 }
 
+func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.PostponeSurveyRequest) (*api.AssignedSurveys, error) {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// ParticipantID
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
+	if err != nil {
+		log.Println("PostponeSurvey: participant state not found")
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	for i, as := range pState.AssignedSurveys {
+		if as.SurveyKey == req.SurveyKey {
+			newValidFrom := time.Now().Unix() + req.Delay
+
+			if as.ValidUntil > 0 {
+				if newValidFrom > as.ValidUntil-1800 {
+					// submit survey as empty
+					emptyResponse := types.SurveyResponse{
+						Key:           req.SurveyKey,
+						ParticipantID: participantID,
+						SubmittedAt:   time.Now().Unix(),
+						ArrivedAt:     time.Now().Unix(),
+					}
+					// perform study rules/actions
+					currentEvent := types.StudyEvent{
+						Type:     "SUBMIT",
+						Response: emptyResponse,
+					}
+					pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+					if err != nil {
+						return nil, status.Error(codes.Internal, err.Error())
+					}
+					break
+				}
+			}
+			pState.AssignedSurveys[i].ValidFrom = newValidFrom
+		}
+	}
+
+	// save state back to DB
+	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
+	}
+	for _, as := range pState.AssignedSurveys {
+		cs := as.ToAPI()
+		cs.StudyKey = req.StudyKey
+		resp.Surveys = append(resp.Surveys, cs)
+	}
+
+	return &resp, nil
+}
+
 func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.StatusReportRequest) (*api.AssignedSurveys, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StatusSurvey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -150,14 +214,14 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.UserIDtoParticipantID(req.Token.ProfilId, s.StudyGlobalSecret, study.SecretKey)
+		participantID, err := utils.ProfileIDtoParticipantID(req.Token.ProfilId, s.StudyGlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, study.Key, participantID)
 		if err != nil {
-			log.Println(err)
+			// user not in the study - log.Println(err)
 			continue
 		}
 
@@ -204,7 +268,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	// ParticipantID
-	participantID, err := s.userIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

@@ -603,6 +603,77 @@ func (x *SurveyReferenceRequest) GetSurveyKey() string {
 	return ""
 }
 
+type PostponeSurveyRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Token     *TokenInfos `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	StudyKey  string      `protobuf:"bytes,2,opt,name=study_key,json=studyKey,proto3" json:"study_key,omitempty"`
+	SurveyKey string      `protobuf:"bytes,3,opt,name=survey_key,json=surveyKey,proto3" json:"survey_key,omitempty"`
+	Delay     int64       `protobuf:"varint,4,opt,name=delay,proto3" json:"delay,omitempty"`
+}
+
+func (x *PostponeSurveyRequest) Reset() {
+	*x = PostponeSurveyRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_study_service_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PostponeSurveyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PostponeSurveyRequest) ProtoMessage() {}
+
+func (x *PostponeSurveyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_study_service_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PostponeSurveyRequest.ProtoReflect.Descriptor instead.
+func (*PostponeSurveyRequest) Descriptor() ([]byte, []int) {
+	return file_api_study_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *PostponeSurveyRequest) GetToken() *TokenInfos {
+	if x != nil {
+		return x.Token
+	}
+	return nil
+}
+
+func (x *PostponeSurveyRequest) GetStudyKey() string {
+	if x != nil {
+		return x.StudyKey
+	}
+	return ""
+}
+
+func (x *PostponeSurveyRequest) GetSurveyKey() string {
+	if x != nil {
+		return x.SurveyKey
+	}
+	return ""
+}
+
+func (x *PostponeSurveyRequest) GetDelay() int64 {
+	if x != nil {
+		return x.Delay
+	}
+	return 0
+}
+
 type StatusReportRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -615,7 +686,7 @@ type StatusReportRequest struct {
 func (x *StatusReportRequest) Reset() {
 	*x = StatusReportRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_study_service_proto_msgTypes[9]
+		mi := &file_api_study_service_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -628,7 +699,7 @@ func (x *StatusReportRequest) String() string {
 func (*StatusReportRequest) ProtoMessage() {}
 
 func (x *StatusReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_study_service_proto_msgTypes[9]
+	mi := &file_api_study_service_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -641,7 +712,7 @@ func (x *StatusReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatusReportRequest.ProtoReflect.Descriptor instead.
 func (*StatusReportRequest) Descriptor() ([]byte, []int) {
-	return file_api_study_service_proto_rawDescGZIP(), []int{9}
+	return file_api_study_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StatusReportRequest) GetToken() *TokenInfos {
@@ -671,7 +742,7 @@ type SurveyInfoResp_SurveyInfo struct {
 func (x *SurveyInfoResp_SurveyInfo) Reset() {
 	*x = SurveyInfoResp_SurveyInfo{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_study_service_proto_msgTypes[10]
+		mi := &file_api_study_service_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -684,7 +755,7 @@ func (x *SurveyInfoResp_SurveyInfo) String() string {
 func (*SurveyInfoResp_SurveyInfo) ProtoMessage() {}
 
 func (x *SurveyInfoResp_SurveyInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_api_study_service_proto_msgTypes[10]
+	mi := &file_api_study_service_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -814,37 +885,52 @@ var file_api_study_service_proto_rawDesc = []byte{
 	0x12, 0x1b, 0x0a, 0x09, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x74, 0x75, 0x64, 0x79, 0x4b, 0x65, 0x79, 0x12, 0x1d, 0x0a,
 	0x0a, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x09, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x4b, 0x65, 0x79, 0x22, 0x8b, 0x01, 0x0a,
-	0x13, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x65, 0x70, 0x6f, 0x72, 0x74, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x2e, 0x54,
-	0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e,
-	0x12, 0x48, 0x0a, 0x0d, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x5f, 0x73, 0x75, 0x72, 0x76, 0x65,
-	0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x23, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x75,
-	0x72, 0x76, 0x65, 0x79, 0x5f, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x53, 0x75,
-	0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x52, 0x0c, 0x73, 0x74,
-	0x61, 0x74, 0x75, 0x73, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x32, 0xd8, 0x06, 0x0a, 0x0f, 0x53,
-	0x74, 0x75, 0x64, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x41, 0x70, 0x69, 0x12, 0x42,
-	0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79,
-	0x1a, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74,
-	0x75, 0x73, 0x12, 0x4e, 0x0a, 0x0a, 0x45, 0x6e, 0x74, 0x65, 0x72, 0x53, 0x74, 0x75, 0x64, 0x79,
-	0x12, 0x24, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6e, 0x74, 0x65, 0x72, 0x53, 0x74, 0x75, 0x64, 0x79, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75,
-	0x64, 0x79, 0x2e, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65,
-	0x79, 0x73, 0x12, 0x46, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65,
-	0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12, 0x14, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x61,
-	0x75, 0x74, 0x68, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x1a, 0x1a,
+	0x09, 0x52, 0x09, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x4b, 0x65, 0x79, 0x22, 0x95, 0x01, 0x0a,
+	0x15, 0x50, 0x6f, 0x73, 0x74, 0x70, 0x6f, 0x6e, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x61, 0x75, 0x74, 0x68,
+	0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x52, 0x05, 0x74, 0x6f, 0x6b,
+	0x65, 0x6e, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x74, 0x75, 0x64, 0x79, 0x4b, 0x65, 0x79, 0x12,
+	0x1d, 0x0a, 0x0a, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x4b, 0x65, 0x79, 0x12, 0x14,
+	0x0a, 0x05, 0x64, 0x65, 0x6c, 0x61, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x05, 0x64,
+	0x65, 0x6c, 0x61, 0x79, 0x22, 0x8b, 0x01, 0x0a, 0x13, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
+	0x65, 0x70, 0x6f, 0x72, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2a, 0x0a, 0x05,
+	0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x69, 0x6e,
+	0x66, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x2e, 0x54, 0x6f, 0x6b, 0x65, 0x6e, 0x49, 0x6e, 0x66, 0x6f,
+	0x73, 0x52, 0x05, 0x74, 0x6f, 0x6b, 0x65, 0x6e, 0x12, 0x48, 0x0a, 0x0d, 0x73, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x5f, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x23, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x72, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x52, 0x0c, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x53, 0x75, 0x72, 0x76,
+	0x65, 0x79, 0x32, 0xb0, 0x07, 0x0a, 0x0f, 0x53, 0x74, 0x75, 0x64, 0x79, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x41, 0x70, 0x69, 0x12, 0x42, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x1a, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x4e, 0x0a, 0x0a, 0x45, 0x6e,
+	0x74, 0x65, 0x72, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x24, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x45, 0x6e, 0x74,
+	0x65, 0x72, 0x53, 0x74, 0x75, 0x64, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a,
 	0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x2e, 0x41, 0x73, 0x73, 0x69, 0x67,
-	0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12, 0x63, 0x0a, 0x11, 0x47, 0x65,
-	0x74, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12,
-	0x29, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76,
-	0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72, 0x65,
-	0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x23, 0x2e, 0x69, 0x6e, 0x66,
-	0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53,
-	0x75, 0x72, 0x76, 0x65, 0x79, 0x41, 0x6e, 0x64, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x12,
+	0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12, 0x46, 0x0a, 0x12, 0x47, 0x65,
+	0x74, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73,
+	0x12, 0x14, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x61, 0x75, 0x74, 0x68, 0x2e, 0x54, 0x6f, 0x6b, 0x65,
+	0x6e, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x1a, 0x1a, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75,
+	0x64, 0x79, 0x2e, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65,
+	0x79, 0x73, 0x12, 0x63, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65,
+	0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x29, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74,
+	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76,
+	0x65, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x23, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x41, 0x6e, 0x64,
+	0x43, 0x6f, 0x6e, 0x74, 0x65, 0x78, 0x74, 0x12, 0x56, 0x0a, 0x0e, 0x50, 0x6f, 0x73, 0x74, 0x70,
+	0x6f, 0x6e, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x28, 0x2e, 0x69, 0x6e, 0x66, 0x2e,
+	0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x50, 0x6f,
+	0x73, 0x74, 0x70, 0x6f, 0x6e, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x2e,
+	0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12,
 	0x58, 0x0a, 0x12, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x74, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52,
 	0x65, 0x70, 0x6f, 0x72, 0x74, 0x12, 0x26, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64,
 	0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
@@ -896,7 +982,7 @@ func file_api_study_service_proto_rawDescGZIP() []byte {
 }
 
 var file_api_study_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_api_study_service_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_api_study_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_study_service_proto_goTypes = []interface{}{
 	(ServiceStatus_StatusValue)(0),    // 0: inf.study_service.ServiceStatus.StatusValue
 	(*ServiceStatus)(nil),             // 1: inf.study_service.ServiceStatus
@@ -908,61 +994,65 @@ var file_api_study_service_proto_goTypes = []interface{}{
 	(*SubmitResponseReq)(nil),         // 7: inf.study_service.SubmitResponseReq
 	(*EnterStudyRequest)(nil),         // 8: inf.study_service.EnterStudyRequest
 	(*SurveyReferenceRequest)(nil),    // 9: inf.study_service.SurveyReferenceRequest
-	(*StatusReportRequest)(nil),       // 10: inf.study_service.StatusReportRequest
-	(*SurveyInfoResp_SurveyInfo)(nil), // 11: inf.study_service.SurveyInfoResp.SurveyInfo
-	(*TokenInfos)(nil),                // 12: inf.auth.TokenInfos
-	(*Study)(nil),                     // 13: inf.study.Study
-	(*Survey)(nil),                    // 14: inf.survey.Survey
-	(*SurveyContext)(nil),             // 15: inf.survey.SurveyContext
-	(*SurveyResponse)(nil),            // 16: inf.survey_response.SurveyResponse
-	(*LocalisedObject)(nil),           // 17: inf.survey.LocalisedObject
-	(*empty.Empty)(nil),               // 18: google.protobuf.Empty
-	(*AssignedSurveys)(nil),           // 19: inf.study.AssignedSurveys
+	(*PostponeSurveyRequest)(nil),     // 10: inf.study_service.PostponeSurveyRequest
+	(*StatusReportRequest)(nil),       // 11: inf.study_service.StatusReportRequest
+	(*SurveyInfoResp_SurveyInfo)(nil), // 12: inf.study_service.SurveyInfoResp.SurveyInfo
+	(*TokenInfos)(nil),                // 13: inf.auth.TokenInfos
+	(*Study)(nil),                     // 14: inf.study.Study
+	(*Survey)(nil),                    // 15: inf.survey.Survey
+	(*SurveyContext)(nil),             // 16: inf.survey.SurveyContext
+	(*SurveyResponse)(nil),            // 17: inf.survey_response.SurveyResponse
+	(*LocalisedObject)(nil),           // 18: inf.survey.LocalisedObject
+	(*empty.Empty)(nil),               // 19: google.protobuf.Empty
+	(*AssignedSurveys)(nil),           // 20: inf.study.AssignedSurveys
 }
 var file_api_study_service_proto_depIdxs = []int32{
 	0,  // 0: inf.study_service.ServiceStatus.status:type_name -> inf.study_service.ServiceStatus.StatusValue
-	12, // 1: inf.study_service.NewStudyRequest.token:type_name -> inf.auth.TokenInfos
-	13, // 2: inf.study_service.NewStudyRequest.study:type_name -> inf.study.Study
-	14, // 3: inf.study_service.SurveyAndContext.survey:type_name -> inf.survey.Survey
-	15, // 4: inf.study_service.SurveyAndContext.context:type_name -> inf.survey.SurveyContext
-	16, // 5: inf.study_service.SurveyAndContext.prefill:type_name -> inf.survey_response.SurveyResponse
-	12, // 6: inf.study_service.StudyReferenceReq.token:type_name -> inf.auth.TokenInfos
-	11, // 7: inf.study_service.SurveyInfoResp.infos:type_name -> inf.study_service.SurveyInfoResp.SurveyInfo
-	12, // 8: inf.study_service.AddSurveyReq.token:type_name -> inf.auth.TokenInfos
-	14, // 9: inf.study_service.AddSurveyReq.survey:type_name -> inf.survey.Survey
-	12, // 10: inf.study_service.SubmitResponseReq.token:type_name -> inf.auth.TokenInfos
-	16, // 11: inf.study_service.SubmitResponseReq.response:type_name -> inf.survey_response.SurveyResponse
-	12, // 12: inf.study_service.EnterStudyRequest.token:type_name -> inf.auth.TokenInfos
-	12, // 13: inf.study_service.SurveyReferenceRequest.token:type_name -> inf.auth.TokenInfos
-	12, // 14: inf.study_service.StatusReportRequest.token:type_name -> inf.auth.TokenInfos
-	16, // 15: inf.study_service.StatusReportRequest.status_survey:type_name -> inf.survey_response.SurveyResponse
-	17, // 16: inf.study_service.SurveyInfoResp.SurveyInfo.name:type_name -> inf.survey.LocalisedObject
-	17, // 17: inf.study_service.SurveyInfoResp.SurveyInfo.description:type_name -> inf.survey.LocalisedObject
-	18, // 18: inf.study_service.StudyServiceApi.Status:input_type -> google.protobuf.Empty
-	8,  // 19: inf.study_service.StudyServiceApi.EnterStudy:input_type -> inf.study_service.EnterStudyRequest
-	12, // 20: inf.study_service.StudyServiceApi.GetAssignedSurveys:input_type -> inf.auth.TokenInfos
-	9,  // 21: inf.study_service.StudyServiceApi.GetAssignedSurvey:input_type -> inf.study_service.SurveyReferenceRequest
-	10, // 22: inf.study_service.StudyServiceApi.SubmitStatusReport:input_type -> inf.study_service.StatusReportRequest
-	7,  // 23: inf.study_service.StudyServiceApi.SubmitResponse:input_type -> inf.study_service.SubmitResponseReq
-	2,  // 24: inf.study_service.StudyServiceApi.CreateNewStudy:input_type -> inf.study_service.NewStudyRequest
-	6,  // 25: inf.study_service.StudyServiceApi.SaveSurveyToStudy:input_type -> inf.study_service.AddSurveyReq
-	9,  // 26: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:input_type -> inf.study_service.SurveyReferenceRequest
-	4,  // 27: inf.study_service.StudyServiceApi.GetStudySurveyInfos:input_type -> inf.study_service.StudyReferenceReq
-	1,  // 28: inf.study_service.StudyServiceApi.Status:output_type -> inf.study_service.ServiceStatus
-	19, // 29: inf.study_service.StudyServiceApi.EnterStudy:output_type -> inf.study.AssignedSurveys
-	19, // 30: inf.study_service.StudyServiceApi.GetAssignedSurveys:output_type -> inf.study.AssignedSurveys
-	3,  // 31: inf.study_service.StudyServiceApi.GetAssignedSurvey:output_type -> inf.study_service.SurveyAndContext
-	19, // 32: inf.study_service.StudyServiceApi.SubmitStatusReport:output_type -> inf.study.AssignedSurveys
-	19, // 33: inf.study_service.StudyServiceApi.SubmitResponse:output_type -> inf.study.AssignedSurveys
-	13, // 34: inf.study_service.StudyServiceApi.CreateNewStudy:output_type -> inf.study.Study
-	14, // 35: inf.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> inf.survey.Survey
-	1,  // 36: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> inf.study_service.ServiceStatus
-	5,  // 37: inf.study_service.StudyServiceApi.GetStudySurveyInfos:output_type -> inf.study_service.SurveyInfoResp
-	28, // [28:38] is the sub-list for method output_type
-	18, // [18:28] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	13, // 1: inf.study_service.NewStudyRequest.token:type_name -> inf.auth.TokenInfos
+	14, // 2: inf.study_service.NewStudyRequest.study:type_name -> inf.study.Study
+	15, // 3: inf.study_service.SurveyAndContext.survey:type_name -> inf.survey.Survey
+	16, // 4: inf.study_service.SurveyAndContext.context:type_name -> inf.survey.SurveyContext
+	17, // 5: inf.study_service.SurveyAndContext.prefill:type_name -> inf.survey_response.SurveyResponse
+	13, // 6: inf.study_service.StudyReferenceReq.token:type_name -> inf.auth.TokenInfos
+	12, // 7: inf.study_service.SurveyInfoResp.infos:type_name -> inf.study_service.SurveyInfoResp.SurveyInfo
+	13, // 8: inf.study_service.AddSurveyReq.token:type_name -> inf.auth.TokenInfos
+	15, // 9: inf.study_service.AddSurveyReq.survey:type_name -> inf.survey.Survey
+	13, // 10: inf.study_service.SubmitResponseReq.token:type_name -> inf.auth.TokenInfos
+	17, // 11: inf.study_service.SubmitResponseReq.response:type_name -> inf.survey_response.SurveyResponse
+	13, // 12: inf.study_service.EnterStudyRequest.token:type_name -> inf.auth.TokenInfos
+	13, // 13: inf.study_service.SurveyReferenceRequest.token:type_name -> inf.auth.TokenInfos
+	13, // 14: inf.study_service.PostponeSurveyRequest.token:type_name -> inf.auth.TokenInfos
+	13, // 15: inf.study_service.StatusReportRequest.token:type_name -> inf.auth.TokenInfos
+	17, // 16: inf.study_service.StatusReportRequest.status_survey:type_name -> inf.survey_response.SurveyResponse
+	18, // 17: inf.study_service.SurveyInfoResp.SurveyInfo.name:type_name -> inf.survey.LocalisedObject
+	18, // 18: inf.study_service.SurveyInfoResp.SurveyInfo.description:type_name -> inf.survey.LocalisedObject
+	19, // 19: inf.study_service.StudyServiceApi.Status:input_type -> google.protobuf.Empty
+	8,  // 20: inf.study_service.StudyServiceApi.EnterStudy:input_type -> inf.study_service.EnterStudyRequest
+	13, // 21: inf.study_service.StudyServiceApi.GetAssignedSurveys:input_type -> inf.auth.TokenInfos
+	9,  // 22: inf.study_service.StudyServiceApi.GetAssignedSurvey:input_type -> inf.study_service.SurveyReferenceRequest
+	10, // 23: inf.study_service.StudyServiceApi.PostponeSurvey:input_type -> inf.study_service.PostponeSurveyRequest
+	11, // 24: inf.study_service.StudyServiceApi.SubmitStatusReport:input_type -> inf.study_service.StatusReportRequest
+	7,  // 25: inf.study_service.StudyServiceApi.SubmitResponse:input_type -> inf.study_service.SubmitResponseReq
+	2,  // 26: inf.study_service.StudyServiceApi.CreateNewStudy:input_type -> inf.study_service.NewStudyRequest
+	6,  // 27: inf.study_service.StudyServiceApi.SaveSurveyToStudy:input_type -> inf.study_service.AddSurveyReq
+	9,  // 28: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:input_type -> inf.study_service.SurveyReferenceRequest
+	4,  // 29: inf.study_service.StudyServiceApi.GetStudySurveyInfos:input_type -> inf.study_service.StudyReferenceReq
+	1,  // 30: inf.study_service.StudyServiceApi.Status:output_type -> inf.study_service.ServiceStatus
+	20, // 31: inf.study_service.StudyServiceApi.EnterStudy:output_type -> inf.study.AssignedSurveys
+	20, // 32: inf.study_service.StudyServiceApi.GetAssignedSurveys:output_type -> inf.study.AssignedSurveys
+	3,  // 33: inf.study_service.StudyServiceApi.GetAssignedSurvey:output_type -> inf.study_service.SurveyAndContext
+	20, // 34: inf.study_service.StudyServiceApi.PostponeSurvey:output_type -> inf.study.AssignedSurveys
+	20, // 35: inf.study_service.StudyServiceApi.SubmitStatusReport:output_type -> inf.study.AssignedSurveys
+	20, // 36: inf.study_service.StudyServiceApi.SubmitResponse:output_type -> inf.study.AssignedSurveys
+	14, // 37: inf.study_service.StudyServiceApi.CreateNewStudy:output_type -> inf.study.Study
+	15, // 38: inf.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> inf.survey.Survey
+	1,  // 39: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> inf.study_service.ServiceStatus
+	5,  // 40: inf.study_service.StudyServiceApi.GetStudySurveyInfos:output_type -> inf.study_service.SurveyInfoResp
+	30, // [30:41] is the sub-list for method output_type
+	19, // [19:30] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_api_study_service_proto_init() }
@@ -1084,7 +1174,7 @@ func file_api_study_service_proto_init() {
 			}
 		}
 		file_api_study_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StatusReportRequest); i {
+			switch v := v.(*PostponeSurveyRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1096,6 +1186,18 @@ func file_api_study_service_proto_init() {
 			}
 		}
 		file_api_study_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*StatusReportRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_study_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SurveyInfoResp_SurveyInfo); i {
 			case 0:
 				return &v.state
@@ -1114,7 +1216,7 @@ func file_api_study_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_study_service_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -1146,6 +1248,7 @@ type StudyServiceApiClient interface {
 	EnterStudy(ctx context.Context, in *EnterStudyRequest, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	GetAssignedSurveys(ctx context.Context, in *TokenInfos, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	GetAssignedSurvey(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*SurveyAndContext, error)
+	PostponeSurvey(ctx context.Context, in *PostponeSurveyRequest, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	SubmitStatusReport(ctx context.Context, in *StatusReportRequest, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	SubmitResponse(ctx context.Context, in *SubmitResponseReq, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	// Study management
@@ -1193,6 +1296,15 @@ func (c *studyServiceApiClient) GetAssignedSurveys(ctx context.Context, in *Toke
 func (c *studyServiceApiClient) GetAssignedSurvey(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*SurveyAndContext, error) {
 	out := new(SurveyAndContext)
 	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/GetAssignedSurvey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) PostponeSurvey(ctx context.Context, in *PostponeSurveyRequest, opts ...grpc.CallOption) (*AssignedSurveys, error) {
+	out := new(AssignedSurveys)
+	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/PostponeSurvey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1260,6 +1372,7 @@ type StudyServiceApiServer interface {
 	EnterStudy(context.Context, *EnterStudyRequest) (*AssignedSurveys, error)
 	GetAssignedSurveys(context.Context, *TokenInfos) (*AssignedSurveys, error)
 	GetAssignedSurvey(context.Context, *SurveyReferenceRequest) (*SurveyAndContext, error)
+	PostponeSurvey(context.Context, *PostponeSurveyRequest) (*AssignedSurveys, error)
 	SubmitStatusReport(context.Context, *StatusReportRequest) (*AssignedSurveys, error)
 	SubmitResponse(context.Context, *SubmitResponseReq) (*AssignedSurveys, error)
 	// Study management
@@ -1284,6 +1397,9 @@ func (*UnimplementedStudyServiceApiServer) GetAssignedSurveys(context.Context, *
 }
 func (*UnimplementedStudyServiceApiServer) GetAssignedSurvey(context.Context, *SurveyReferenceRequest) (*SurveyAndContext, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssignedSurvey not implemented")
+}
+func (*UnimplementedStudyServiceApiServer) PostponeSurvey(context.Context, *PostponeSurveyRequest) (*AssignedSurveys, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostponeSurvey not implemented")
 }
 func (*UnimplementedStudyServiceApiServer) SubmitStatusReport(context.Context, *StatusReportRequest) (*AssignedSurveys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SubmitStatusReport not implemented")
@@ -1376,6 +1492,24 @@ func _StudyServiceApi_GetAssignedSurvey_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).GetAssignedSurvey(ctx, req.(*SurveyReferenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_PostponeSurvey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PostponeSurveyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).PostponeSurvey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/inf.study_service.StudyServiceApi/PostponeSurvey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).PostponeSurvey(ctx, req.(*PostponeSurveyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1507,6 +1641,10 @@ var _StudyServiceApi_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAssignedSurvey",
 			Handler:    _StudyServiceApi_GetAssignedSurvey_Handler,
+		},
+		{
+			MethodName: "PostponeSurvey",
+			Handler:    _StudyServiceApi_PostponeSurvey_Handler,
 		},
 		{
 			MethodName: "SubmitStatusReport",

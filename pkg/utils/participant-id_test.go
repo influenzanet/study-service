@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func TestUserIDtoParticipantID(t *testing.T) {
+func TestProfileIDtoParticipantID(t *testing.T) {
 	n := 12
 	b := make([]byte, n)
 	if _, err := rand.Read(b); err != nil {
@@ -21,12 +21,12 @@ func TestUserIDtoParticipantID(t *testing.T) {
 	testProfileID2 := primitive.NewObjectID().Hex()
 
 	t.Run("same user same keys", func(t *testing.T) {
-		pId, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret)
+		pId, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		pId2, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret)
+		pId2, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -37,12 +37,12 @@ func TestUserIDtoParticipantID(t *testing.T) {
 	})
 
 	t.Run("different users same keys", func(t *testing.T) {
-		pId, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret)
+		pId, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		pId2, err := UserIDtoParticipantID(testProfileID2, globalKey, studySecret)
+		pId2, err := ProfileIDtoParticipantID(testProfileID2, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -53,12 +53,12 @@ func TestUserIDtoParticipantID(t *testing.T) {
 	})
 
 	t.Run("same user different study keys", func(t *testing.T) {
-		pId, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret)
+		pId, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		pId2, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret+"different")
+		pId2, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret+"different")
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -68,12 +68,12 @@ func TestUserIDtoParticipantID(t *testing.T) {
 		}
 	})
 	t.Run("same user different global keys", func(t *testing.T) {
-		pId, err := UserIDtoParticipantID(testProfileID, globalKey, studySecret)
+		pId, err := ProfileIDtoParticipantID(testProfileID, globalKey, studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		pId2, err := UserIDtoParticipantID(testProfileID, globalKey+"different", studySecret)
+		pId2, err := ProfileIDtoParticipantID(testProfileID, globalKey+"different", studySecret)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return

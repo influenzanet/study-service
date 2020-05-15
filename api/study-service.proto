@@ -17,9 +17,11 @@ service StudyServiceApi {
   rpc GetAssignedSurveys(inf.auth.TokenInfos)
       returns (inf.study.AssignedSurveys);
   rpc GetAssignedSurvey(SurveyReferenceRequest) returns (SurveyAndContext);
+  rpc PostponeSurvey(PostponeSurveyRequest) returns (inf.study.AssignedSurveys);
   rpc SubmitStatusReport(StatusReportRequest)
       returns (inf.study.AssignedSurveys);
   rpc SubmitResponse(SubmitResponseReq) returns (inf.study.AssignedSurveys);
+  // TODO: leave study
 
   // Study management
   rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
@@ -28,6 +30,9 @@ service StudyServiceApi {
   rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (ServiceStatus);
   rpc GetStudySurveyInfos(StudyReferenceReq) returns (SurveyInfoResp);
 
+  // TODO: get studies
+  // TODO: get study infos
+  // TODO: get study survey infos
   // TODO: Update study // manage roles
   // TODO: Archive study
 }
@@ -88,6 +93,13 @@ message SurveyReferenceRequest {
   inf.auth.TokenInfos token = 1;
   string study_key = 2;
   string survey_key = 3;
+}
+
+message PostponeSurveyRequest {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  string survey_key = 3;
+  int64 delay = 4;
 }
 
 message StatusReportRequest {

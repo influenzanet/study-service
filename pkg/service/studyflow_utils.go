@@ -10,12 +10,12 @@ import (
 	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func (s *studyServiceServer) userIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
+func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
 	studySecret, err := s.studyDBservice.GetStudySecretKey(instanceID, studyKey)
 	if err != nil {
 		return "", err
 	}
-	return utils.UserIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret)
+	return utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret)
 }
 
 func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string) bool {
