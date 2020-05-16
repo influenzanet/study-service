@@ -317,7 +317,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	return &resp, nil
 }
 
-func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudyMsg) (*api.ServiceStatus, error) {
+func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudyMsg) (*api.AssignedSurveys, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -341,6 +341,14 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 		ParticipantID: participantID,
 		StudyStatus:   "exited",
 	}
+	// perform study rules/actions
+	currentEvent := types.StudyEvent{
+		Type: "LEAVE",
+	}
+	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
 	_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
 	if err != nil {
@@ -349,9 +357,14 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 
 	log.Println("TODO: set up message to notify user about exiting the study")
 
-	return &api.ServiceStatus{
-		Status:  api.ServiceStatus_NORMAL,
-		Msg:     "study exited",
-		Version: apiVersion,
-	}, nil
+	// Prepare response
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
+	}
+	for _, as := range pState.AssignedSurveys {
+		cs := as.ToAPI()
+		cs.StudyKey = req.StudyKey
+		resp.Surveys = append(resp.Surveys, cs)
+	}
+	return &resp, nil
 }

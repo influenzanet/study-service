@@ -21,7 +21,7 @@ service StudyServiceApi {
   rpc SubmitStatusReport(StatusReportRequest)
       returns (inf.study.AssignedSurveys);
   rpc SubmitResponse(SubmitResponseReq) returns (inf.study.AssignedSurveys);
-  rpc LeaveStudy(LeaveStudyMsg) returns (ServiceStatus);
+  rpc LeaveStudy(LeaveStudyMsg) returns (inf.study.AssignedSurveys);
 
   // Study management
   rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
