@@ -24,6 +24,10 @@ func TestCheckIfParticipantExists(t *testing.T) {
 			ParticipantID: "1",
 			StudyStatus:   "active",
 		},
+		{
+			ParticipantID: "2",
+			StudyStatus:   "terminated",
+		},
 	}
 
 	for _, ps := range pStates {
@@ -36,13 +40,19 @@ func TestCheckIfParticipantExists(t *testing.T) {
 
 	// Tests
 	t.Run("with existing participant", func(t *testing.T) {
-		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1") {
+		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1", "active") {
 			t.Error("should be true if participant exists")
 		}
 	})
 
+	t.Run("with not active participant", func(t *testing.T) {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2", "active") {
+			t.Error("should be false if participant is not active")
+		}
+	})
+
 	t.Run("with not existing participant", func(t *testing.T) {
-		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "3", "active") {
 			t.Error("should be false if participant does not exist")
 		}
 	})
@@ -955,6 +965,135 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
+		}
+	})
+}
+
+func TestLeaveStudyEndpoint(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudies := []types.Study{
+		{
+			Status:    "active",
+			Key:       "studyfor_leave_study",
+			SecretKey: "testsecret",
+		},
+	}
+
+	for _, study := range testStudies {
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testUserID1 := "234234laaabbb3423"
+	testUserID2 := "234234laaabbb3424"
+
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pState1 := types.ParticipantState{
+		ParticipantID: pid1,
+		StudyStatus:   "active",
+		AssignedSurveys: []types.AssignedSurvey{
+			{SurveyKey: "s1"},
+		},
+	}
+	pState2 := types.ParticipantState{
+		ParticipantID: pid2,
+		StudyStatus:   "exited",
+	}
+
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.LeaveStudy(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with wrong study key", func(t *testing.T) {
+		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
+			Token: &api.TokenInfos{
+				InstanceId: testInstanceID,
+				Id:         testUserID1,
+				ProfilId:   testUserID1,
+			},
+			StudyKey: "wrong",
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "mongo: no documents in result")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with already left study", func(t *testing.T) {
+		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
+			Token: &api.TokenInfos{
+				InstanceId: testInstanceID,
+				Id:         testUserID2,
+				ProfilId:   testUserID2,
+			},
+			StudyKey: testStudies[0].Key,
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not active in the study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("leave study", func(t *testing.T) {
+		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
+			Token: &api.TokenInfos{
+				InstanceId: testInstanceID,
+				Id:         testUserID1,
+				ProfilId:   testUserID1,
+			},
+			StudyKey: testStudies[0].Key,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		pState, err := s.studyDBservice.FindParticipantState(testInstanceID, testStudies[0].Key, pid1)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if pState.StudyStatus != "exited" {
+			t.Errorf("unexpected study status: %s", pState.StudyStatus)
 		}
 	})
 }

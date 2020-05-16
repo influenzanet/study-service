@@ -24,7 +24,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// Exists already?
-	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID)
+	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID, "active")
 	if exists {
 		log.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
@@ -315,4 +315,43 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		resp.Surveys = append(resp.Surveys, cs)
 	}
 	return &resp, nil
+}
+
+func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudyMsg) (*api.ServiceStatus, error) {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// ParticipantID
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if pState.StudyStatus != "active" {
+		return nil, status.Error(codes.Internal, "not active in the study")
+	}
+
+	// Init state and perform rules
+	pState = types.ParticipantState{
+		ParticipantID: participantID,
+		StudyStatus:   "exited",
+	}
+
+	_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	log.Println("TODO: set up message to notify user about exiting the study")
+
+	return &api.ServiceStatus{
+		Status:  api.ServiceStatus_NORMAL,
+		Msg:     "study exited",
+		Version: apiVersion,
+	}, nil
 }

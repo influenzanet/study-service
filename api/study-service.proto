@@ -21,7 +21,7 @@ service StudyServiceApi {
   rpc SubmitStatusReport(StatusReportRequest)
       returns (inf.study.AssignedSurveys);
   rpc SubmitResponse(SubmitResponseReq) returns (inf.study.AssignedSurveys);
-  // TODO: leave study
+  rpc LeaveStudy(LeaveStudyMsg) returns (ServiceStatus);
 
   // Study management
   rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
@@ -85,6 +85,11 @@ message SubmitResponseReq {
 }
 
 message EnterStudyRequest {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+}
+
+message LeaveStudyMsg {
   inf.auth.TokenInfos token = 1;
   string study_key = 2;
 }

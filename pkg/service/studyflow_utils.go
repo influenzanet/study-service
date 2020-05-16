@@ -18,8 +18,11 @@ func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKe
 	return utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret)
 }
 
-func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string) bool {
-	_, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
+func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string, withStatus string) bool {
+	pState, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
+	if err != nil || (withStatus != "" && pState.StudyStatus != withStatus) {
+		return false
+	}
 	return err == nil
 }
 
