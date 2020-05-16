@@ -58,7 +58,7 @@ func setupTestDBService() {
 }
 
 func dropTestDB() {
-	log.Println("Drop test database: globaldb package")
+	log.Println("Drop test database: studydb package")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
