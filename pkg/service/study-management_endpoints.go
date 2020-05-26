@@ -35,6 +35,14 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	return cStudy.ToAPI(), nil
 }
 
+func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api.TokenInfos) (*api.Studies, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
+
+func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.Study, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
+
 func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.Survey, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Survey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -55,6 +63,10 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	}
 
 	return createdSurvey.ToAPI(), nil
+}
+
+func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.Survey, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
 func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.ServiceStatus, error) {

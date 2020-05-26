@@ -96,6 +96,24 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 
 }
 
+func TestGetAllStudiesEndpoint(t *testing.T) {
+	// add test study
+	// with nil
+	// with empty
+	// with non admin user
+	// with valid request
+	t.Error("test unimplemented")
+}
+
+func TestGetStudyEndpoint(t *testing.T) {
+	// add test study
+	// with nil
+	// with empty
+	// with non admin user
+	// with valid request
+	t.Error("test unimplemented")
+}
+
 func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
@@ -189,6 +207,16 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			t.Error("unexpected survey key")
 		}
 	})
+}
+
+func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
+	// add study with survey in it
+	// with nil
+	// with empty
+	// with wrong survey key
+	// with non admin user
+	// with valid request
+	t.Error("test unimplemented")
 }
 
 func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
