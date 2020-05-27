@@ -148,20 +148,70 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 }
 
 func TestGetActiveStudiesEndpoint(t *testing.T) {
-	/*s := studyServiceServer{
+	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
-	}*/
-	// create study for user in it
-	// create archived study for user in it
-	// create study for user not in it
-	// create archived study for user not in it
+	}
+	testStudies := []types.Study{
+		{
+			Status:    "active",
+			Key:       "studyfor_getactivestudies_1",
+			SecretKey: "testsecret",
+		}, {
+			Status:    "archived",
+			Key:       "studyfor_getactivestudies_2",
+			SecretKey: "testsecret2",
+		}, {
+			Status:    "active",
+			Key:       "studyfor_getactivestudies_3",
+			SecretKey: "testsecret3",
+		}, {
+			Status:    "active",
+			Key:       "studyfor_getactivestudies_4",
+			SecretKey: "testsecret4",
+		},
+	}
 
-	// test with nil
-	// test with empty
-	// test with valid user token
-	t.Error("test unimplemented")
+	for _, study := range testStudies {
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.GetActiveStudies(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.GetActiveStudies(context.Background(), &api.TokenInfos{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with valid request", func(t *testing.T) {
+		resp, err := s.GetActiveStudies(context.Background(), &api.TokenInfos{
+			Id:              "userid",
+			InstanceId:      testInstanceID,
+			ProfilId:        "testProfileID1",
+			OtherProfileIds: []string{"testProfileID2"},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(resp.Studies) < 3 {
+			t.Errorf("unexpected number of studies: %d", len(resp.Studies))
+		}
+	})
 }
 func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 	/*s := studyServiceServer{

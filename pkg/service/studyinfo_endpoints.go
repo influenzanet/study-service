@@ -59,9 +59,31 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 }
 
 func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api.TokenInfos) (*api.Studies, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	if req == nil || utils.IsTokenEmpty(req) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", false)
+	if err != nil {
+		log.Printf("GetActiveStudies.GetStudiesByStatus: %v", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.Studies{Studies: []*api.Study{}}
+	for _, study := range studies {
+		// at least one profile in the study:
+		resp.Studies = append(resp.Studies, &api.Study{
+			Key:    study.Key,
+			Status: study.Status,
+			Props:  study.Props.ToAPI(),
+		})
+
+	}
+	return resp, nil
 }
 
 func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Context, req *api.ProfilesWithConditionReq) (*api.AssignedSurveys, error) {
+	// check if study has participant
+	// check if participant state satisifies conditions
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
