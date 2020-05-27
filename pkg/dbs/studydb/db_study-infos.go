@@ -29,7 +29,10 @@ func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status st
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	filter := bson.M{"status": status}
+	filter := bson.M{}
+	if len(status) > 0 {
+		filter["status"] = status
+	}
 
 	var opts *options.FindOptions
 	if onlyKeys {

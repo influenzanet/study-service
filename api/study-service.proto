@@ -25,7 +25,7 @@ service StudyServiceApi {
   rpc LeaveStudy(LeaveStudyMsg) returns (inf.study.AssignedSurveys);
 
   // for all profiles (also not active studies):
-  rpc GetStudiesForUser(inf.auth.TokenInfos) returns (Studies);
+  rpc GetStudiesForUser(GetStudiesForUserReq) returns (Studies);
   // all active studies even if user not in:
   rpc GetActiveStudies(inf.auth.TokenInfos) returns (Studies);
   // get info about surveys in a study:
@@ -127,5 +127,7 @@ message StatusReportRequest {
   inf.auth.TokenInfos token = 1;
   inf.survey_response.SurveyResponse status_survey = 2;
 }
+
+message GetStudiesForUserReq { inf.auth.TokenInfos token = 1; }
 
 message Studies { repeated inf.study.Study studies = 1; }

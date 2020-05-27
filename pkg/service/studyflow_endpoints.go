@@ -355,8 +355,6 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	log.Println("TODO: set up message to notify user about exiting the study")
-
 	// Prepare response
 	resp := api.AssignedSurveys{
 		Surveys: []*api.AssignedSurvey{},
