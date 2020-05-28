@@ -36,11 +36,52 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 }
 
 func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api.TokenInfos) (*api.Studies, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	if req == nil || utils.IsTokenEmpty(req) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !utils.CheckIfAnyRolesInToken(req, []string{"RESEARCHER", "ADMIN"}) {
+		return nil, status.Error(codes.Unauthenticated, "not authorized")
+	}
+
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "", false)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.Studies{
+		Studies: []*api.Study{},
+	}
+	for _, study := range studies {
+		if !utils.CheckIfMember(req.Id, study.Members, []string{"maintainer", "owner"}) {
+			// don't share secret key if not study admin
+			study.SecretKey = ""
+		}
+		resp.Studies = append(resp.Studies, study.ToAPI())
+	}
+	return resp, nil
 }
 
 func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.Study, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+		return nil, status.Error(codes.Unauthenticated, "not authorized")
+	}
+
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if !utils.CheckIfMember(req.Token.Id, study.Members, []string{"maintainer", "owner"}) {
+		// don't share secret key if not study admin
+		study.SecretKey = ""
+	}
+
+	return study.ToAPI(), nil
 }
 
 func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.Survey, error) {
@@ -96,7 +137,7 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	surveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, true)
+	surveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

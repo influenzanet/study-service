@@ -97,21 +97,159 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 }
 
 func TestGetAllStudiesEndpoint(t *testing.T) {
-	// add test study
-	// with nil
-	// with empty
-	// with non admin user
-	// with valid request
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_getallstudies"
+	testUser := "testuser"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUser,
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.GetAllStudies(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.GetAllStudies(context.Background(), &api.TokenInfos{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non admin user", func(t *testing.T) {
+		_, err := s.GetAllStudies(context.Background(), &api.TokenInfos{
+			Id:         "user",
+			InstanceId: testInstanceID,
+			Payload: map[string]string{
+				"roles":    "PARTICIPANT",
+				"username": "testuser",
+			},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with researcher user", func(t *testing.T) {
+		resp, err := s.GetAllStudies(context.Background(), &api.TokenInfos{
+			Id:         "user",
+			InstanceId: testInstanceID,
+			Payload: map[string]string{
+				"roles":    "PARTICIPANT,RESEARCHER",
+				"username": "testuser",
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Studies) < 1 {
+			t.Error("at least one study should be there")
+		}
+	})
 }
 
 func TestGetStudyEndpoint(t *testing.T) {
-	// add test study
-	// with nil
-	// with empty
-	// with non admin user
-	// with valid request
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_getstudy"
+	testUser := "testuser"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUser,
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.GetStudy(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non admin user", func(t *testing.T) {
+		_, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with researcher user", func(t *testing.T) {
+		resp, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Members) < 1 {
+			t.Error("at least one study member should be there")
+		}
+	})
 }
 
 func TestSaveSurveyToStudyEndpoint(t *testing.T) {
