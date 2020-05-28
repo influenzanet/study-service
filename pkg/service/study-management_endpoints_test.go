@@ -348,13 +348,105 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 }
 
 func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
-	// add study with survey in it
-	// with nil
-	// with empty
-	// with wrong survey key
-	// with non admin user
-	// with valid request
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_getsurveydef"
+	testUser := "testuser"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUser,
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	testSurveys := []types.Survey{
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
+		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
+	}
+	for _, s := range testSurveys {
+		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.GetSurveyDefForStudy(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+	t.Run("as non study member", func(t *testing.T) {
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+			Token: &api.TokenInfos{
+				Id:         testUser + "wrong",
+				InstanceId: testInstanceID,
+			},
+			StudyKey:  testStudyKey,
+			SurveyKey: "1",
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with not existing survey", func(t *testing.T) {
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey:  testStudyKey + "wrong",
+			SurveyKey: "1",
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with correct inputs", func(t *testing.T) {
+		resp, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey:  testStudyKey,
+			SurveyKey: "1",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if resp.Current.SurveyDefinition.Key != "1" {
+			t.Errorf("unexpected survey def: %v", resp)
+		}
+	})
 }
 
 func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {

@@ -107,7 +107,23 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 }
 
 func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.Survey, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	members, err := s.studyDBservice.GetStudyMembers(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	if !utils.CheckIfMember(req.Token.Id, members, []string{"maintainer", "owner"}) {
+		return nil, status.Error(codes.Unauthenticated, "not authorized to access this study")
+	}
+
+	survey, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return survey.ToAPI(), nil
 }
 
 func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.ServiceStatus, error) {
