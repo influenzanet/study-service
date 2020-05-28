@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -214,17 +215,160 @@ func TestGetActiveStudiesEndpoint(t *testing.T) {
 	})
 }
 func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
-	/*s := studyServiceServer{
+	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
-	}*/
-	// create study for user in it
+	}
 
-	// test with nil
-	// test with empty
-	// test with user profiles not in the study
-	// test with profiles not fulfilling condition
-	// test with profiles mathing conditions
-	t.Error("test unimplemented")
+	// create study for user in it
+	testStudies := []types.Study{
+		{
+			Status:    "active",
+			Key:       "studyfor_hasParticipantWithConditionStudies_1",
+			SecretKey: "testsecret",
+		},
+	}
+
+	for _, study := range testStudies {
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testProfileID1 := "234234laaabbb3423_for_hasProf_1"
+	testProfileID2 := "234234laaabbb3423_for_hasProf_2"
+
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pState1 := types.ParticipantState{
+		ParticipantID: pid1,
+		StudyStatus:   "active",
+		LastSubmissions: map[string]int64{
+			"s3": time.Now().Unix() - 20,
+		},
+		AssignedSurveys: []types.AssignedSurvey{
+			{SurveyKey: "s1"},
+		},
+	}
+
+	pState2 := types.ParticipantState{
+		ParticipantID: pid2,
+		StudyStatus:   "exited",
+	}
+
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with user profiles not in the study", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{
+			ProfileIds: []string{"notthere1", "notthere2"},
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+			Condition:  &api.ExpressionArg{Dtype: "num", Data: &api.ExpressionArg_Num{Num: 1}},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "no participant found")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with profiles not fulfilling condition", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{
+			ProfileIds: []string{testProfileID2},
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+			Condition: &api.ExpressionArg{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{
+				Name: "hasStudyStatus",
+				Data: []*api.ExpressionArg{
+					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: "active"}},
+				},
+			}}},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "no participant found")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with hardcoded condition", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{
+			ProfileIds: []string{testProfileID1},
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+			Condition:  &api.ExpressionArg{Dtype: "num", Data: &api.ExpressionArg_Num{Num: 1}},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+	})
+
+	t.Run("with profiles fulfilling condition", func(t *testing.T) {
+		_, err := s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{
+			ProfileIds: []string{testProfileID1},
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+			Condition: &api.ExpressionArg{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{
+				Name: "lastSubmissionDateOlderThan",
+				Data: []*api.ExpressionArg{
+					{Dtype: "num", Data: &api.ExpressionArg_Num{Num: 10}},
+					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: "s3"}},
+				},
+			}}},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+
+		_, err = s.HasParticipantStateWithCondition(context.Background(), &api.ProfilesWithConditionReq{
+			ProfileIds: []string{testProfileID2},
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+			Condition: &api.ExpressionArg{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{
+				Name: "hasStudyStatus",
+				Data: []*api.ExpressionArg{
+					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: "exited"}},
+				},
+			}}},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	})
 }
