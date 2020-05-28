@@ -59,11 +59,11 @@ func updateLastSubmissionForSurvey(oldState types.ParticipantState, event types.
 	return
 }
 
-func checkCondition(condition types.ExpressionArg, evalContext evalContext) bool {
+func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool {
 	if !condition.IsExpression() {
 		return condition.Num != 0
 	}
-	val, err := ExpressionEval(*condition.Exp, evalContext)
+	val, err := ExpressionEval(*condition.Exp, EvalContext)
 	bVal, ok := val.(bool)
 	return bVal && ok && err == nil
 }
@@ -74,11 +74,11 @@ func ifThenAction(action types.Expression, oldState types.ParticipantState, even
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	if !checkCondition(action.Data[0], evalContext) {
+	if !checkCondition(action.Data[0], EvalContext) {
 		return
 	}
 	for _, action := range action.Data[1:] {
@@ -98,11 +98,11 @@ func updateStudyStatusAction(action types.Expression, oldState types.Participant
 	if len(action.Data) != 1 {
 		return newState, errors.New("updateStudyStatusAction must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
@@ -122,15 +122,15 @@ func updateFlagAction(action types.Expression, oldState types.ParticipantState, 
 	if len(action.Data) != 2 {
 		return newState, errors.New("updateFlagAction must have exactly two arguments")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
-	v, err := evalContext.expressionArgResolver(action.Data[1])
+	v, err := EvalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
 		return newState, err
 	}
@@ -154,11 +154,11 @@ func removeFlagAction(action types.Expression, oldState types.ParticipantState, 
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeFlagAction must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
@@ -178,19 +178,19 @@ func addNewSurveyAction(action types.Expression, oldState types.ParticipantState
 	if len(action.Data) != 3 {
 		return newState, errors.New("addNewSurveyAction must have exactly three arguments")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
-	start, err := evalContext.expressionArgResolver(action.Data[1])
+	start, err := EvalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
 		return newState, err
 	}
-	end, err := evalContext.expressionArgResolver(action.Data[2])
+	end, err := EvalContext.expressionArgResolver(action.Data[2])
 	if err != nil {
 		return newState, err
 	}
@@ -229,15 +229,15 @@ func removeSurveyByKey(action types.Expression, oldState types.ParticipantState,
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeSurveyByKey must have exactly two arguments")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
-	pos, err := evalContext.expressionArgResolver(action.Data[1])
+	pos, err := EvalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
 		return newState, err
 	}
@@ -288,11 +288,11 @@ func removeSurveysByKey(action types.Expression, oldState types.ParticipantState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeSurveysByKey must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
@@ -319,11 +319,11 @@ func addReport(action types.Expression, oldState types.ParticipantState, event t
 	if len(action.Data) != 1 {
 		return newState, errors.New("addReport must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
@@ -358,15 +358,15 @@ func removeReportByKey(action types.Expression, oldState types.ParticipantState,
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeReportByKey must have exactly two arguments")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}
-	pos, err := evalContext.expressionArgResolver(action.Data[1])
+	pos, err := EvalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
 		return newState, err
 	}
@@ -417,11 +417,11 @@ func removeReportsByKey(action types.Expression, oldState types.ParticipantState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeReportsByKey must have exactly one argument")
 	}
-	evalContext := evalContext{
-		event:            event,
-		participantState: newState,
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
 	}
-	k, err := evalContext.expressionArgResolver(action.Data[0])
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
 		return newState, err
 	}

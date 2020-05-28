@@ -9,18 +9,20 @@ import (
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
-// evalContext contains all the data that can be looked up by expressions
-type evalContext struct {
-	event            types.StudyEvent
-	participantState types.ParticipantState
+// EvalContext contains all the data that can be looked up by expressions
+type EvalContext struct {
+	Event            types.StudyEvent
+	ParticipantState types.ParticipantState
 }
 
-func ExpressionEval(expression types.Expression, evalCtx evalContext) (val interface{}, err error) {
+func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val interface{}, err error) {
 	switch expression.Name {
 	case "checkEventType":
 		val, err = evalCtx.checkEventType(expression)
 	case "checkSurveyResponseKey":
 		val, err = evalCtx.checkSurveyResponseKey(expression)
+	case "hasStudyStatus":
+		val, err = evalCtx.hasStudyStatus(expression)
 	case "eq":
 		val, err = evalCtx.eq(expression)
 	case "lt":
@@ -46,7 +48,7 @@ func ExpressionEval(expression types.Expression, evalCtx evalContext) (val inter
 	return
 }
 
-func (ctx evalContext) expressionArgResolver(arg types.ExpressionArg) (interface{}, error) {
+func (ctx EvalContext) expressionArgResolver(arg types.ExpressionArg) (interface{}, error) {
 	switch arg.DType {
 	case "num":
 		return arg.Num, nil
@@ -60,7 +62,7 @@ func (ctx evalContext) expressionArgResolver(arg types.ExpressionArg) (interface
 }
 
 // checkEventType compares the eventType with a string
-func (ctx evalContext) checkEventType(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) checkEventType(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -74,11 +76,11 @@ func (ctx evalContext) checkEventType(exp types.Expression) (val bool, err error
 		return val, errors.New("could not cast arguments")
 	}
 
-	return ctx.event.Type == arg1Val, nil
+	return ctx.Event.Type == arg1Val, nil
 }
 
 // checkSurveyResponseKey compares the key of the submitted survey response (if any)
-func (ctx evalContext) checkSurveyResponseKey(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) checkSurveyResponseKey(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -92,10 +94,27 @@ func (ctx evalContext) checkSurveyResponseKey(exp types.Expression) (val bool, e
 		return val, errors.New("could not cast arguments")
 	}
 
-	return ctx.event.Response.Key == arg1Val, nil
+	return ctx.Event.Response.Key == arg1Val, nil
 }
 
-func (ctx evalContext) eq(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+}
+
+func (ctx EvalContext) eq(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -127,7 +146,7 @@ func (ctx evalContext) eq(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) lt(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) lt(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -159,7 +178,7 @@ func (ctx evalContext) lt(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) lte(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) lte(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -191,7 +210,7 @@ func (ctx evalContext) lte(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) gt(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) gt(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -223,7 +242,7 @@ func (ctx evalContext) gt(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) gte(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) gte(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 2 {
 		return val, errors.New("not expected numbers of arguments")
 	}
@@ -255,7 +274,7 @@ func (ctx evalContext) gte(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx evalContext) and(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) and(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) < 2 {
 		return val, errors.New("should have at least two arguments")
 	}
@@ -279,7 +298,7 @@ func (ctx evalContext) and(exp types.Expression) (val bool, err error) {
 	return true, nil
 }
 
-func (ctx evalContext) or(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) or(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) < 2 {
 		return val, errors.New("should have at least two arguments")
 	}
@@ -303,7 +322,7 @@ func (ctx evalContext) or(exp types.Expression) (val bool, err error) {
 	return false, nil
 }
 
-func (ctx evalContext) not(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) not(exp types.Expression) (val bool, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("should have one argument")
 	}
@@ -324,7 +343,7 @@ func (ctx evalContext) not(exp types.Expression) (val bool, err error) {
 	return
 }
 
-func (ctx evalContext) timestampWithOffset(exp types.Expression) (t float64, err error) {
+func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err error) {
 	if len(exp.Data) != 1 {
 		return t, errors.New("should have one argument")
 	}

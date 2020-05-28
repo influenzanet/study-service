@@ -14,10 +14,10 @@ func TestEvalCheckEventType(t *testing.T) {
 	}}
 
 	t.Run("for matching", func(t *testing.T) {
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "ENTER"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "ENTER"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -28,10 +28,10 @@ func TestEvalCheckEventType(t *testing.T) {
 	})
 
 	t.Run("for not matching", func(t *testing.T) {
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "enter"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "enter"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -48,10 +48,10 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 	}}
 
 	t.Run("for no survey responses at all", func(t *testing.T) {
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "SUBMIT"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "SUBMIT"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -62,8 +62,8 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 	})
 
 	t.Run("not matching key", func(t *testing.T) {
-		evalContext := evalContext{
-			event: types.StudyEvent{
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{
 				Type: "SUBMIT",
 				Response: types.SurveyResponse{
 					Key:       "intake",
@@ -71,7 +71,7 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 				},
 			},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -82,8 +82,8 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 	})
 
 	t.Run("for matching key", func(t *testing.T) {
-		evalContext := evalContext{
-			event: types.StudyEvent{
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{
 				Type: "SUBMIT",
 				Response: types.SurveyResponse{
 					Key:       "weekly",
@@ -91,7 +91,7 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 				},
 			},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -102,8 +102,40 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 	})
 }
 
-func TestEvalGetParticipantState(t *testing.T) {
-	t.Run("with normal state", func(t *testing.T) { t.Error("test unimplemented") })
+func TestEvalHasStudyStatus(t *testing.T) {
+	t.Run("with not matching state", func(t *testing.T) {
+		exp := types.Expression{Name: "hasStudyStatus", Data: []types.ExpressionArg{
+			{DType: "str", Str: "exited"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: "active"},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+	})
+
+	t.Run("with matching state", func(t *testing.T) {
+		exp := types.Expression{Name: "hasStudyStatus", Data: []types.ExpressionArg{
+			{DType: "str", Str: "active"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: "active"},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+	})
 }
 
 // Comparisons
@@ -113,10 +145,10 @@ func TestEvalEq(t *testing.T) {
 			{DType: "num", Num: 23},
 			{DType: "num", Num: 23},
 		}}
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "TIMER"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "TIMER"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -131,10 +163,10 @@ func TestEvalEq(t *testing.T) {
 			{DType: "num", Num: 13},
 			{DType: "num", Num: 23},
 		}}
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "enter"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "enter"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -149,10 +181,10 @@ func TestEvalEq(t *testing.T) {
 			{DType: "str", Str: "enter"},
 			{DType: "str", Str: "enter"},
 		}}
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "enter"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "enter"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -167,10 +199,10 @@ func TestEvalEq(t *testing.T) {
 			{DType: "str", Str: "enter"},
 			{DType: "str", Str: "time..."},
 		}}
-		evalContext := evalContext{
-			event: types.StudyEvent{Type: "enter"},
+		EvalContext := EvalContext{
+			Event: types.StudyEvent{Type: "enter"},
 		}
-		ret, err := ExpressionEval(exp, evalContext)
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -187,8 +219,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -203,8 +235,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -219,8 +251,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -235,8 +267,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -251,8 +283,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -267,8 +299,8 @@ func TestEvalLT(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -285,8 +317,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -301,8 +333,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -317,8 +349,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -333,8 +365,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -349,8 +381,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -365,8 +397,8 @@ func TestEvalLTE(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -383,8 +415,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -399,8 +431,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -415,8 +447,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -431,8 +463,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -447,8 +479,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -463,8 +495,8 @@ func TestEvalGT(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -481,8 +513,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -497,8 +529,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "num", Num: 2},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -513,8 +545,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 2},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -529,8 +561,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "str", Str: "a"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -545,8 +577,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "b"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -561,8 +593,8 @@ func TestEvalGTE(t *testing.T) {
 			{DType: "str", Str: "b"},
 			{DType: "str", Str: "a"},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -580,8 +612,8 @@ func TestEvalAND(t *testing.T) {
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 0},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -596,8 +628,8 @@ func TestEvalAND(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 0},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -612,8 +644,8 @@ func TestEvalAND(t *testing.T) {
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -628,8 +660,8 @@ func TestEvalAND(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -646,8 +678,8 @@ func TestEvalOR(t *testing.T) {
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 0},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -662,8 +694,8 @@ func TestEvalOR(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 0},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -678,8 +710,8 @@ func TestEvalOR(t *testing.T) {
 			{DType: "num", Num: 0},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -694,8 +726,8 @@ func TestEvalOR(t *testing.T) {
 			{DType: "num", Num: 1},
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -711,8 +743,8 @@ func TestEvalNOT(t *testing.T) {
 		exp := types.Expression{Name: "not", Data: []types.ExpressionArg{
 			{DType: "num", Num: 0},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -725,8 +757,8 @@ func TestEvalNOT(t *testing.T) {
 		exp := types.Expression{Name: "not", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -742,8 +774,8 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
 			{DType: "num", Num: 10},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -758,8 +790,8 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
 			{DType: "num", Num: -10},
 		}}
-		evalContext := evalContext{}
-		ret, err := ExpressionEval(exp, evalContext)
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
