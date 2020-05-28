@@ -23,6 +23,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.checkSurveyResponseKey(expression)
 	case "hasStudyStatus":
 		val, err = evalCtx.hasStudyStatus(expression)
+	case "lastSubmissionDateOlderThan":
+		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
 	case "eq":
 		val, err = evalCtx.eq(expression)
 	case "lt":
@@ -112,6 +114,46 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 	}
 
 	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+}
+
+func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 && len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(float64)
+	if !ok {
+		return val, errors.New("could not cast argument 1")
+	}
+
+	refTime := time.Now().Unix() - int64(arg1Val)
+	if len(exp.Data) == 2 {
+		arg2, err := ctx.expressionArgResolver(exp.Data[1])
+		if err != nil {
+			return val, err
+		}
+		arg2Val, ok := arg2.(string)
+		if !ok {
+			return val, errors.New("could not cast arguments")
+		}
+		lastTs, ok := ctx.ParticipantState.LastSubmissions[arg2Val]
+		if !ok {
+			return false, nil
+		}
+		return lastTs < refTime, nil
+
+	} else {
+		for _, lastTs := range ctx.ParticipantState.LastSubmissions {
+			if lastTs > refTime {
+				return false, nil
+			}
+		}
+	}
+	return true, nil
 }
 
 func (ctx EvalContext) eq(exp types.Expression) (val bool, err error) {
