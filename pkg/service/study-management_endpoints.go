@@ -89,12 +89,9 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	members, err := s.studyDBservice.GetStudyMembers(req.Token.InstanceId, req.StudyKey)
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-	}
-	if !utils.CheckIfMember(req.Token.Id, members, []string{"maintainer", "owner"}) {
-		return nil, status.Error(codes.Unauthenticated, "not authorized to access this study")
 	}
 
 	newSurvey := types.SurveyFromAPI(req.Survey)
@@ -111,12 +108,9 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	members, err := s.studyDBservice.GetStudyMembers(req.Token.InstanceId, req.StudyKey)
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-	}
-	if !utils.CheckIfMember(req.Token.Id, members, []string{"maintainer", "owner"}) {
-		return nil, status.Error(codes.Unauthenticated, "not authorized to access this study")
 	}
 
 	survey, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
@@ -131,13 +125,11 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	members, err := s.studyDBservice.GetStudyMembers(req.Token.InstanceId, req.StudyKey)
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if !utils.CheckIfMember(req.Token.Id, members, []string{"maintainer", "owner"}) {
-		return nil, status.Error(codes.Unauthenticated, "not authorized to access this study")
-	}
+
 	err = s.studyDBservice.RemoveSurveyFromStudy(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

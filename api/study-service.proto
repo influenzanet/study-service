@@ -44,6 +44,26 @@ service StudyServiceApi {
   rpc GetSurveyDefForStudy(SurveyReferenceRequest) returns (inf.survey.Survey);
   rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (ServiceStatus);
   // <---
+
+  rpc GetStudyResponseStatistics(StudyReferenceReq)
+      returns (StudyResponseStatistics);
+  rpc StreamStudyResponses(SurveyResponseQuery)
+      returns (stream inf.survey_response.SurveyResponse);
+}
+
+message SurveyResponseQuery {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  string survey_key = 3;
+  int64 from = 4;
+  int64 until = 5;
+  // to query specific survey engine versions for example:
+  map<string, string> context_query = 6;
+}
+
+message StudyResponseStatistics {
+  string study_key = 1;
+  map<string, int64> survey_response_counts = 6;
 }
 
 message ProfilesWithConditionReq {
