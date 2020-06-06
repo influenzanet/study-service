@@ -12,6 +12,8 @@ message SurveyResponse {
       5; // e.g. to store location and other context data
 }
 
+message SurveyResponses { SurveyResponse responses = 1; }
+
 message SurveyItemResponse {
   string key = 1; // reference to the item
   ResponseMeta meta = 2;
