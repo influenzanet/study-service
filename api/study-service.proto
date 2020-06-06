@@ -45,7 +45,7 @@ service StudyServiceApi {
   rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (ServiceStatus);
   // <---
 
-  rpc GetStudyResponseStatistics(StudyReferenceReq)
+  rpc GetStudyResponseStatistics(SurveyResponseQuery)
       returns (StudyResponseStatistics);
   rpc StreamStudyResponses(SurveyResponseQuery)
       returns (stream inf.survey_response.SurveyResponse);

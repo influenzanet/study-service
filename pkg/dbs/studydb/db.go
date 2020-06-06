@@ -62,10 +62,6 @@ func (dbService *StudyDBService) collectionRefStudySurveys(instanceID string, st
 	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_surveys")
 }
 
-func (dbService *StudyDBService) collectionRefStudyMessageBoard(instanceID string, studyKey string) *mongo.Collection {
-	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_messageBoard")
-}
-
 func (dbService *StudyDBService) collectionRefSurveyResponses(instanceID string, studyKey string) *mongo.Collection {
 	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_surveyResponses")
 }

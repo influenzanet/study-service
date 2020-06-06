@@ -2,6 +2,7 @@ package studydb
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -78,4 +79,53 @@ func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey
 	}
 
 	return responses, nil
+}
+
+func (dbService *StudyDBService) GetSurveyResponseKeys(instanceID string, studyKey string, from int64, until int64) (keys []string, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{}
+
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": from}},
+			bson.M{"submittedAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["submittedAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": until}
+	}
+
+	k, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Distinct(ctx, "key", filter)
+	if err != nil {
+		return keys, err
+	}
+	keys = make([]string, len(k))
+	for i, v := range k {
+		keys[i] = fmt.Sprint(v)
+	}
+	return keys, err
+}
+
+func (dbService *StudyDBService) CountSurveyResponsesByKey(instanceID string, studyKey string, surveyKey string, from int64, until int64) (count int64, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{}
+	filter["key"] = surveyKey
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": from}},
+			bson.M{"submittedAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["submittedAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": until}
+	}
+
+	count, err = dbService.collectionRefSurveyResponses(instanceID, studyKey).CountDocuments(ctx, filter)
+	return count, err
 }
