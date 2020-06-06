@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -51,5 +53,25 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	return status.Error(codes.Unimplemented, "unimplemented")
+	sendResponseOverGrpc := func(instanceID string, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+		if len(args) != 1 {
+			return errors.New("StreamStudyResponses callback: unexpected number of args")
+		}
+		stream, ok := args[0].(api.StudyServiceApi_StreamStudyResponsesServer)
+		if !ok {
+			return errors.New(("StreamStudyResponses callback: can't parse stream"))
+		}
+
+		if err := stream.Send(response.ToAPI()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err = s.studyDBservice.PerfomActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
+		sendResponseOverGrpc, stream)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	return nil
 }

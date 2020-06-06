@@ -7,6 +7,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
+	"google.golang.org/grpc"
 )
 
 func addTestSurveyResponses(studyDBservice *studydb.StudyDBService, instID string, studyKey string, repsonses []types.SurveyResponse) error {
@@ -190,6 +191,16 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 }
 
+type studyServiceAPI_StreamSurveyResponses struct {
+	grpc.ServerStream
+	Results []*api.SurveyResponse
+}
+
+func (_m *studyServiceAPI_StreamSurveyResponses) Send(r *api.SurveyResponse) error {
+	_m.Results = append(_m.Results, r)
+	return nil
+}
+
 func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
@@ -230,12 +241,123 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 		return
 	}
 
-	// with nil
-	// with empty
-	// with non-study member
-	// with spec. survey key
-	// with from
-	// with until
-	// with all query params
-	t.Error("test unimplemented")
+	t.Run("with missing request", func(t *testing.T) {
+		err := s.StreamStudyResponses(nil, nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{}
+		err := s.StreamStudyResponses(req, mock)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("as non study member", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{
+			Token: &api.TokenInfos{
+				Id:         testUser + "wrong",
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudyKey,
+		}
+		err := s.StreamStudyResponses(req, mock)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with spec. survey key", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey:  testStudyKey,
+			SurveyKey: "key2",
+		}
+		err := s.StreamStudyResponses(req, mock)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(mock.Results) != 2 {
+			t.Errorf("unexpected number of responses: %d", len(mock.Results))
+			return
+		}
+	})
+
+	t.Run("with from", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudyKey,
+			From:     13,
+		}
+		err := s.StreamStudyResponses(req, mock)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(mock.Results) != 3 {
+			t.Errorf("unexpected number of responses: %d", len(mock.Results))
+			return
+		}
+	})
+
+	t.Run("with until", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey: testStudyKey,
+			Until:    11,
+		}
+		err := s.StreamStudyResponses(req, mock)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(mock.Results) != 2 {
+			t.Errorf("unexpected number of responses: %d", len(mock.Results))
+			return
+		}
+	})
+
+	t.Run("with all query params", func(t *testing.T) {
+		mock := &studyServiceAPI_StreamSurveyResponses{}
+		req := &api.SurveyResponseQuery{
+			Token: &api.TokenInfos{
+				Id:         testUser,
+				InstanceId: testInstanceID,
+			},
+			StudyKey:  testStudyKey,
+			SurveyKey: "key2",
+			From:      11,
+			Until:     19,
+		}
+		err := s.StreamStudyResponses(req, mock)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(mock.Results) != 1 {
+			t.Errorf("unexpected number of responses: %d", len(mock.Results))
+			return
+		}
+	})
 }
