@@ -201,14 +201,30 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 }
 
 func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	for i, m := range study.Members {
+		if m.UserID == req.Member.UserId {
+			study.Members = append(study.Members[:i], study.Members[i+1:]...)
+			break
+		}
+	}
+
+	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return uStudy.ToAPI(), nil
 }
 
 func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyRulesReq) (*api.Study, error) {

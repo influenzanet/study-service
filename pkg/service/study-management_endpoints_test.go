@@ -796,7 +796,7 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
-		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
+		resp, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
@@ -815,7 +815,7 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 			return
 		}
 		if len(resp.Members) != 1 {
-			t.Error("unexpected number of members")
+			t.Errorf("unexpected number of members: %d", len(resp.Members))
 		}
 	})
 }
