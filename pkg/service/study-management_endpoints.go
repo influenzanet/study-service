@@ -261,7 +261,15 @@ func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.Study
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	err = s.studyDBservice.UpdateStudyStatus(req.Token.InstanceId, req.StudyKey, req.NewStatus)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return study.ToAPI(), nil
 }
 
 func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyPropsReq) (*api.Study, error) {
@@ -272,6 +280,7 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
