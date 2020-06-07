@@ -125,7 +125,6 @@ func (dbService *StudyDBService) GetStudyRules(instanceID string, studyKey strin
 	return study.Rules, nil
 }
 
-// saveParticipantStateDB creates or replaces the participant states in the DB
 func (dbService *StudyDBService) CreateStudy(instanceID string, study types.Study) (types.Study, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
@@ -141,6 +140,21 @@ func (dbService *StudyDBService) CreateStudy(instanceID string, study types.Stud
 		study.ID = id
 	}
 	return study, err
+}
+
+func (dbService *StudyDBService) DeleteStudy(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{"key": studyKey}
+	res, err := dbService.collectionRefStudyInfos(instanceID).DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount < 1 {
+		return errors.New("nothing deleted")
+	}
+	return nil
 }
 
 func (dbService *StudyDBService) UpdateStudyKey(instanceID string, oldKey string, newKey string) error {

@@ -303,5 +303,13 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+
+	err = s.studyDBservice.DeleteStudy(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+		Msg:    "study deleted",
+	}, nil
 }
