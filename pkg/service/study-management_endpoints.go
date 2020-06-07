@@ -169,10 +169,13 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"ADMIN"}) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
+
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 

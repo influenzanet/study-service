@@ -609,52 +609,572 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 }
 
 func TestSaveStudyMemberEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member and non admin
-	// with non study member but admin
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_savemember"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.SaveStudyMember(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member non admin user", func(t *testing.T) {
+		_, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+			Member: &api.Study_Member{
+				Role:     "analyst",
+				UserId:   "newid",
+				Username: "new user",
+			},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member but admin user", func(t *testing.T) {
+		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+			Member: &api.Study_Member{
+				Role:     "maintainer",
+				UserId:   "newid",
+				Username: "new user",
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Members) != 2 {
+			t.Error("unexpected number of members")
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+			Member: &api.Study_Member{
+				Role:     "test",
+				UserId:   "newid",
+				Username: "new user",
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Members) != 2 {
+			t.Error("unexpected number of members")
+			return
+		}
+		if resp.Members[1].Role != "test" {
+			t.Error("unexpected role in updated member")
+		}
+	})
 }
 
 func TestRemoveStudyMemberEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member and non admin
-	// with non study member but admin
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_removemember"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+			{
+				UserID: "userid2",
+				Role:   "maintainer",
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.RemoveStudyMember(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		_, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+			Member: &api.Study_Member{
+				UserId: "userid2",
+			},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with study member", func(t *testing.T) {
+		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+			Member: &api.Study_Member{
+				UserId: "userid2",
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Members) != 1 {
+			t.Error("unexpected number of members")
+		}
+	})
 }
 
 func TestSaveStudyRulesEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_saverules"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+		},
+		Rules: []types.Expression{},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.SaveStudyRules(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		_, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+			Rules: []*api.Expression{
+				{Name: "test"},
+			},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with study member", func(t *testing.T) {
+		resp, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+			Rules: []*api.Expression{
+				{Name: "test"},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Rules) != 1 {
+			t.Error("unexpected number of rules")
+		}
+	})
 }
 
 func TestSaveStudyStatusEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member and non admin
-	// with non study member but admin
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_savestatus"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+		},
+		Status: "active",
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.SaveStudyStatus(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		_, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey:  testStudyKey,
+			NewStatus: "test",
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with study member", func(t *testing.T) {
+		resp, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey:  testStudyKey,
+			NewStatus: "test",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if resp.Status != "test" {
+			t.Error("unexpected status")
+		}
+	})
 }
 
 func TestSaveStudyPropsEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_saveprops"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+		},
+		Status: "active",
+		Props: types.StudyProps{
+			Name: []types.LocalisedObject{
+				{Code: "en "},
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.SaveStudyProps(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		_, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+			Props: &api.Study_Props{
+				Name: []*api.LocalisedObject{
+					{Code: "en"},
+					{Code: "de"},
+				},
+			},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with study member", func(t *testing.T) {
+		resp, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+			Props: &api.Study_Props{
+				Name: []*api.LocalisedObject{
+					{Code: "en"},
+					{Code: "de"},
+				},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(resp.Props.Name) != 2 {
+			t.Error("unexpected name loc objs")
+		}
+	})
 }
 
 func TestDeleteStudyEndpoint(t *testing.T) {
-	// with nil
-	// with empty
-	// with non study member
-	// with study member
-	t.Error("test unimplemented")
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudyKey := "testStudyfor_todelete"
+	testUserID := "testuserid"
+	testStudy := types.Study{
+		Key: testStudyKey,
+		Members: []types.StudyMember{
+			{
+				UserID: testUserID,
+				Role:   "maintainer",
+			},
+		},
+		Status: "active",
+		Props: types.StudyProps{
+			Name: []types.LocalisedObject{
+				{Code: "en "},
+			},
+		},
+	}
+
+	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.DeleteStudy(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with non study member", func(t *testing.T) {
+		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
+			Token: &api.TokenInfos{
+				Id:         "user",
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT",
+					"username": "testuser2",
+				},
+			},
+			StudyKey: testStudyKey,
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "not authorized to access this study")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with study member", func(t *testing.T) {
+		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
+			Token: &api.TokenInfos{
+				Id:         testUserID,
+				InstanceId: testInstanceID,
+				Payload: map[string]string{
+					"roles":    "PARTICIPANT,RESEARCHER,ADMIN",
+					"username": "testuser",
+				},
+			},
+			StudyKey: testStudyKey,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		_, err = s.studyDBservice.GetStudyByStudyKey(testInstanceID, testStudyKey)
+		if err == nil {
+			t.Error("study should be deleted")
+		}
+	})
 }
