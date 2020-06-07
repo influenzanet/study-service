@@ -166,7 +166,7 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 }
 
 func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil {
+	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"ADMIN"}) {
@@ -176,7 +176,28 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 		}
 	}
 
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	existing := false
+	for i, m := range study.Members {
+		if m.UserID == req.Member.UserId {
+			study.Members[i] = types.StudyMemberFromAPI(req.Member)
+			existing = true
+			break
+		}
+	}
+	if !existing {
+		study.Members = append(study.Members, types.StudyMemberFromAPI(req.Member))
+	}
+
+	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return uStudy.ToAPI(), nil
 }
 
 func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {

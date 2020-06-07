@@ -698,7 +698,7 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 		}
 	})
 
-	t.Run("with non study member", func(t *testing.T) {
+	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api.TokenInfos{
 				Id:         testUserID,
@@ -720,7 +720,7 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 			return
 		}
 		if len(resp.Members) != 2 {
-			t.Error("unexpected number of members")
+			t.Errorf("unexpected number of members: %d", len(resp.Members))
 			return
 		}
 		if resp.Members[1].Role != "test" {
