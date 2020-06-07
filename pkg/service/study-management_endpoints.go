@@ -281,7 +281,18 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	study.Props = types.StudyPropsFromAPI(req.Props)
+
+	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return uStudy.ToAPI(), nil
 }
 
 func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.ServiceStatus, error) {
