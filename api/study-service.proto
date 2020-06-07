@@ -38,11 +38,16 @@ service StudyServiceApi {
   rpc CreateNewStudy(NewStudyRequest) returns (inf.study.Study);
   rpc GetAllStudies(inf.auth.TokenInfos) returns (Studies);
   rpc GetStudy(StudyReferenceReq) returns (inf.study.Study);
-  // TODO: Update study // manage roles
-
+  // add, update and remove study members (and roles):
+  rpc SaveStudyMember(StudyMemberReq) returns (inf.study.Study);
+  rpc RemoveStudyMember(StudyMemberReq) returns (inf.study.Study);
+  rpc SaveStudyRules(StudyRulesReq) returns (inf.study.Study);
+  rpc SaveStudyStatus(StudyStatusReq) returns (inf.study.Study);
+  rpc SaveStudyProps(StudyPropsReq) returns (inf.study.Study);
   rpc SaveSurveyToStudy(AddSurveyReq) returns (inf.survey.Survey);
   rpc GetSurveyDefForStudy(SurveyReferenceRequest) returns (inf.survey.Survey);
   rpc RemoveSurveyFromStudy(SurveyReferenceRequest) returns (ServiceStatus);
+  rpc DeleteStudy(StudyReferenceReq) returns (ServiceStatus);
   // <---
 
   rpc GetStudyResponseStatistics(SurveyResponseQuery)
@@ -152,3 +157,27 @@ message StatusReportRequest {
 message GetStudiesForUserReq { inf.auth.TokenInfos token = 1; }
 
 message Studies { repeated inf.study.Study studies = 1; }
+
+message StudyMemberReq {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  inf.study.Study.Member member = 3;
+}
+
+message StudyRulesReq {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  repeated inf.expressions.Expression rules = 3;
+}
+
+message StudyStatusReq {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  string new_status = 3;
+}
+
+message StudyPropsReq {
+  inf.auth.TokenInfos token = 1;
+  string study_key = 2;
+  inf.study.Study.Props props = 3;
+}

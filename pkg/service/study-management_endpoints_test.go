@@ -607,3 +607,54 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 		}
 	})
 }
+
+func TestSaveStudyMemberEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member and non admin
+	// with non study member but admin
+	// with study member
+	t.Error("test unimplemented")
+}
+
+func TestRemoveStudyMemberEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member and non admin
+	// with non study member but admin
+	// with study member
+	t.Error("test unimplemented")
+}
+
+func TestSaveStudyRulesEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member
+	// with study member
+	t.Error("test unimplemented")
+}
+
+func TestSaveStudyStatusEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member and non admin
+	// with non study member but admin
+	// with study member
+	t.Error("test unimplemented")
+}
+
+func TestSaveStudyPropsEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member
+	// with study member
+	t.Error("test unimplemented")
+}
+
+func TestDeleteStudyEndpoint(t *testing.T) {
+	// with nil
+	// with empty
+	// with non study member
+	// with study member
+	t.Error("test unimplemented")
+}
