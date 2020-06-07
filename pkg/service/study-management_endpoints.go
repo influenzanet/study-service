@@ -235,7 +235,22 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	rules := []types.Expression{}
+	for _, exp := range req.Rules {
+		rules = append(rules, *types.ExpressionFromAPI(exp))
+	}
+	study.Rules = rules
+
+	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return uStudy.ToAPI(), nil
 }
 
 func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.StudyStatusReq) (*api.Study, error) {
