@@ -112,6 +112,7 @@ func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey str
 }
 
 func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey string, participantID string, rules []types.Expression) (prefills types.SurveyResponse, err error) {
+	lastSurveyCache := map[string]types.SurveyResponse{}
 	for _, rule := range rules {
 		switch rule.Name {
 		case "GET_LAST_SURVEY_ITEM":
@@ -120,19 +121,26 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 			}
 			surveyKey := rule.Data[0].Str
 			itemKey := rule.Data[1].Str
-			resps, err := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
-				ParticipantID: participantID,
-				SurveyKey:     surveyKey,
-				Limit:         1,
-			})
 
-			if err != nil || len(resps) < 1 {
-				continue
+			previousResp, ok := lastSurveyCache[surveyKey]
+			if !ok {
+				resps, err := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
+					ParticipantID: participantID,
+					SurveyKey:     surveyKey,
+					Limit:         1,
+				})
+
+				if err != nil || len(resps) < 1 {
+					continue
+				}
+				lastSurveyCache[surveyKey] = resps[0]
+				previousResp = resps[0]
 			}
-			for _, item := range resps[0].Responses {
+
+			for _, item := range previousResp.Responses {
 				if item.Key == itemKey {
 					prefills.Responses = append(prefills.Responses, item)
-					continue
+					break
 				}
 			}
 		default:
