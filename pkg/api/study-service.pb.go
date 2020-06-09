@@ -1717,27 +1717,27 @@ var file_api_study_service_proto_rawDesc = []byte{
 	0x64, 0x79, 0x50, 0x72, 0x6f, 0x70, 0x73, 0x12, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74,
 	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74, 0x75, 0x64,
 	0x79, 0x50, 0x72, 0x6f, 0x70, 0x73, 0x52, 0x65, 0x71, 0x1a, 0x10, 0x2e, 0x69, 0x6e, 0x66, 0x2e,
-	0x73, 0x74, 0x75, 0x64, 0x79, 0x2e, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x55, 0x0a, 0x0b, 0x44,
-	0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x24, 0x2e, 0x69, 0x6e, 0x66,
-	0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53,
-	0x74, 0x75, 0x64, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71,
+	0x73, 0x74, 0x75, 0x64, 0x79, 0x2e, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x48, 0x0a, 0x11, 0x53,
+	0x61, 0x76, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x54, 0x6f, 0x53, 0x74, 0x75, 0x64, 0x79,
+	0x12, 0x1f, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x2e, 0x41, 0x64, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65,
+	0x71, 0x1a, 0x12, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x2e, 0x53,
+	0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x55, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x53, 0x75, 0x72, 0x76,
+	0x65, 0x79, 0x44, 0x65, 0x66, 0x46, 0x6f, 0x72, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x29, 0x2e,
+	0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x12, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73,
+	0x75, 0x72, 0x76, 0x65, 0x79, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x64, 0x0a, 0x15,
+	0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x46, 0x72, 0x6f, 0x6d,
+	0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x29, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64,
+	0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79,
+	0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
 	0x1a, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74,
-	0x75, 0x73, 0x12, 0x48, 0x0a, 0x11, 0x53, 0x61, 0x76, 0x65, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79,
-	0x54, 0x6f, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x1f, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74,
-	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x41, 0x64, 0x64, 0x53,
-	0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x71, 0x1a, 0x12, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73,
-	0x75, 0x72, 0x76, 0x65, 0x79, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x55, 0x0a, 0x14,
-	0x47, 0x65, 0x74, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x44, 0x65, 0x66, 0x46, 0x6f, 0x72, 0x53,
-	0x74, 0x75, 0x64, 0x79, 0x12, 0x29, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79,
-	0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52,
-	0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x12, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x2e, 0x53, 0x75, 0x72,
-	0x76, 0x65, 0x79, 0x12, 0x64, 0x0a, 0x15, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x53, 0x75, 0x72,
-	0x76, 0x65, 0x79, 0x46, 0x72, 0x6f, 0x6d, 0x53, 0x74, 0x75, 0x64, 0x79, 0x12, 0x29, 0x2e, 0x69,
-	0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74,
+	0x75, 0x73, 0x12, 0x55, 0x0a, 0x0b, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x74, 0x75, 0x64,
+	0x79, 0x12, 0x24, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x74, 0x75, 0x64, 0x79, 0x52, 0x65, 0x66, 0x65, 0x72,
+	0x65, 0x6e, 0x63, 0x65, 0x52, 0x65, 0x71, 0x1a, 0x20, 0x2e, 0x69, 0x6e, 0x66, 0x2e, 0x73, 0x74,
 	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x65, 0x72, 0x76,
 	0x69, 0x63, 0x65, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x70, 0x0a, 0x1a, 0x47, 0x65, 0x74,
 	0x53, 0x74, 0x75, 0x64, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x53, 0x74, 0x61,
@@ -1866,10 +1866,10 @@ var file_api_study_service_proto_depIdxs = []int32{
 	19, // 50: inf.study_service.StudyServiceApi.SaveStudyRules:input_type -> inf.study_service.StudyRulesReq
 	20, // 51: inf.study_service.StudyServiceApi.SaveStudyStatus:input_type -> inf.study_service.StudyStatusReq
 	21, // 52: inf.study_service.StudyServiceApi.SaveStudyProps:input_type -> inf.study_service.StudyPropsReq
-	7,  // 53: inf.study_service.StudyServiceApi.DeleteStudy:input_type -> inf.study_service.StudyReferenceReq
-	9,  // 54: inf.study_service.StudyServiceApi.SaveSurveyToStudy:input_type -> inf.study_service.AddSurveyReq
-	13, // 55: inf.study_service.StudyServiceApi.GetSurveyDefForStudy:input_type -> inf.study_service.SurveyReferenceRequest
-	13, // 56: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:input_type -> inf.study_service.SurveyReferenceRequest
+	9,  // 53: inf.study_service.StudyServiceApi.SaveSurveyToStudy:input_type -> inf.study_service.AddSurveyReq
+	13, // 54: inf.study_service.StudyServiceApi.GetSurveyDefForStudy:input_type -> inf.study_service.SurveyReferenceRequest
+	13, // 55: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:input_type -> inf.study_service.SurveyReferenceRequest
+	7,  // 56: inf.study_service.StudyServiceApi.DeleteStudy:input_type -> inf.study_service.StudyReferenceReq
 	1,  // 57: inf.study_service.StudyServiceApi.GetStudyResponseStatistics:input_type -> inf.study_service.SurveyResponseQuery
 	1,  // 58: inf.study_service.StudyServiceApi.StreamStudyResponses:input_type -> inf.study_service.SurveyResponseQuery
 	4,  // 59: inf.study_service.StudyServiceApi.Status:output_type -> inf.study_service.ServiceStatus
@@ -1892,10 +1892,10 @@ var file_api_study_service_proto_depIdxs = []int32{
 	27, // 76: inf.study_service.StudyServiceApi.SaveStudyRules:output_type -> inf.study.Study
 	27, // 77: inf.study_service.StudyServiceApi.SaveStudyStatus:output_type -> inf.study.Study
 	27, // 78: inf.study_service.StudyServiceApi.SaveStudyProps:output_type -> inf.study.Study
-	4,  // 79: inf.study_service.StudyServiceApi.DeleteStudy:output_type -> inf.study_service.ServiceStatus
-	28, // 80: inf.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> inf.survey.Survey
-	28, // 81: inf.study_service.StudyServiceApi.GetSurveyDefForStudy:output_type -> inf.survey.Survey
-	4,  // 82: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> inf.study_service.ServiceStatus
+	28, // 79: inf.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> inf.survey.Survey
+	28, // 80: inf.study_service.StudyServiceApi.GetSurveyDefForStudy:output_type -> inf.survey.Survey
+	4,  // 81: inf.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> inf.study_service.ServiceStatus
+	4,  // 82: inf.study_service.StudyServiceApi.DeleteStudy:output_type -> inf.study_service.ServiceStatus
 	2,  // 83: inf.study_service.StudyServiceApi.GetStudyResponseStatistics:output_type -> inf.study_service.StudyResponseStatistics
 	30, // 84: inf.study_service.StudyServiceApi.StreamStudyResponses:output_type -> inf.survey_response.SurveyResponse
 	59, // [59:85] is the sub-list for method output_type
@@ -2241,10 +2241,10 @@ type StudyServiceApiClient interface {
 	SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyStatus(ctx context.Context, in *StudyStatusReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyProps(ctx context.Context, in *StudyPropsReq, opts ...grpc.CallOption) (*Study, error)
-	DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	SaveSurveyToStudy(ctx context.Context, in *AddSurveyReq, opts ...grpc.CallOption) (*Survey, error)
 	GetSurveyDefForStudy(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*Survey, error)
 	RemoveSurveyFromStudy(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*ServiceStatus, error)
+	DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 }
@@ -2437,15 +2437,6 @@ func (c *studyServiceApiClient) SaveStudyProps(ctx context.Context, in *StudyPro
 	return out, nil
 }
 
-func (c *studyServiceApiClient) DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
-	out := new(ServiceStatus)
-	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/DeleteStudy", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *studyServiceApiClient) SaveSurveyToStudy(ctx context.Context, in *AddSurveyReq, opts ...grpc.CallOption) (*Survey, error) {
 	out := new(Survey)
 	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/SaveSurveyToStudy", in, out, opts...)
@@ -2467,6 +2458,15 @@ func (c *studyServiceApiClient) GetSurveyDefForStudy(ctx context.Context, in *Su
 func (c *studyServiceApiClient) RemoveSurveyFromStudy(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*ServiceStatus, error) {
 	out := new(ServiceStatus)
 	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/RemoveSurveyFromStudy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/inf.study_service.StudyServiceApi/DeleteStudy", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -2543,10 +2543,10 @@ type StudyServiceApiServer interface {
 	SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error)
 	SaveStudyStatus(context.Context, *StudyStatusReq) (*Study, error)
 	SaveStudyProps(context.Context, *StudyPropsReq) (*Study, error)
-	DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error)
 	SaveSurveyToStudy(context.Context, *AddSurveyReq) (*Survey, error)
 	GetSurveyDefForStudy(context.Context, *SurveyReferenceRequest) (*Survey, error)
 	RemoveSurveyFromStudy(context.Context, *SurveyReferenceRequest) (*ServiceStatus, error)
+	DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error)
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 }
@@ -2615,9 +2615,6 @@ func (*UnimplementedStudyServiceApiServer) SaveStudyStatus(context.Context, *Stu
 func (*UnimplementedStudyServiceApiServer) SaveStudyProps(context.Context, *StudyPropsReq) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStudyProps not implemented")
 }
-func (*UnimplementedStudyServiceApiServer) DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteStudy not implemented")
-}
 func (*UnimplementedStudyServiceApiServer) SaveSurveyToStudy(context.Context, *AddSurveyReq) (*Survey, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveSurveyToStudy not implemented")
 }
@@ -2626,6 +2623,9 @@ func (*UnimplementedStudyServiceApiServer) GetSurveyDefForStudy(context.Context,
 }
 func (*UnimplementedStudyServiceApiServer) RemoveSurveyFromStudy(context.Context, *SurveyReferenceRequest) (*ServiceStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveSurveyFromStudy not implemented")
+}
+func (*UnimplementedStudyServiceApiServer) DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteStudy not implemented")
 }
 func (*UnimplementedStudyServiceApiServer) GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudyResponseStatistics not implemented")
@@ -2998,24 +2998,6 @@ func _StudyServiceApi_SaveStudyProps_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StudyServiceApi_DeleteStudy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StudyReferenceReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(StudyServiceApiServer).DeleteStudy(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/inf.study_service.StudyServiceApi/DeleteStudy",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StudyServiceApiServer).DeleteStudy(ctx, req.(*StudyReferenceReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _StudyServiceApi_SaveSurveyToStudy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddSurveyReq)
 	if err := dec(in); err != nil {
@@ -3066,6 +3048,24 @@ func _StudyServiceApi_RemoveSurveyFromStudy_Handler(srv interface{}, ctx context
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).RemoveSurveyFromStudy(ctx, req.(*SurveyReferenceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_DeleteStudy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StudyReferenceReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).DeleteStudy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/inf.study_service.StudyServiceApi/DeleteStudy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).DeleteStudy(ctx, req.(*StudyReferenceReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3194,10 +3194,6 @@ var _StudyServiceApi_serviceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_SaveStudyProps_Handler,
 		},
 		{
-			MethodName: "DeleteStudy",
-			Handler:    _StudyServiceApi_DeleteStudy_Handler,
-		},
-		{
 			MethodName: "SaveSurveyToStudy",
 			Handler:    _StudyServiceApi_SaveSurveyToStudy_Handler,
 		},
@@ -3208,6 +3204,10 @@ var _StudyServiceApi_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveSurveyFromStudy",
 			Handler:    _StudyServiceApi_RemoveSurveyFromStudy_Handler,
+		},
+		{
+			MethodName: "DeleteStudy",
+			Handler:    _StudyServiceApi_DeleteStudy_Handler,
 		},
 		{
 			MethodName: "GetStudyResponseStatistics",

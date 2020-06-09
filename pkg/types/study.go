@@ -6,14 +6,15 @@ import (
 )
 
 type Study struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Key            string             `bson:"key"`
-	SecretKey      string             `bson:"secretKey"`
-	Status         string             `bson:"status"`
-	Members        []StudyMember      `bson:"members"` // users with access to manage study
-	Rules          []Expression       `bson:"rules"`   // defining how the study should run
-	Props          StudyProps         `bson:"props"`
-	NextTimerEvent int64              `bson:"nextTimerEventAfter"`
+	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Key                string             `bson:"key"`
+	SecretKey          string             `bson:"secretKey"`
+	Status             string             `bson:"status"`
+	Members            []StudyMember      `bson:"members"` // users with access to manage study
+	Rules              []Expression       `bson:"rules"`   // defining how the study should run
+	Props              StudyProps         `bson:"props"`
+	NextTimerEvent     int64              `bson:"nextTimerEventAfter"`
+	SystemDefaultStudy bool               `bson:"systemDefaultStudy"`
 }
 
 type StudyMember struct {
@@ -25,6 +26,9 @@ type StudyMember struct {
 type StudyProps struct {
 	Name        []LocalisedObject `bson:"name"`
 	Description []LocalisedObject `bson:"description"`
+	Tags        []string          `bson:"tags"`
+	StartDate   int64             `bson:"startDate"`
+	EndDate     int64             `bson:"endDate"`
 }
 
 func (s Study) ToAPI() *api.Study {
@@ -38,13 +42,14 @@ func (s Study) ToAPI() *api.Study {
 	}
 
 	return &api.Study{
-		Id:        s.ID.Hex(),
-		Key:       s.Key,
-		SecretKey: s.SecretKey,
-		Status:    s.Status,
-		Members:   members,
-		Rules:     rules,
-		Props:     s.Props.ToAPI(),
+		Id:                 s.ID.Hex(),
+		Key:                s.Key,
+		SecretKey:          s.SecretKey,
+		Status:             s.Status,
+		Members:            members,
+		Rules:              rules,
+		Props:              s.Props.ToAPI(),
+		SystemDefaultStudy: s.SystemDefaultStudy,
 	}
 }
 
@@ -62,13 +67,14 @@ func StudyFromAPI(s *api.Study) Study {
 	}
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 	return Study{
-		ID:        _id,
-		Key:       s.Key,
-		SecretKey: s.SecretKey,
-		Status:    s.Status,
-		Members:   members,
-		Rules:     rules,
-		Props:     StudyPropsFromAPI(s.Props),
+		ID:                 _id,
+		Key:                s.Key,
+		SecretKey:          s.SecretKey,
+		Status:             s.Status,
+		Members:            members,
+		Rules:              rules,
+		Props:              StudyPropsFromAPI(s.Props),
+		SystemDefaultStudy: s.SystemDefaultStudy,
 	}
 }
 
