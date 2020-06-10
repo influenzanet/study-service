@@ -15,7 +15,7 @@ message Study {
   message Props {
     repeated inf.survey.LocalisedObject name = 1;
     repeated inf.survey.LocalisedObject description = 2;
-    repeated string tags = 3;
+    repeated Tag tags = 3;
     int64 start_date = 4;
     int64 end_date = 5;
     bool system_default_study = 6;
@@ -31,6 +31,8 @@ message Study {
   repeated inf.expressions.Expression rules = 6;
   repeated Member members = 7;
 }
+
+message Tag { repeated inf.survey.LocalisedObject label = 1; }
 
 message AssignedSurvey {
   string survey_key = 1;

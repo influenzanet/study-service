@@ -25,10 +25,14 @@ type StudyMember struct {
 type StudyProps struct {
 	Name               []LocalisedObject `bson:"name"`
 	Description        []LocalisedObject `bson:"description"`
-	Tags               []string          `bson:"tags"`
+	Tags               []Tag             `bson:"tags"`
 	StartDate          int64             `bson:"startDate"`
 	EndDate            int64             `bson:"endDate"`
 	SystemDefaultStudy bool              `bson:"systemDefaultStudy"`
+}
+
+type Tag struct {
+	Label []LocalisedObject `bson:"label"`
 }
 
 func (s Study) ToAPI() *api.Study {
@@ -104,10 +108,14 @@ func (sp StudyProps) ToAPI() *api.Study_Props {
 	for i, r := range sp.Description {
 		description[i] = r.ToAPI()
 	}
+	tags := make([]*api.Tag, len(sp.Tags))
+	for i, r := range sp.Tags {
+		tags[i] = r.ToAPI()
+	}
 	return &api.Study_Props{
 		Name:               name,
 		Description:        description,
-		Tags:               sp.Tags,
+		Tags:               tags,
 		StartDate:          sp.StartDate,
 		EndDate:            sp.EndDate,
 		SystemDefaultStudy: sp.SystemDefaultStudy,
@@ -126,12 +134,39 @@ func StudyPropsFromAPI(sp *api.Study_Props) StudyProps {
 	for i, r := range sp.Description {
 		description[i] = LocalisedObjectFromAPI(r)
 	}
+	tags := make([]Tag, len(sp.Tags))
+	for i, r := range sp.Tags {
+		tags[i] = TagFromAPI(r)
+	}
 	return StudyProps{
 		Name:               name,
 		Description:        description,
-		Tags:               sp.Tags,
+		Tags:               tags,
 		StartDate:          sp.StartDate,
 		EndDate:            sp.EndDate,
 		SystemDefaultStudy: sp.SystemDefaultStudy,
+	}
+}
+
+func TagFromAPI(t *api.Tag) Tag {
+	if t == nil {
+		return Tag{}
+	}
+	label := make([]LocalisedObject, len(t.Label))
+	for i, r := range t.Label {
+		label[i] = LocalisedObjectFromAPI(r)
+	}
+	return Tag{
+		Label: label,
+	}
+}
+
+func (t Tag) ToAPI() *api.Tag {
+	label := make([]*api.LocalisedObject, len(t.Label))
+	for i, r := range t.Label {
+		label[i] = r.ToAPI()
+	}
+	return &api.Tag{
+		Label: label,
 	}
 }
