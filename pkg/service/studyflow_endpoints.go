@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
@@ -372,10 +373,35 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	// get all studies
-	// for each study:
-	// get participant ID
-	// remove participant if any
-	// remove responses for participantID
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "", true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	profileIDs := []string{req.ProfilId}
+	profileIDs = append(profileIDs, req.OtherProfileIds...)
+
+	for _, study := range studies {
+		for _, profileID := range profileIDs {
+			// ParticipantID
+			participantID, err := s.profileIDToParticipantID(req.InstanceId, study.Key, profileID)
+			if err != nil {
+				log.Printf("DeleteParticipantData: %v", err)
+				continue
+			}
+			err = s.studyDBservice.DeleteParticipantState(req.InstanceId, study.Key, participantID)
+			if err != nil {
+				continue
+			}
+			_, err = s.studyDBservice.DeleteSurveyResponses(req.InstanceId, study.Key, studydb.ResponseQuery{ParticipantID: participantID})
+			if err != nil {
+				continue
+			}
+		}
+
+	}
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+		Msg:    "all responses deleted",
+	}, nil
 }

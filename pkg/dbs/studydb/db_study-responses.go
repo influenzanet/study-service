@@ -182,3 +182,19 @@ func (dbService *StudyDBService) PerfomActionForSurveyResponses(
 	}
 	return nil
 }
+
+func (dbService *StudyDBService) DeleteSurveyResponses(instanceID string, studyKey string, query ResponseQuery) (count int64, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	if query.ParticipantID == "" {
+		return 0, errors.New("participant id must be defined")
+	}
+	filter := bson.M{"participantID": query.ParticipantID}
+	if query.SurveyKey != "" {
+		filter["key"] = query.SurveyKey
+	}
+
+	res, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).DeleteMany(ctx, filter)
+	return res.DeletedCount, err
+}

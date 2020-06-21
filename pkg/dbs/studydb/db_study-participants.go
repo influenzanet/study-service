@@ -83,6 +83,15 @@ func (dbService *StudyDBService) SaveParticipantState(instanceID string, studyKe
 	return elem, err
 }
 
+func (dbService *StudyDBService) DeleteParticipantState(instanceID string, studyKey string, pID string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{"participantID": pID}
+	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).DeleteOne(ctx, filter)
+	return err
+}
+
 // FindParticipantState retrieves the participant state for a given participant from a study
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	instanceID string,
