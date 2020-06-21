@@ -366,3 +366,16 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	}
 	return &resp, nil
 }
+
+func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api.TokenInfos) (*api.ServiceStatus, error) {
+	if req == nil || utils.IsTokenEmpty(req) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// get all studies
+	// for each study:
+	// get participant ID
+	// remove participant if any
+	// remove responses for participantID
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}

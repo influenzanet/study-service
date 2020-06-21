@@ -1212,6 +1212,156 @@ func TestResolveContextRules(t *testing.T) {
 	})
 }
 
+func TestDeleteParticipantDataEndpoint(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testStudies := []types.Study{
+		{
+			Key:       "test_for_delete_p_data_1",
+			SecretKey: "test1",
+			Status:    "active",
+		},
+		{
+			Key:       "test_for_delete_p_data_2",
+			SecretKey: "test2",
+			Status:    "finished",
+		},
+	}
+
+	testUserProfiles := []string{"profile1", "profile2"}
+	for _, study := range testStudies {
+		_, err := s.studyDBservice.CreateStudy(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		tokenOther := &api.TokenInfos{
+			Id:               "testid2",
+			AccountConfirmed: true,
+			InstanceId:       testInstanceID,
+			ProfilId:         "other",
+		}
+
+		_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
+			Token:    tokenOther,
+			StudyKey: study.Key,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		_, err = s.SubmitResponse(context.TODO(), &api.SubmitResponseReq{
+			Token:    tokenOther,
+			StudyKey: study.Key,
+			Response: &api.SurveyResponse{
+				Key:         "test-survey-1",
+				SubmittedAt: time.Now().Unix(),
+				Responses:   []*api.SurveyItemResponse{},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		for _, profile := range testUserProfiles {
+			token := &api.TokenInfos{
+				Id:               "testid",
+				AccountConfirmed: true,
+				InstanceId:       testInstanceID,
+				ProfilId:         profile,
+			}
+			_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
+				Token:    token,
+				StudyKey: study.Key,
+			})
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			_, err = s.SubmitResponse(context.TODO(), &api.SubmitResponseReq{
+				Token:    token,
+				StudyKey: study.Key,
+				Response: &api.SurveyResponse{
+					Key:         "test-survey-1",
+					SubmittedAt: time.Now().Unix(),
+					Responses:   []*api.SurveyItemResponse{},
+				},
+			})
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		}
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.DeleteParticipantData(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.DeleteParticipantData(context.Background(), &api.TokenInfos{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with normal request", func(t *testing.T) {
+		sr1, err := s.studyDBservice.CountSurveyResponsesByKey(testInstanceID, testStudies[0].Key, "test-survey-1", 0, 0)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		sr2, err := s.studyDBservice.CountSurveyResponsesByKey(testInstanceID, testStudies[1].Key, "test-survey-1", 0, 0)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if sr1 != 3 || sr2 != 3 {
+			t.Errorf("unexpected number of response: %d - %d", sr1, sr2)
+			return
+		}
+		_, err = s.DeleteParticipantData(context.Background(), &api.TokenInfos{
+			Id:              "userid",
+			InstanceId:      testInstanceID,
+			ProfilId:        testUserProfiles[0],
+			OtherProfileIds: []string{testUserProfiles[1]},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		sr1, err = s.studyDBservice.CountSurveyResponsesByKey(testInstanceID, testStudies[0].Key, "test-survey-1", 0, 0)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		sr2, err = s.studyDBservice.CountSurveyResponsesByKey(testInstanceID, testStudies[1].Key, "test-survey-1", 0, 0)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if sr1 != 1 || sr2 != 1 {
+			t.Errorf("unexpected number of response: %d - %d", sr1, sr2)
+			return
+		}
+	})
+}
+
 func TestResolvePrefillRules(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,

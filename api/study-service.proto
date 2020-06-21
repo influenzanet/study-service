@@ -23,6 +23,7 @@ service StudyServiceApi {
       returns (inf.study.AssignedSurveys);
   rpc SubmitResponse(SubmitResponseReq) returns (inf.study.AssignedSurveys);
   rpc LeaveStudy(LeaveStudyMsg) returns (inf.study.AssignedSurveys);
+  rpc DeleteParticipantData(inf.auth.TokenInfos) returns (ServiceStatus);
 
   // for all profiles (also not active studies):
   rpc GetStudiesForUser(GetStudiesForUserReq) returns (Studies);
