@@ -271,12 +271,12 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// ParticipantID
 	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "could not compute participant id")
 	}
 
 	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, "participant state not found")
 	}
 	if pState.StudyStatus != "active" {
 		return nil, status.Error(codes.Internal, "user is not active in the current study")
