@@ -22,7 +22,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	study := types.StudyFromAPI(req.Study)
 	study.Members = []types.StudyMember{
 		{
-			Role:     "owner",
+			Role:     types.STUDY_ROLE_OWNER,
 			UserID:   req.Token.Id,
 			UserName: utils.GetUsernameFromToken(req.Token),
 		},
@@ -165,12 +165,16 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	return &resp, nil
 }
 
+type StudyRole string
+
 func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"ADMIN"}) {
-		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -204,7 +208,9 @@ func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.Stu
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -231,7 +237,9 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -257,7 +265,9 @@ func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.Study
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -276,7 +286,9 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -299,7 +311,9 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

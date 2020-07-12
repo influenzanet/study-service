@@ -5,6 +5,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	STUDY_ROLE_OWNER      = "owner"
+	STUDY_ROLE_MAINTAINER = "maintainer"
+)
+
 type Study struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Key            string             `bson:"key"`
