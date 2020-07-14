@@ -84,7 +84,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, study.Key, participantID)
-		if err != nil || pState.StudyStatus != "active" {
+		if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 			continue
 		}
 
@@ -226,7 +226,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 			continue
 		}
 
-		if pState.StudyStatus != "active" {
+		if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 			continue
 		}
 
@@ -278,7 +278,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	if err != nil {
 		return nil, status.Error(codes.Internal, "participant state not found")
 	}
-	if pState.StudyStatus != "active" {
+	if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 		return nil, status.Error(codes.Internal, "user is not active in the current study")
 	}
 
@@ -333,14 +333,14 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if pState.StudyStatus != "active" {
+	if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 		return nil, status.Error(codes.Internal, "not active in the study")
 	}
 
 	// Init state and perform rules
 	pState = types.ParticipantState{
 		ParticipantID: participantID,
-		StudyStatus:   "exited",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 	}
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{

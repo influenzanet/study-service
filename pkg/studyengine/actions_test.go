@@ -126,6 +126,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
+				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -153,6 +154,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
+				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -191,6 +193,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
+				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -243,6 +246,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
+				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)
@@ -294,6 +298,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey1"},
 				{DType: "num", Num: float64(now - 10)},
 				{DType: "num", Num: float64(now + 10)},
+				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
 		newState, err := ActionEval(action, participantState, event)

@@ -10,6 +10,11 @@ const (
 	STUDY_ROLE_MAINTAINER = "maintainer"
 )
 
+const (
+	STUDY_STATUS_ACTIVE   = "active"
+	STUDY_STATUS_INACTIVE = "inactive"
+)
+
 type Study struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Key            string             `bson:"key"`

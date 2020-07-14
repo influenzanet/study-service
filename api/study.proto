@@ -39,6 +39,7 @@ message AssignedSurvey {
   int64 valid_from = 2;
   int64 valid_until = 3;
   string study_key = 4;
+  string category = 5;
 }
 
 message AssignedSurveys { repeated AssignedSurvey surveys = 1; }

@@ -202,6 +202,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 								{Str: "testsurvey"},
 								{DType: "num", Num: 0},
 								{DType: "num", Num: 0},
+								{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 							},
 						},
 					},

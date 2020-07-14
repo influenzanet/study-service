@@ -175,8 +175,8 @@ func removeFlagAction(action types.Expression, oldState types.ParticipantState, 
 // addNewSurveyAction appends a new AssignedSurvey for the participant state
 func addNewSurveyAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
-	if len(action.Data) != 3 {
-		return newState, errors.New("addNewSurveyAction must have exactly three arguments")
+	if len(action.Data) != 4 {
+		return newState, errors.New("addNewSurveyAction must have exactly four arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
@@ -194,12 +194,17 @@ func addNewSurveyAction(action types.Expression, oldState types.ParticipantState
 	if err != nil {
 		return newState, err
 	}
+	c, err := EvalContext.expressionArgResolver(action.Data[3])
+	if err != nil {
+		return newState, err
+	}
 
 	surveyKey, ok1 := k.(string)
 	validFrom, ok2 := start.(float64)
 	validUntil, ok3 := end.(float64)
+	category, ok4 := c.(string)
 
-	if !ok1 || !ok2 || !ok3 {
+	if !ok1 || !ok2 || !ok3 || !ok4 {
 		return newState, errors.New("could not parse arguments")
 	}
 
@@ -207,6 +212,7 @@ func addNewSurveyAction(action types.Expression, oldState types.ParticipantState
 		SurveyKey:  surveyKey,
 		ValidFrom:  int64(validFrom),
 		ValidUntil: int64(validUntil),
+		Category:   category,
 	}
 	newState.AssignedSurveys = append(newState.AssignedSurveys, newSurvey)
 	return

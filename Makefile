@@ -2,7 +2,7 @@
 
 PROTO_BUILD_DIR = ./pkg
 
-#TEST_ARGS = -v
+# TEST_ARGS = -v | grep -c RUN
 
 DOCKER_OPTS ?= --rm
 VERSION := $(shell git describe --tags --abbrev=0)
