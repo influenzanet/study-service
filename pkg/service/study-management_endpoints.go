@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
@@ -11,11 +13,11 @@ import (
 )
 
 func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStudyRequest) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.Study == nil {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.Study == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
 		return nil, status.Error(codes.Unauthenticated, "not authorized to create a study")
 	}
 
@@ -24,7 +26,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 		{
 			Role:     types.STUDY_ROLE_OWNER,
 			UserID:   req.Token.Id,
-			UserName: utils.GetUsernameFromToken(req.Token),
+			UserName: token_checks.GetUsernameFromToken(req.Token),
 		},
 	}
 
@@ -35,12 +37,12 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	return cStudy.ToAPI(), nil
 }
 
-func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api.TokenInfos) (*api.Studies, error) {
-	if req == nil || utils.IsTokenEmpty(req) {
+func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api_types.TokenInfos) (*api.Studies, error) {
+	if req == nil || token_checks.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !utils.CheckIfAnyRolesInToken(req, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req, []string{"RESEARCHER", "ADMIN"}) {
 		return nil, status.Error(codes.Unauthenticated, "not authorized")
 	}
 
@@ -63,11 +65,11 @@ func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api.TokenIn
 }
 
 func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
 		return nil, status.Error(codes.Unauthenticated, "not authorized")
 	}
 
@@ -85,7 +87,7 @@ func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferen
 }
 
 func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.AddSurveyReq) (*api.Survey, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Survey == nil {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Survey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -104,7 +106,7 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 }
 
 func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.Survey, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -121,7 +123,7 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 }
 
 func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.ServiceStatus, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -142,7 +144,7 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 }
 
 func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.StudyReferenceReq) (*api.SurveyInfoResp, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	surveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, false)
@@ -168,10 +170,10 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 type StudyRole string
 
 func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	if !utils.CheckIfAnyRolesInToken(req.Token, []string{"ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{"ADMIN"}) {
 		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
@@ -205,7 +207,7 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 }
 
 func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
@@ -234,7 +236,7 @@ func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.Stu
 }
 
 func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyRulesReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
@@ -262,7 +264,7 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 }
 
 func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.StudyStatusReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
@@ -283,7 +285,7 @@ func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.Study
 }
 
 func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyPropsReq) (*api.Study, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
@@ -308,7 +310,7 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 }
 
 func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.ServiceStatus, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,

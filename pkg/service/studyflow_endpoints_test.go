@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -259,7 +260,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		req := &api.EnterStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
 			},
@@ -274,7 +275,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		req := &api.EnterStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
 			},
@@ -292,7 +293,7 @@ func TestEnterStudyEndpoint(t *testing.T) {
 
 	t.Run("existing participant (user) id", func(t *testing.T) {
 		req := &api.EnterStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
 			},
@@ -407,7 +408,7 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		req := &api.PostponeSurveyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID1,
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID1,
@@ -423,7 +424,7 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 
 	t.Run("without validUntil", func(t *testing.T) {
 		req := &api.PostponeSurveyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID1,
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID1,
@@ -450,7 +451,7 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 
 	t.Run("with validUntil expired", func(t *testing.T) {
 		req := &api.PostponeSurveyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID2,
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID2,
@@ -560,7 +561,7 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.GetAssignedSurveys(context.Background(), &api.TokenInfos{})
+		_, err := s.GetAssignedSurveys(context.Background(), &api_types.TokenInfos{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -568,7 +569,7 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	})
 
 	t.Run("wrong study key", func(t *testing.T) {
-		resp, err := s.GetAssignedSurveys(context.Background(), &api.TokenInfos{
+		resp, err := s.GetAssignedSurveys(context.Background(), &api_types.TokenInfos{
 			Id:         testUserID,
 			InstanceId: testInstanceID,
 			ProfilId:   testUserID,
@@ -706,7 +707,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		_, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
-			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
 			StudyKey:  "wrong",
 			SurveyKey: "t1",
 		})
@@ -718,7 +719,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		resp, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
-			Token:     &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
 			StudyKey:  testStudyKey,
 			SurveyKey: "t1",
 		})
@@ -823,7 +824,7 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		resp, err := s.SubmitStatusReport(context.Background(), &api.StatusReportRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID,
@@ -947,7 +948,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
-			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:    &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
 			StudyKey: "wrong_study",
 			Response: &survResp,
 		})
@@ -959,7 +960,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
-			Token:    &api.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
+			Token:    &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
 			StudyKey: studies[0].Key,
 			Response: &survResp,
 		})
@@ -1047,7 +1048,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 
 	t.Run("with wrong study key", func(t *testing.T) {
 		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         testUserID1,
 				ProfilId:   testUserID1,
@@ -1062,7 +1063,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 
 	t.Run("with already left study", func(t *testing.T) {
 		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         testUserID2,
 				ProfilId:   testUserID2,
@@ -1077,7 +1078,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 
 	t.Run("leave study", func(t *testing.T) {
 		_, err := s.LeaveStudy(context.Background(), &api.LeaveStudyMsg{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         testUserID1,
 				ProfilId:   testUserID1,
@@ -1240,7 +1241,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}
-		tokenOther := &api.TokenInfos{
+		tokenOther := &api_types.TokenInfos{
 			Id:               "testid2",
 			AccountConfirmed: true,
 			InstanceId:       testInstanceID,
@@ -1271,7 +1272,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 		}
 
 		for _, profile := range testUserProfiles {
-			token := &api.TokenInfos{
+			token := &api_types.TokenInfos{
 				Id:               "testid",
 				AccountConfirmed: true,
 				InstanceId:       testInstanceID,
@@ -1311,7 +1312,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.DeleteParticipantData(context.Background(), &api.TokenInfos{})
+		_, err := s.DeleteParticipantData(context.Background(), &api_types.TokenInfos{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -1334,7 +1335,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 			t.Errorf("unexpected number of response: %d - %d", sr1, sr2)
 			return
 		}
-		_, err = s.DeleteParticipantData(context.Background(), &api.TokenInfos{
+		_, err = s.DeleteParticipantData(context.Background(), &api_types.TokenInfos{
 			Id:              "userid",
 			InstanceId:      testInstanceID,
 			ProfilId:        testUserProfiles[0],

@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -13,7 +15,7 @@ import (
 )
 
 func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.GetStudiesForUserReq) (*api.Studies, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -60,8 +62,8 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 	return resp, nil
 }
 
-func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api.TokenInfos) (*api.Studies, error) {
-	if req == nil || utils.IsTokenEmpty(req) {
+func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api_types.TokenInfos) (*api.Studies, error) {
+	if req == nil || token_checks.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 

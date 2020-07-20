@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -37,7 +38,7 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 
 	t.Run("with missing user roles", func(t *testing.T) {
 		_, err := s.CreateNewStudy(context.Background(), &api.NewStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         "user-id",
 				Payload: map[string]string{
@@ -54,7 +55,7 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 
 	t.Run("with correct user roles", func(t *testing.T) {
 		study, err := s.CreateNewStudy(context.Background(), &api.NewStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         "user-id",
 				Payload: map[string]string{
@@ -79,7 +80,7 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 
 	t.Run("with existing study key", func(t *testing.T) {
 		_, err := s.CreateNewStudy(context.Background(), &api.NewStudyRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
 				Id:         "user-id",
 				Payload: map[string]string{
@@ -130,7 +131,7 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.GetAllStudies(context.Background(), &api.TokenInfos{})
+		_, err := s.GetAllStudies(context.Background(), &api_types.TokenInfos{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -138,7 +139,7 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non admin user", func(t *testing.T) {
-		_, err := s.GetAllStudies(context.Background(), &api.TokenInfos{
+		_, err := s.GetAllStudies(context.Background(), &api_types.TokenInfos{
 			Id:         "user",
 			InstanceId: testInstanceID,
 			Payload: map[string]string{
@@ -153,7 +154,7 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with researcher user", func(t *testing.T) {
-		resp, err := s.GetAllStudies(context.Background(), &api.TokenInfos{
+		resp, err := s.GetAllStudies(context.Background(), &api_types.TokenInfos{
 			Id:         "user",
 			InstanceId: testInstanceID,
 			Payload: map[string]string{
@@ -214,7 +215,7 @@ func TestGetStudyEndpoint(t *testing.T) {
 
 	t.Run("with non admin user", func(t *testing.T) {
 		_, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -232,7 +233,7 @@ func TestGetStudyEndpoint(t *testing.T) {
 
 	t.Run("with researcher user", func(t *testing.T) {
 		resp, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -301,7 +302,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			},
 		}
 		_, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -326,7 +327,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			},
 		}
 		resp, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -402,7 +403,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 	})
 	t.Run("as non study member", func(t *testing.T) {
 		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
 			},
@@ -417,7 +418,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 
 	t.Run("with not existing survey", func(t *testing.T) {
 		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -432,7 +433,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 
 	t.Run("with correct inputs", func(t *testing.T) {
 		resp, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -504,7 +505,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	})
 	t.Run("as non study member", func(t *testing.T) {
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
 			},
@@ -519,7 +520,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 
 	t.Run("with not existing survey", func(t *testing.T) {
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -534,7 +535,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 
 	t.Run("with correct inputs", func(t *testing.T) {
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -595,7 +596,7 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 
 	t.Run("correct args", func(t *testing.T) {
 		surveys, err := s.GetStudySurveyInfos(context.Background(), &api.StudyReferenceReq{
-			Token:    &api.TokenInfos{Id: "test", InstanceId: testInstanceID, ProfilId: "test"},
+			Token:    &api_types.TokenInfos{Id: "test", InstanceId: testInstanceID, ProfilId: "test"},
 			StudyKey: testStudyKey,
 		})
 		if err != nil {
@@ -651,7 +652,7 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 
 	t.Run("with non study member non admin user", func(t *testing.T) {
 		_, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -674,7 +675,7 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 
 	t.Run("with non study member but admin user", func(t *testing.T) {
 		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -700,7 +701,7 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -776,7 +777,7 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 
 	t.Run("with non study member", func(t *testing.T) {
 		_, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -797,7 +798,7 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -864,7 +865,7 @@ func TestSaveStudyRulesEndpoint(t *testing.T) {
 
 	t.Run("with non study member", func(t *testing.T) {
 		_, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -885,7 +886,7 @@ func TestSaveStudyRulesEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -952,7 +953,7 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 
 	t.Run("with non study member", func(t *testing.T) {
 		_, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -971,7 +972,7 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -1041,7 +1042,7 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 
 	t.Run("with non study member", func(t *testing.T) {
 		_, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -1065,7 +1066,7 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		resp, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -1140,7 +1141,7 @@ func TestDeleteStudyEndpoint(t *testing.T) {
 
 	t.Run("with non study member", func(t *testing.T) {
 		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         "user",
 				InstanceId: testInstanceID,
 				Payload: map[string]string{
@@ -1158,7 +1159,7 @@ func TestDeleteStudyEndpoint(t *testing.T) {
 
 	t.Run("with study member", func(t *testing.T) {
 		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUserID,
 				InstanceId: testInstanceID,
 				Payload: map[string]string{

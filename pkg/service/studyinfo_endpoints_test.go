@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -131,7 +132,7 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 
 	t.Run("with valid request", func(t *testing.T) {
 		resp, err := s.GetStudiesForUser(context.Background(), &api.GetStudiesForUserReq{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:              "userid",
 				InstanceId:      testInstanceID,
 				ProfilId:        testProfileID1,
@@ -191,7 +192,7 @@ func TestGetActiveStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.GetActiveStudies(context.Background(), &api.TokenInfos{})
+		_, err := s.GetActiveStudies(context.Background(), &api_types.TokenInfos{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -199,7 +200,7 @@ func TestGetActiveStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with valid request", func(t *testing.T) {
-		resp, err := s.GetActiveStudies(context.Background(), &api.TokenInfos{
+		resp, err := s.GetActiveStudies(context.Background(), &api_types.TokenInfos{
 			Id:              "userid",
 			InstanceId:      testInstanceID,
 			ProfilId:        "testProfileID1",

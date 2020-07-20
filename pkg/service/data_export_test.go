@@ -8,6 +8,8 @@ import (
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc"
+
+	api_types "github.com/influenzanet/go-utils/pkg/api_types"
 )
 
 func addTestSurveyResponses(studyDBservice *studydb.StudyDBService, instID string, studyKey string, repsonses []types.SurveyResponse) error {
@@ -78,7 +80,7 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 
 	t.Run("as non study member", func(t *testing.T) {
 		_, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
 			},
@@ -92,7 +94,7 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 
 	t.Run("without query", func(t *testing.T) {
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -116,7 +118,7 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 
 	t.Run("with from", func(t *testing.T) {
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -141,7 +143,7 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 
 	t.Run("with until", func(t *testing.T) {
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -166,7 +168,7 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 
 	t.Run("with time range", func(t *testing.T) {
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -262,7 +264,7 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	t.Run("as non study member", func(t *testing.T) {
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
 			},
@@ -278,7 +280,7 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	t.Run("with spec. survey key", func(t *testing.T) {
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -299,7 +301,7 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	t.Run("with from", func(t *testing.T) {
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -320,7 +322,7 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	t.Run("with until", func(t *testing.T) {
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
@@ -341,7 +343,7 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	t.Run("with all query params", func(t *testing.T) {
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
-			Token: &api.TokenInfos{
+			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},

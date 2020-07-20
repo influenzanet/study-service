@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -14,7 +16,7 @@ import (
 )
 
 func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudyRequest) (*api.AssignedSurveys, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -65,8 +67,8 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	return &resp, nil
 }
 
-func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.TokenInfos) (*api.AssignedSurveys, error) {
-	if utils.IsTokenEmpty(req) {
+func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_types.TokenInfos) (*api.AssignedSurveys, error) {
+	if token_checks.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -99,7 +101,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api.To
 }
 
 func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.SurveyReferenceRequest) (*api.SurveyAndContext, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 	// ParticipantID
@@ -139,7 +141,7 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 }
 
 func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.PostponeSurveyRequest) (*api.AssignedSurveys, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -203,7 +205,7 @@ func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.Postpo
 }
 
 func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.StatusReportRequest) (*api.AssignedSurveys, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StatusSurvey == nil {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StatusSurvey == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -264,7 +266,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 }
 
 func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.AssignedSurveys, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -319,7 +321,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 }
 
 func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudyMsg) (*api.AssignedSurveys, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -368,8 +370,8 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	return &resp, nil
 }
 
-func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api.TokenInfos) (*api.ServiceStatus, error) {
-	if req == nil || utils.IsTokenEmpty(req) {
+func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api_types.TokenInfos) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 

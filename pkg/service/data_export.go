@@ -5,15 +5,15 @@ import (
 	"errors"
 	"log"
 
+	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
-	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req *api.SurveyResponseQuery) (*api.StudyResponseStatistics, error) {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
@@ -44,7 +44,7 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 }
 
 func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, stream api.StudyServiceApi_StreamStudyResponsesServer) error {
-	if req == nil || utils.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return status.Error(codes.InvalidArgument, "missing argument")
 	}
 
