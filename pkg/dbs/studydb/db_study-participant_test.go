@@ -124,7 +124,7 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 		}
 	})
 
-	t.Run("Findign not existing status", func(t *testing.T) {
+	t.Run("Finding not existing status", func(t *testing.T) {
 		participants, err := testDBService.FindParticipantsByStudyStatus(testInstanceID, testStudyKey, "teststatus", false)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
@@ -135,6 +135,17 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 		}
 	})
 
+	t.Run("Finding not existing status", func(t *testing.T) {
+		count, err := testDBService.GetParticipantCountByStatus(testInstanceID, testStudyKey, "active")
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if count != 2 {
+			t.Errorf("unexpected number of active participants: %d", count)
+			return
+		}
+	})
 }
 
 func TestFindAndExecuteOnParticipantsStates(t *testing.T) {

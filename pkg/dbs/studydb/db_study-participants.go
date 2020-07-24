@@ -92,6 +92,18 @@ func (dbService *StudyDBService) DeleteParticipantState(instanceID string, study
 	return err
 }
 
+func (dbService *StudyDBService) GetParticipantCountByStatus(instanceID string, studyKey string, studyStatus string) (count int64, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{
+		"studyStatus": studyStatus,
+	}
+
+	count, err = dbService.collectionRefStudyParticipant(instanceID, studyKey).CountDocuments(ctx, filter)
+	return count, err
+}
+
 // FindParticipantState retrieves the participant state for a given participant from a study
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	instanceID string,
