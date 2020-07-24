@@ -25,6 +25,8 @@ func (s *StudyTimerService) StudyTimerEvent() {
 			}
 			log.Printf("performing timer event for study: %s - %s", instance.InstanceID, study.Key)
 
+			s.UpdateStudyStats(instance.InstanceID, study.Key)
+
 			if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instance.InstanceID, study.Key, s.checkAndUpdateParticipantState); err != nil {
 				log.Println(err)
 				continue
@@ -53,4 +55,22 @@ func (s *StudyTimerService) checkAndUpdateParticipantState(studyDBServ *studydb.
 	// save state back to DB
 	_, err = studyDBServ.SaveParticipantState(instanceID, studyKey, pState)
 	return err
+}
+
+func (s *StudyTimerService) UpdateStudyStats(instanceID string, studyKey string) {
+	pCount, err := s.studyDBService.GetParticipantCountByStatus(instanceID, studyKey, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
+	if err != nil {
+		log.Printf("DB ERROR for participant counting for study: %s -> %s", studyKey, err.Error())
+	}
+	rCount, err := s.studyDBService.CountSurveyResponsesByKey(instanceID, studyKey, "", 0, 0)
+	if err != nil {
+		log.Printf("DB ERROR for response counting for study: %s -> %s", studyKey, err.Error())
+	}
+
+	if err := s.studyDBService.UpdateStudyStats(instanceID, studyKey, types.StudyStats{
+		ParticipantCount: pCount,
+		ResponseCount:    rCount,
+	}); err != nil {
+		log.Printf("DB ERROR for updating stats for study: %s -> %s", studyKey, err.Error())
+	}
 }

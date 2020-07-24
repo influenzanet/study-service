@@ -218,3 +218,21 @@ func (dbService *StudyDBService) ShouldPerformTimerEvent(instanceID string, stud
 	}
 	return nil
 }
+
+func (dbService *StudyDBService) UpdateStudyStats(instanceID string, studyKey string, stats types.StudyStats) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{
+		"key": studyKey,
+	}
+	update := bson.M{"$set": bson.M{"studyStats": stats}}
+	res, err := dbService.collectionRefStudyInfos(instanceID).UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	if res.ModifiedCount < 1 {
+		return errors.New("not modified")
+	}
+	return nil
+}
