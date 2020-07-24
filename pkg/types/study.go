@@ -24,6 +24,7 @@ type Study struct {
 	Rules          []Expression       `bson:"rules"`   // defining how the study should run
 	Props          StudyProps         `bson:"props"`
 	NextTimerEvent int64              `bson:"nextTimerEventAfter"`
+	Stats          StudyStats         `bson:"studyStats"`
 }
 
 type StudyMember struct {
@@ -39,6 +40,11 @@ type StudyProps struct {
 	StartDate          int64             `bson:"startDate"`
 	EndDate            int64             `bson:"endDate"`
 	SystemDefaultStudy bool              `bson:"systemDefaultStudy"`
+}
+
+type StudyStats struct {
+	ParticipantCount int64 `bson:"participantCount"`
+	ResponseCount    int64 `bson:"responseCount"`
 }
 
 type Tag struct {
@@ -63,6 +69,7 @@ func (s Study) ToAPI() *api.Study {
 		Members:   members,
 		Rules:     rules,
 		Props:     s.Props.ToAPI(),
+		Stats:     s.Stats.ToAPI(),
 	}
 }
 
@@ -87,6 +94,7 @@ func StudyFromAPI(s *api.Study) Study {
 		Members:   members,
 		Rules:     rules,
 		Props:     StudyPropsFromAPI(s.Props),
+		Stats:     StudyStatsFromAPI(s.Stats),
 	}
 }
 
@@ -178,5 +186,22 @@ func (t Tag) ToAPI() *api.Tag {
 	}
 	return &api.Tag{
 		Label: label,
+	}
+}
+
+func StudyStatsFromAPI(t *api.Study_Stats) StudyStats {
+	if t == nil {
+		return StudyStats{}
+	}
+	return StudyStats{
+		ParticipantCount: t.ParticipantCount,
+		ResponseCount:    t.ResponseCount,
+	}
+}
+
+func (t StudyStats) ToAPI() *api.Study_Stats {
+	return &api.Study_Stats{
+		ParticipantCount: t.ParticipantCount,
+		ResponseCount:    t.ResponseCount,
 	}
 }
