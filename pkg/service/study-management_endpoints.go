@@ -55,7 +55,10 @@ func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api_types.T
 		Studies: []*api.Study{},
 	}
 	for _, study := range studies {
-		if !utils.CheckIfMember(req.Id, study.Members, []string{"maintainer", "owner"}) {
+		if !utils.CheckIfMember(req.Id, study.Members, []string{
+			types.STUDY_ROLE_MAINTAINER,
+			types.STUDY_ROLE_OWNER,
+		}) {
 			// don't share secret key if not study admin
 			study.SecretKey = ""
 		}
@@ -78,7 +81,10 @@ func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferen
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if !utils.CheckIfMember(req.Token.Id, study.Members, []string{"maintainer", "owner"}) {
+	if !utils.CheckIfMember(req.Token.Id, study.Members, []string{
+		types.STUDY_ROLE_MAINTAINER,
+		types.STUDY_ROLE_OWNER,
+	}) {
 		// don't share secret key if not study admin
 		study.SecretKey = ""
 	}
@@ -91,7 +97,10 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+		types.STUDY_ROLE_MAINTAINER,
+		types.STUDY_ROLE_OWNER,
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -110,7 +119,10 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+		types.STUDY_ROLE_MAINTAINER,
+		types.STUDY_ROLE_OWNER,
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -127,7 +139,10 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+		types.STUDY_ROLE_MAINTAINER,
+		types.STUDY_ROLE_OWNER,
+	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

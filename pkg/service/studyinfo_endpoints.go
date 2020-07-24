@@ -54,6 +54,7 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 				Key:    study.Key,
 				Status: study.Status,
 				Props:  study.Props.ToAPI(),
+				Stats:  study.Stats.ToAPI(),
 			})
 			break
 		}
@@ -80,6 +81,7 @@ func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api_type
 			Key:    study.Key,
 			Status: study.Status,
 			Props:  study.Props.ToAPI(),
+			Stats:  study.Stats.ToAPI(),
 		})
 
 	}
