@@ -155,9 +155,10 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	for i, s := range surveys {
 		apiS := s.ToAPI()
 		infos[i] = &api.SurveyInfoResp_SurveyInfo{
-			Key:         s.Current.SurveyDefinition.Key,
-			Name:        apiS.Name,
-			Description: apiS.Description,
+			Key:             s.Current.SurveyDefinition.Key,
+			Name:            apiS.Props.Name,
+			Description:     apiS.Props.Description,
+			TypicalDuration: apiS.Props.TypicalDuration,
 		}
 	}
 
