@@ -227,12 +227,9 @@ func (dbService *StudyDBService) UpdateStudyStats(instanceID string, studyKey st
 		"key": studyKey,
 	}
 	update := bson.M{"$set": bson.M{"studyStats": stats}}
-	res, err := dbService.collectionRefStudyInfos(instanceID).UpdateOne(ctx, filter, update)
+	_, err := dbService.collectionRefStudyInfos(instanceID).UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
-	}
-	if res.ModifiedCount < 1 {
-		return errors.New("not modified")
 	}
 	return nil
 }
