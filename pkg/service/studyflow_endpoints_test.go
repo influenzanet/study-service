@@ -1263,7 +1263,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 			Response: &api.SurveyResponse{
 				Key:         "test-survey-1",
 				SubmittedAt: time.Now().Unix(),
-				Responses:   []*api.SurveyItemResponse{},
+				Responses: []*api.SurveyItemResponse{
+					{Key: "1"},
+				},
 			},
 		})
 		if err != nil {
@@ -1293,7 +1295,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 				Response: &api.SurveyResponse{
 					Key:         "test-survey-1",
 					SubmittedAt: time.Now().Unix(),
-					Responses:   []*api.SurveyItemResponse{},
+					Responses: []*api.SurveyItemResponse{
+						{Key: "1"},
+					},
 				},
 			})
 			if err != nil {

@@ -266,7 +266,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 }
 
 func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.AssignedSurveys, error) {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Response == nil || len(req.Response.Responses) < 1 {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
