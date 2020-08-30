@@ -689,6 +689,26 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 
+	_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
+		Token:    &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
+		StudyKey: testStudyKey,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pState, err := testStudyDBService.FindParticipantState(testInstanceID, testStudyKey, pid1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+
+	pState.Flags = map[string]string{"test": "testValue"}
+	_, err = testStudyDBService.SaveParticipantState(testInstanceID, testStudyKey, pState)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+	}
+
 	t.Run("with missing request", func(t *testing.T) {
 		_, err := s.GetAssignedSurvey(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
@@ -719,15 +739,20 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		resp, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
-			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:     &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
 			StudyKey:  testStudyKey,
 			SurveyKey: "t1",
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
+			return
 		}
 		if resp.Context.Mode != "test" {
 			t.Error("wrong mode")
+		}
+		value, ok := resp.Context.ParticipantFlags["test"]
+		if !ok || value != "testValue" {
+			t.Error("wrong flag")
 		}
 		if resp.Survey.Current.SurveyDefinition.Key != "t1" {
 			t.Error("wrong survey key")
@@ -1109,7 +1134,13 @@ func TestResolveContextRules(t *testing.T) {
 	testStudyKey := "teststudy_forresolvecontext"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	_, err := testStudyDBService.CreateStudy(testInstanceID, types.Study{Key: testStudyKey, SecretKey: testStudyKey})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -1131,6 +1162,14 @@ func TestResolveContextRules(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
+	}
+	_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
+		Token:    &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
+		StudyKey: testStudyKey,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
 	}
 
 	t.Run("resolve with nil", func(t *testing.T) {

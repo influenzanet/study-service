@@ -5,6 +5,7 @@ import api "github.com/influenzanet/study-service/pkg/api"
 type SurveyContext struct {
 	Mode              string
 	PreviousResponses []SurveyResponse
+	ParticipantFlags  map[string]string
 }
 
 func (ctx SurveyContext) ToAPI() *api.SurveyContext {
@@ -15,6 +16,7 @@ func (ctx SurveyContext) ToAPI() *api.SurveyContext {
 	return &api.SurveyContext{
 		Mode:              ctx.Mode,
 		PreviousResponses: previous,
+		ParticipantFlags:  ctx.ParticipantFlags,
 	}
 }
 

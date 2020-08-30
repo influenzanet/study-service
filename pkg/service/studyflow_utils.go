@@ -47,6 +47,11 @@ func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey str
 		return types.SurveyContext{}, nil
 	}
 
+	pState, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
+	if err != nil {
+		return sCtx, errors.New("no participant with this id in this study")
+	}
+
 	// mode:
 	if rules.Mode != nil {
 		modeRule := rules.Mode
@@ -59,6 +64,9 @@ func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey str
 			sCtx.Mode = modeRule.Str
 		}
 	}
+
+	// participant flags:
+	sCtx.ParticipantFlags = pState.Flags
 
 	// previous responses:
 	prevRespRules := rules.PreviousResponses
