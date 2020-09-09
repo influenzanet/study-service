@@ -15,11 +15,15 @@ type Config struct {
 	StudyDBConfig  types.DBConfig
 	GlobalDBConfig types.DBConfig
 	Study          types.StudyConfig
+	ServiceURLs    struct {
+		LoggingService string
+	}
 }
 
 func InitConfig() Config {
 	conf := Config{}
 	conf.Port = os.Getenv("STUDY_SERVICE_LISTEN_PORT")
+	conf.ServiceURLs.LoggingService = os.Getenv("ADDR_LOGGING_SERVICE")
 	conf.StudyDBConfig = getStudyDBConfig()
 	conf.GlobalDBConfig = getGlobalDBConfig()
 	conf.Study = getStudyConfig()

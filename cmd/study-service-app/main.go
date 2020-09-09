@@ -7,8 +7,10 @@ import (
 	"github.com/influenzanet/study-service/internal/config"
 	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
-	"github.com/influenzanet/study-service/pkg/service"
+	gc "github.com/influenzanet/study-service/pkg/grpc/clients"
+	"github.com/influenzanet/study-service/pkg/grpc/service"
 	"github.com/influenzanet/study-service/pkg/studytimer"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func main() {
@@ -19,10 +21,17 @@ func main() {
 	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService)
 	sTimerService.Run()
 
+	clients := &types.APIClients{}
+
+	loggingClient, close := gc.ConnectToLoggingService(conf.ServiceURLs.LoggingService)
+	defer close()
+	clients.LoggingService = loggingClient
+
 	ctx := context.Background()
 	if err := service.RunServer(
 		ctx,
 		conf.Port,
+		clients,
 		studyDBService,
 		globalDBService,
 		conf.Study.GlobalSecret,

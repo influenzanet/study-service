@@ -34,3 +34,5 @@ STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN=2
 STUDY_TIMER_EVENT_CHECK_INTERVAL_VAR=1
 # should be secret:
 STUDY_GLOBAL_SECRET=<global study service key to encrypt participant ids>
+
+ADDR_LOGGING_SERVICE=<url:port>

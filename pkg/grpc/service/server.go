@@ -10,6 +10,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
+	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc"
 )
 
@@ -19,6 +20,7 @@ const (
 )
 
 type studyServiceServer struct {
+	clients           *types.APIClients
 	studyDBservice    *studydb.StudyDBService
 	globalDBService   *globaldb.GlobalDBService
 	StudyGlobalSecret string
@@ -26,11 +28,13 @@ type studyServiceServer struct {
 
 // NewUserManagementServer creates a new service instance
 func NewStudyServiceServer(
+	clients *types.APIClients,
 	studyDBservice *studydb.StudyDBService,
 	globalDBservice *globaldb.GlobalDBService,
 	studyGlobalSectret string,
 ) api.StudyServiceApiServer {
 	return &studyServiceServer{
+		clients:           clients,
 		studyDBservice:    studyDBservice,
 		globalDBService:   globalDBservice,
 		StudyGlobalSecret: studyGlobalSectret,
@@ -39,6 +43,7 @@ func NewStudyServiceServer(
 
 // RunServer runs gRPC service to publish ToDo service
 func RunServer(ctx context.Context, port string,
+	clients *types.APIClients,
 	studyDBservice *studydb.StudyDBService,
 	globalDBservice *globaldb.GlobalDBService,
 	globalStudySecret string,
@@ -51,6 +56,7 @@ func RunServer(ctx context.Context, port string,
 	// register service
 	server := grpc.NewServer()
 	api.RegisterStudyServiceApiServer(server, NewStudyServiceServer(
+		clients,
 		studyDBservice,
 		globalDBservice,
 		globalStudySecret,
