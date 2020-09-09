@@ -24,6 +24,9 @@ api:
 build:
 	go build .
 
+mock:
+	mockgen github.com/influenzanet/logging-service/pkg/api LoggingServiceApiClient > test/mocks/logging_service/logging_service.go
+
 test:
 	./test/test.sh $(TEST_ARGS)
 

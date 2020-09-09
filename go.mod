@@ -3,6 +3,7 @@ module github.com/influenzanet/study-service
 go 1.14
 
 require (
+	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/influenzanet/go-utils v0.2.1
 	github.com/influenzanet/logging-service v0.1.0
