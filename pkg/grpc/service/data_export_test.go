@@ -4,10 +4,13 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc"
+
+	loggingMock "github.com/influenzanet/study-service/test/mocks/logging_service"
 
 	api_types "github.com/influenzanet/go-utils/pkg/api_types"
 )
@@ -23,10 +26,17 @@ func addTestSurveyResponses(studyDBservice *studydb.StudyDBService, instID strin
 }
 
 func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_getsurveyresponsestatistics"
@@ -79,6 +89,11 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 
 	t.Run("as non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
+
 		_, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
@@ -93,6 +108,11 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 
 	t.Run("without query", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
+
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -117,6 +137,10 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 
 	t.Run("with from", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -142,6 +166,10 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 
 	t.Run("with until", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -167,6 +195,10 @@ func TestGetStudyResponseStatisticsEndpoint(t *testing.T) {
 	})
 
 	t.Run("with time range", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetStudyResponseStatistics(context.Background(), &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -204,10 +236,17 @@ func (_m *studyServiceAPI_StreamSurveyResponses) Send(r *api.SurveyResponse) err
 }
 
 func TestStreamStudyResponsesEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_streamsurveyresponses"
@@ -262,6 +301,10 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	})
 
 	t.Run("as non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
@@ -278,6 +321,10 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with spec. survey key", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
@@ -299,6 +346,10 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with from", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
@@ -320,6 +371,10 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with until", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{
@@ -341,6 +396,10 @@ func TestStreamStudyResponsesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with all query params", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		mock := &studyServiceAPI_StreamSurveyResponses{}
 		req := &api.SurveyResponseQuery{
 			Token: &api_types.TokenInfos{

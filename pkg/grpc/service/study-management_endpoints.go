@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
+	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
@@ -17,7 +20,8 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{constants.USER_ROLE_RESEARCHER, constants.USER_ROLE_ADMIN}) {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_CREATION, "permission denied for "+req.Study.Key)
 		return nil, status.Error(codes.Unauthenticated, "not authorized to create a study")
 	}
 
@@ -34,6 +38,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_CREATION, req.Study.Key)
 	return cStudy.ToAPI(), nil
 }
 
@@ -42,7 +47,11 @@ func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api_types.T
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !token_checks.CheckIfAnyRolesInToken(req, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req, []string{
+		constants.USER_ROLE_ADMIN,
+		constants.USER_ROLE_RESEARCHER,
+	}) {
+		s.SaveLogEvent(req.InstanceId, req.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, "permission denied for all studies")
 		return nil, status.Error(codes.Unauthenticated, "not authorized")
 	}
 
@@ -64,6 +73,7 @@ func (s *studyServiceServer) GetAllStudies(ctx context.Context, req *api_types.T
 		}
 		resp.Studies = append(resp.Studies, study.ToAPI())
 	}
+	s.SaveLogEvent(req.InstanceId, req.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, "all")
 	return resp, nil
 }
 
@@ -72,7 +82,11 @@ func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferen
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{"RESEARCHER", "ADMIN"}) {
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{
+		constants.USER_ROLE_RESEARCHER,
+		constants.USER_ROLE_ADMIN,
+	}) {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_STUDY, "permission denied for: "+req.StudyKey)
 		return nil, status.Error(codes.Unauthenticated, "not authorized")
 	}
 
@@ -88,7 +102,7 @@ func (s *studyServiceServer) GetStudy(ctx context.Context, req *api.StudyReferen
 		// don't share secret key if not study admin
 		study.SecretKey = ""
 	}
-
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, req.StudyKey)
 	return study.ToAPI(), nil
 }
 
@@ -102,6 +116,7 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 		types.STUDY_ROLE_OWNER,
 	})
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_SAVE_SURVEY, fmt.Sprintf("permission denied for %s in %s", req.StudyKey, req.StudyKey))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -110,7 +125,7 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_SAVE_SURVEY, req.StudyKey)
 	return createdSurvey.ToAPI(), nil
 }
 
@@ -124,13 +139,16 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 		types.STUDY_ROLE_OWNER,
 	})
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_SURVEY_DEF, "permission denied for "+req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	survey, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_SURVEY_DEF, "not found"+req.StudyKey+"-"+req.SurveyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_SURVEY_DEF, req.StudyKey+"-"+req.SurveyKey)
 	return survey.ToAPI(), nil
 }
 
@@ -144,6 +162,7 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 		types.STUDY_ROLE_OWNER,
 	})
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("permission denied for removing %s from study %s  ", req.SurveyKey, req.StudyKey))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -151,6 +170,7 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("removed %s from study %s  ", req.SurveyKey, req.StudyKey))
 	return &api.ServiceStatus{
 		Status:  api.ServiceStatus_NORMAL,
 		Msg:     "survey removed",
@@ -166,11 +186,12 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	infos := make([]*api.SurveyInfoResp_SurveyInfo, len(surveys))
+	infos := make([]*api.SurveyInfo, len(surveys))
 	for i, s := range surveys {
 		apiS := s.ToAPI()
-		infos[i] = &api.SurveyInfoResp_SurveyInfo{
-			Key:             s.Current.SurveyDefinition.Key,
+		infos[i] = &api.SurveyInfo{
+			StudyKey:        req.StudyKey,
+			SurveyKey:       s.Current.SurveyDefinition.Key,
 			Name:            apiS.Props.Name,
 			Description:     apiS.Props.Description,
 			TypicalDuration: apiS.Props.TypicalDuration,
@@ -194,6 +215,7 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_MEMBER, fmt.Sprintf("permission denied for saving member %s from study %s  ", req.Member.UserId, req.StudyKey))
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -219,6 +241,7 @@ func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.Study
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_MEMBER, fmt.Sprintf("save membmer (%s) for %s with role %s", req.Member.UserId, req.StudyKey, req.Member.Role))
 	return uStudy.ToAPI(), nil
 }
 
@@ -230,6 +253,7 @@ func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.Stu
 		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 	)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_MEMBER, fmt.Sprintf("permission denied for removing %s from study %s  ", req.Member.UserId, req.StudyKey))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
@@ -248,6 +272,7 @@ func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.Stu
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_MEMBER, fmt.Sprintf("removed %s from study %s  ", req.Member.UserId, req.StudyKey))
 	return uStudy.ToAPI(), nil
 }
 
@@ -259,6 +284,7 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 	)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_UPDATE, fmt.Sprintf("permission denied for rule update in study %s  ", req.StudyKey))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
@@ -276,6 +302,7 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_UPDATE, fmt.Sprintf("rules updated for %s", req.StudyKey))
 	return uStudy.ToAPI(), nil
 }
 
@@ -287,6 +314,7 @@ func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.Study
 		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 	)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_UPDATE, fmt.Sprintf("permission denied for status update of study %s  ", req.StudyKey))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	err = s.studyDBservice.UpdateStudyStatus(req.Token.InstanceId, req.StudyKey, req.NewStatus)
@@ -297,6 +325,7 @@ func (s *studyServiceServer) SaveStudyStatus(ctx context.Context, req *api.Study
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_UPDATE, fmt.Sprintf("status updated for %s", req.StudyKey))
 	return study.ToAPI(), nil
 }
 
@@ -308,6 +337,7 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 	)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_UPDATE, "permission denied for updating props for "+req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -322,6 +352,7 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_UPDATE, req.StudyKey)
 	return uStudy.ToAPI(), nil
 }
 
@@ -333,6 +364,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 	)
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -340,6 +372,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_DELETION, req.StudyKey)
 	return &api.ServiceStatus{
 		Status: api.ServiceStatus_NORMAL,
 		Msg:    "study deleted",

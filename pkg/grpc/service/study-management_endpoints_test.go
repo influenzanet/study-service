@@ -4,16 +4,25 @@ import (
 	"context"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
+	loggingMock "github.com/influenzanet/study-service/test/mocks/logging_service"
 )
 
 func TestCreateNewStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	t.Run("with missing request", func(t *testing.T) {
@@ -37,6 +46,10 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 	}
 
 	t.Run("with missing user roles", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.CreateNewStudy(context.Background(), &api.NewStudyRequest{
 			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
@@ -54,6 +67,10 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with correct user roles", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		study, err := s.CreateNewStudy(context.Background(), &api.NewStudyRequest{
 			Token: &api_types.TokenInfos{
 				InstanceId: testInstanceID,
@@ -98,10 +115,17 @@ func TestCreateNewStudyEndpoint(t *testing.T) {
 }
 
 func TestGetAllStudiesEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_getallstudies"
@@ -139,6 +163,10 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non admin user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.GetAllStudies(context.Background(), &api_types.TokenInfos{
 			Id:         "user",
 			InstanceId: testInstanceID,
@@ -154,6 +182,10 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with researcher user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetAllStudies(context.Background(), &api_types.TokenInfos{
 			Id:         "user",
 			InstanceId: testInstanceID,
@@ -173,10 +205,17 @@ func TestGetAllStudiesEndpoint(t *testing.T) {
 }
 
 func TestGetStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_getstudy"
@@ -214,6 +253,10 @@ func TestGetStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non admin user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -232,6 +275,10 @@ func TestGetStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with researcher user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetStudy(context.Background(), &api.StudyReferenceReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -254,10 +301,17 @@ func TestGetStudyEndpoint(t *testing.T) {
 }
 
 func TestSaveSurveyToStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testUser := "testuser"
@@ -294,6 +348,10 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with wrong user role", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		testSurvey := api.Survey{
 			Current: &api.SurveyVersion{
 				SurveyDefinition: &api.SurveyItem{
@@ -319,6 +377,10 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with new survey to add", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		testSurvey := api.Survey{
 			Current: &api.SurveyVersion{
 				SurveyDefinition: &api.SurveyItem{
@@ -349,10 +411,17 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 }
 
 func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_getsurveydef"
@@ -402,6 +471,10 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 		}
 	})
 	t.Run("as non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
@@ -417,6 +490,10 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with not existing survey", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -432,6 +509,10 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with correct inputs", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -451,10 +532,17 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 }
 
 func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_removesurveys"
@@ -504,6 +592,10 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 		}
 	})
 	t.Run("as non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
@@ -519,6 +611,10 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with not existing survey", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -534,6 +630,10 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with correct inputs", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
@@ -610,10 +710,17 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 }
 
 func TestSaveStudyMemberEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_savemember"
@@ -651,6 +758,10 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member non admin user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -674,6 +785,10 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member but admin user", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -700,6 +815,10 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.SaveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,
@@ -731,10 +850,17 @@ func TestSaveStudyMemberEndpoint(t *testing.T) {
 }
 
 func TestRemoveStudyMemberEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_removemember"
@@ -776,6 +902,10 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -797,6 +927,10 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.RemoveStudyMember(context.Background(), &api.StudyMemberReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,
@@ -822,10 +956,17 @@ func TestRemoveStudyMemberEndpoint(t *testing.T) {
 }
 
 func TestSaveStudyRulesEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_saverules"
@@ -864,6 +1005,10 @@ func TestSaveStudyRulesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -885,6 +1030,10 @@ func TestSaveStudyRulesEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.SaveStudyRules(context.Background(), &api.StudyRulesReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,
@@ -910,10 +1059,17 @@ func TestSaveStudyRulesEndpoint(t *testing.T) {
 }
 
 func TestSaveStudyStatusEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_savestatus"
@@ -952,6 +1108,10 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -971,6 +1131,10 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.SaveStudyStatus(context.Background(), &api.StudyStatusReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,
@@ -994,10 +1158,17 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 }
 
 func TestSaveStudyPropsEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_saveprops"
@@ -1041,6 +1212,10 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -1065,6 +1240,10 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		resp, err := s.SaveStudyProps(context.Background(), &api.StudyPropsReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,
@@ -1093,10 +1272,17 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 }
 
 func TestDeleteStudyEndpoint(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockLoggingClient := loggingMock.NewMockLoggingServiceApiClient(mockCtrl)
+
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,
 		StudyGlobalSecret: "globsecretfortest1234",
+		clients: &types.APIClients{
+			LoggingService: mockLoggingClient,
+		},
 	}
 
 	testStudyKey := "testStudyfor_todelete"
@@ -1140,6 +1326,10 @@ func TestDeleteStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with non study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
 			Token: &api_types.TokenInfos{
 				Id:         "user",
@@ -1158,6 +1348,10 @@ func TestDeleteStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with study member", func(t *testing.T) {
+		mockLoggingClient.EXPECT().SaveLogEvent(
+			gomock.Any(),
+			gomock.Any(),
+		).Return(nil, nil)
 		_, err := s.DeleteStudy(context.Background(), &api.StudyReferenceReq{
 			Token: &api_types.TokenInfos{
 				Id:         testUserID,

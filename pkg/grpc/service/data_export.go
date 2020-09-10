@@ -5,11 +5,14 @@ import (
 	"errors"
 	"log"
 
+	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
 )
 
 func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req *api.SurveyResponseQuery) (*api.StudyResponseStatistics, error) {
@@ -17,8 +20,12 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"analyst", "maintainer", "owner"})
+	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+		types.STUDY_ROLE_OWNER,
+		types.STUDY_ROLE_MAINTAINER,
+		"analyst"})
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Statistics: permission denied for "+req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -39,7 +46,7 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 		}
 		resp.SurveyResponseCounts[k] = count
 	}
-
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "statistics: "+req.StudyKey)
 	return resp, nil
 }
 
@@ -50,6 +57,7 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 
 	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"analyst", "maintainer", "owner"})
 	if err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -73,5 +81,6 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, req.StudyKey)
 	return nil
 }
