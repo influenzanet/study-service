@@ -185,6 +185,7 @@ type AssignedSurvey struct {
 	ValidUntil int64  `protobuf:"varint,3,opt,name=valid_until,json=validUntil,proto3" json:"valid_until,omitempty"`
 	StudyKey   string `protobuf:"bytes,4,opt,name=study_key,json=studyKey,proto3" json:"study_key,omitempty"`
 	Category   string `protobuf:"bytes,5,opt,name=category,proto3" json:"category,omitempty"`
+	ProfileId  string `protobuf:"bytes,6,opt,name=profile_id,json=profileId,proto3" json:"profile_id,omitempty"`
 }
 
 func (x *AssignedSurvey) Reset() {
@@ -254,18 +255,105 @@ func (x *AssignedSurvey) GetCategory() string {
 	return ""
 }
 
+func (x *AssignedSurvey) GetProfileId() string {
+	if x != nil {
+		return x.ProfileId
+	}
+	return ""
+}
+
+type SurveyInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	StudyKey        string             `protobuf:"bytes,1,opt,name=study_key,json=studyKey,proto3" json:"study_key,omitempty"`
+	SurveyKey       string             `protobuf:"bytes,2,opt,name=survey_key,json=surveyKey,proto3" json:"survey_key,omitempty"`
+	Name            []*LocalisedObject `protobuf:"bytes,3,rep,name=name,proto3" json:"name,omitempty"`
+	Description     []*LocalisedObject `protobuf:"bytes,4,rep,name=description,proto3" json:"description,omitempty"`
+	TypicalDuration []*LocalisedObject `protobuf:"bytes,5,rep,name=typical_duration,json=typicalDuration,proto3" json:"typical_duration,omitempty"`
+}
+
+func (x *SurveyInfo) Reset() {
+	*x = SurveyInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_study_service_study_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SurveyInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SurveyInfo) ProtoMessage() {}
+
+func (x *SurveyInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_study_service_study_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SurveyInfo.ProtoReflect.Descriptor instead.
+func (*SurveyInfo) Descriptor() ([]byte, []int) {
+	return file_study_service_study_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SurveyInfo) GetStudyKey() string {
+	if x != nil {
+		return x.StudyKey
+	}
+	return ""
+}
+
+func (x *SurveyInfo) GetSurveyKey() string {
+	if x != nil {
+		return x.SurveyKey
+	}
+	return ""
+}
+
+func (x *SurveyInfo) GetName() []*LocalisedObject {
+	if x != nil {
+		return x.Name
+	}
+	return nil
+}
+
+func (x *SurveyInfo) GetDescription() []*LocalisedObject {
+	if x != nil {
+		return x.Description
+	}
+	return nil
+}
+
+func (x *SurveyInfo) GetTypicalDuration() []*LocalisedObject {
+	if x != nil {
+		return x.TypicalDuration
+	}
+	return nil
+}
+
 type AssignedSurveys struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Surveys []*AssignedSurvey `protobuf:"bytes,1,rep,name=surveys,proto3" json:"surveys,omitempty"`
+	Surveys     []*AssignedSurvey `protobuf:"bytes,1,rep,name=surveys,proto3" json:"surveys,omitempty"`
+	SurveyInfos []*SurveyInfo     `protobuf:"bytes,2,rep,name=survey_infos,json=surveyInfos,proto3" json:"survey_infos,omitempty"`
 }
 
 func (x *AssignedSurveys) Reset() {
 	*x = AssignedSurveys{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_study_service_study_proto_msgTypes[3]
+		mi := &file_study_service_study_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -278,7 +366,7 @@ func (x *AssignedSurveys) String() string {
 func (*AssignedSurveys) ProtoMessage() {}
 
 func (x *AssignedSurveys) ProtoReflect() protoreflect.Message {
-	mi := &file_study_service_study_proto_msgTypes[3]
+	mi := &file_study_service_study_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,12 +379,19 @@ func (x *AssignedSurveys) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignedSurveys.ProtoReflect.Descriptor instead.
 func (*AssignedSurveys) Descriptor() ([]byte, []int) {
-	return file_study_service_study_proto_rawDescGZIP(), []int{3}
+	return file_study_service_study_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AssignedSurveys) GetSurveys() []*AssignedSurvey {
 	if x != nil {
 		return x.Surveys
+	}
+	return nil
+}
+
+func (x *AssignedSurveys) GetSurveyInfos() []*SurveyInfo {
+	if x != nil {
+		return x.SurveyInfos
 	}
 	return nil
 }
@@ -317,7 +412,7 @@ type Study_Props struct {
 func (x *Study_Props) Reset() {
 	*x = Study_Props{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_study_service_study_proto_msgTypes[4]
+		mi := &file_study_service_study_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -330,7 +425,7 @@ func (x *Study_Props) String() string {
 func (*Study_Props) ProtoMessage() {}
 
 func (x *Study_Props) ProtoReflect() protoreflect.Message {
-	mi := &file_study_service_study_proto_msgTypes[4]
+	mi := &file_study_service_study_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -401,7 +496,7 @@ type Study_Member struct {
 func (x *Study_Member) Reset() {
 	*x = Study_Member{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_study_service_study_proto_msgTypes[5]
+		mi := &file_study_service_study_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -414,7 +509,7 @@ func (x *Study_Member) String() string {
 func (*Study_Member) ProtoMessage() {}
 
 func (x *Study_Member) ProtoReflect() protoreflect.Message {
-	mi := &file_study_service_study_proto_msgTypes[5]
+	mi := &file_study_service_study_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -463,7 +558,7 @@ type Study_Stats struct {
 func (x *Study_Stats) Reset() {
 	*x = Study_Stats{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_study_service_study_proto_msgTypes[6]
+		mi := &file_study_service_study_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -476,7 +571,7 @@ func (x *Study_Stats) String() string {
 func (*Study_Stats) ProtoMessage() {}
 
 func (x *Study_Stats) ProtoReflect() protoreflect.Message {
-	mi := &file_study_service_study_proto_msgTypes[6]
+	mi := &file_study_service_study_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -573,7 +668,7 @@ var file_study_service_study_proto_rawDesc = []byte{
 	0x6c, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65,
 	0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72,
 	0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x73, 0x65, 0x64, 0x4f, 0x62,
-	0x6a, 0x65, 0x63, 0x74, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x22, 0xa8, 0x01, 0x0a, 0x0e,
+	0x6a, 0x65, 0x63, 0x74, 0x52, 0x05, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x22, 0xc7, 0x01, 0x0a, 0x0e,
 	0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x12, 0x1d,
 	0x0a, 0x0a, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x09, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x4b, 0x65, 0x79, 0x12, 0x1d, 0x0a,
@@ -584,16 +679,42 @@ var file_study_service_study_proto_rawDesc = []byte{
 	0x09, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x08, 0x73, 0x74, 0x75, 0x64, 0x79, 0x4b, 0x65, 0x79, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x61,
 	0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x63, 0x61,
-	0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x22, 0x57, 0x0a, 0x0f, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e,
-	0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12, 0x44, 0x0a, 0x07, 0x73, 0x75, 0x72,
-	0x76, 0x65, 0x79, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x69, 0x6e, 0x66,
+	0x74, 0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c,
+	0x65, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x70, 0x72, 0x6f, 0x66,
+	0x69, 0x6c, 0x65, 0x49, 0x64, 0x22, 0xb0, 0x02, 0x0a, 0x0a, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79,
+	0x49, 0x6e, 0x66, 0x6f, 0x12, 0x1b, 0x0a, 0x09, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x6b, 0x65,
+	0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x73, 0x74, 0x75, 0x64, 0x79, 0x4b, 0x65,
+	0x79, 0x12, 0x1d, 0x0a, 0x0a, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x6b, 0x65, 0x79, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x4b, 0x65, 0x79,
+	0x12, 0x3f, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b,
+	0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74,
+	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x6f, 0x63, 0x61,
+	0x6c, 0x69, 0x73, 0x65, 0x64, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x12, 0x4d, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e,
+	0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x73, 0x65, 0x64, 0x4f, 0x62, 0x6a,
+	0x65, 0x63, 0x74, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x12, 0x56, 0x0a, 0x10, 0x74, 0x79, 0x70, 0x69, 0x63, 0x61, 0x6c, 0x5f, 0x64, 0x75, 0x72, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2b, 0x2e, 0x69, 0x6e, 0x66,
 	0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x41, 0x73, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64,
-	0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x07, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x42,
-	0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e,
-	0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74, 0x75, 0x64, 0x79,
-	0x2d, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69,
-	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x6c, 0x69, 0x73, 0x65,
+	0x64, 0x4f, 0x62, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x0f, 0x74, 0x79, 0x70, 0x69, 0x63, 0x61, 0x6c,
+	0x44, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0xa2, 0x01, 0x0a, 0x0f, 0x41, 0x73, 0x73,
+	0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x12, 0x44, 0x0a, 0x07,
+	0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e,
+	0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75,
+	0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x41, 0x73, 0x73, 0x69, 0x67,
+	0x6e, 0x65, 0x64, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x52, 0x07, 0x73, 0x75, 0x72, 0x76, 0x65,
+	0x79, 0x73, 0x12, 0x49, 0x0a, 0x0c, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x5f, 0x69, 0x6e, 0x66,
+	0x6f, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75,
+	0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f,
+	0x52, 0x0b, 0x73, 0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x73, 0x42, 0x2f, 0x5a,
+	0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x66, 0x6c,
+	0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74, 0x75, 0x64, 0x79, 0x2d, 0x73,
+	0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -608,33 +729,38 @@ func file_study_service_study_proto_rawDescGZIP() []byte {
 	return file_study_service_study_proto_rawDescData
 }
 
-var file_study_service_study_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_study_service_study_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_study_service_study_proto_goTypes = []interface{}{
 	(*Study)(nil),           // 0: influenzanet.study_service.Study
 	(*Tag)(nil),             // 1: influenzanet.study_service.Tag
 	(*AssignedSurvey)(nil),  // 2: influenzanet.study_service.AssignedSurvey
-	(*AssignedSurveys)(nil), // 3: influenzanet.study_service.AssignedSurveys
-	(*Study_Props)(nil),     // 4: influenzanet.study_service.Study.Props
-	(*Study_Member)(nil),    // 5: influenzanet.study_service.Study.Member
-	(*Study_Stats)(nil),     // 6: influenzanet.study_service.Study.Stats
-	(*Expression)(nil),      // 7: influenzanet.study_service.Expression
-	(*LocalisedObject)(nil), // 8: influenzanet.study_service.LocalisedObject
+	(*SurveyInfo)(nil),      // 3: influenzanet.study_service.SurveyInfo
+	(*AssignedSurveys)(nil), // 4: influenzanet.study_service.AssignedSurveys
+	(*Study_Props)(nil),     // 5: influenzanet.study_service.Study.Props
+	(*Study_Member)(nil),    // 6: influenzanet.study_service.Study.Member
+	(*Study_Stats)(nil),     // 7: influenzanet.study_service.Study.Stats
+	(*Expression)(nil),      // 8: influenzanet.study_service.Expression
+	(*LocalisedObject)(nil), // 9: influenzanet.study_service.LocalisedObject
 }
 var file_study_service_study_proto_depIdxs = []int32{
-	4, // 0: influenzanet.study_service.Study.props:type_name -> influenzanet.study_service.Study.Props
-	7, // 1: influenzanet.study_service.Study.rules:type_name -> influenzanet.study_service.Expression
-	5, // 2: influenzanet.study_service.Study.members:type_name -> influenzanet.study_service.Study.Member
-	6, // 3: influenzanet.study_service.Study.stats:type_name -> influenzanet.study_service.Study.Stats
-	8, // 4: influenzanet.study_service.Tag.label:type_name -> influenzanet.study_service.LocalisedObject
-	2, // 5: influenzanet.study_service.AssignedSurveys.surveys:type_name -> influenzanet.study_service.AssignedSurvey
-	8, // 6: influenzanet.study_service.Study.Props.name:type_name -> influenzanet.study_service.LocalisedObject
-	8, // 7: influenzanet.study_service.Study.Props.description:type_name -> influenzanet.study_service.LocalisedObject
-	1, // 8: influenzanet.study_service.Study.Props.tags:type_name -> influenzanet.study_service.Tag
-	9, // [9:9] is the sub-list for method output_type
-	9, // [9:9] is the sub-list for method input_type
-	9, // [9:9] is the sub-list for extension type_name
-	9, // [9:9] is the sub-list for extension extendee
-	0, // [0:9] is the sub-list for field type_name
+	5,  // 0: influenzanet.study_service.Study.props:type_name -> influenzanet.study_service.Study.Props
+	8,  // 1: influenzanet.study_service.Study.rules:type_name -> influenzanet.study_service.Expression
+	6,  // 2: influenzanet.study_service.Study.members:type_name -> influenzanet.study_service.Study.Member
+	7,  // 3: influenzanet.study_service.Study.stats:type_name -> influenzanet.study_service.Study.Stats
+	9,  // 4: influenzanet.study_service.Tag.label:type_name -> influenzanet.study_service.LocalisedObject
+	9,  // 5: influenzanet.study_service.SurveyInfo.name:type_name -> influenzanet.study_service.LocalisedObject
+	9,  // 6: influenzanet.study_service.SurveyInfo.description:type_name -> influenzanet.study_service.LocalisedObject
+	9,  // 7: influenzanet.study_service.SurveyInfo.typical_duration:type_name -> influenzanet.study_service.LocalisedObject
+	2,  // 8: influenzanet.study_service.AssignedSurveys.surveys:type_name -> influenzanet.study_service.AssignedSurvey
+	3,  // 9: influenzanet.study_service.AssignedSurveys.survey_infos:type_name -> influenzanet.study_service.SurveyInfo
+	9,  // 10: influenzanet.study_service.Study.Props.name:type_name -> influenzanet.study_service.LocalisedObject
+	9,  // 11: influenzanet.study_service.Study.Props.description:type_name -> influenzanet.study_service.LocalisedObject
+	1,  // 12: influenzanet.study_service.Study.Props.tags:type_name -> influenzanet.study_service.Tag
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_study_service_study_proto_init() }
@@ -682,7 +808,7 @@ func file_study_service_study_proto_init() {
 			}
 		}
 		file_study_service_study_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AssignedSurveys); i {
+			switch v := v.(*SurveyInfo); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -694,7 +820,7 @@ func file_study_service_study_proto_init() {
 			}
 		}
 		file_study_service_study_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Study_Props); i {
+			switch v := v.(*AssignedSurveys); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -706,7 +832,7 @@ func file_study_service_study_proto_init() {
 			}
 		}
 		file_study_service_study_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Study_Member); i {
+			switch v := v.(*Study_Props); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -718,6 +844,18 @@ func file_study_service_study_proto_init() {
 			}
 		}
 		file_study_service_study_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Study_Member); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_study_service_study_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Study_Stats); i {
 			case 0:
 				return &v.state
@@ -736,7 +874,7 @@ func file_study_service_study_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_study_service_study_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

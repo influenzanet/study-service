@@ -72,28 +72,67 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", true)
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, types.STUDY_STATUS_ACTIVE, true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	// for every profile form the token
+	profileIDs := []string{req.ProfilId}
+	profileIDs = append(profileIDs, req.OtherProfileIds...)
+
 	resp := api.AssignedSurveys{
-		Surveys: []*api.AssignedSurvey{},
+		Surveys:     []*api.AssignedSurvey{},
+		SurveyInfos: []*api.SurveyInfo{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.ProfileIDtoParticipantID(req.ProfilId, s.StudyGlobalSecret, study.SecretKey)
+		studySurveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.InstanceId, study.Key, false)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-		pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, study.Key, participantID)
-		if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
-			continue
-		}
+		for _, profileID := range profileIDs {
 
-		for _, as := range pState.AssignedSurveys {
-			cs := as.ToAPI()
-			cs.StudyKey = study.Key
-			resp.Surveys = append(resp.Surveys, cs)
+			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey)
+			if err != nil {
+				return nil, status.Error(codes.Internal, err.Error())
+			}
+			pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, study.Key, participantID)
+			if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
+				continue
+			}
+
+			for _, as := range pState.AssignedSurveys {
+				cs := as.ToAPI()
+				cs.StudyKey = study.Key
+				cs.ProfileId = profileID
+				resp.Surveys = append(resp.Surveys, cs)
+
+				sDef := types.Survey{}
+				for _, def := range studySurveys {
+					if def.Current.SurveyDefinition.Key == cs.SurveyKey {
+						sDef = def
+						break
+					}
+				}
+
+				found := false
+				for _, info := range resp.SurveyInfos {
+					if info.SurveyKey == sDef.Current.SurveyDefinition.Key && info.StudyKey == cs.StudyKey {
+						found = true
+						break
+					}
+				}
+				if !found {
+					apiS := sDef.ToAPI()
+					resp.SurveyInfos = append(resp.SurveyInfos, &api.SurveyInfo{
+						StudyKey:        cs.StudyKey,
+						SurveyKey:       apiS.Current.SurveyDefinition.Key,
+						Name:            apiS.Props.Name,
+						Description:     apiS.Props.Description,
+						TypicalDuration: apiS.Props.TypicalDuration,
+					})
+				}
+			}
 		}
 	}
 

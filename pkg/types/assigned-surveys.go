@@ -3,6 +3,7 @@ package types
 import api "github.com/influenzanet/study-service/pkg/api"
 
 const (
+	ASSIGNED_SURVEY_CATEGORY_PRIO   = "prio"
 	ASSIGNED_SURVEY_CATEGORY_NORMAL = "normal"
 	ASSIGNED_SURVEY_CATEGORY_QUICK  = "quick"
 	ASSIGNED_SURVEY_CATEGORY_UPDATE = "update"
@@ -21,6 +22,7 @@ func (as AssignedSurvey) ToAPI() *api.AssignedSurvey {
 		SurveyKey:  as.SurveyKey,
 		ValidFrom:  as.ValidFrom,
 		ValidUntil: as.ValidUntil,
+		Category:   as.Category,
 	}
 }
 
@@ -32,5 +34,6 @@ func AssignedSurveyFromAPI(as *api.AssignedSurvey) AssignedSurvey {
 		SurveyKey:  as.SurveyKey,
 		ValidFrom:  as.ValidFrom,
 		ValidUntil: as.ValidUntil,
+		Category:   as.Category,
 	}
 }
