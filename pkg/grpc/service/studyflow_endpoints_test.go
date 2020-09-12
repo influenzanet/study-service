@@ -278,8 +278,10 @@ func TestEnterStudyEndpoint(t *testing.T) {
 			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
+				ProfilId:   "main",
 			},
-			StudyKey: testStudy.Key,
+			ProfileId: "main",
+			StudyKey:  testStudy.Key,
 		}
 		resp, err := s.EnterStudy(context.Background(), req)
 		if err != nil {
@@ -296,8 +298,10 @@ func TestEnterStudyEndpoint(t *testing.T) {
 			Token: &api_types.TokenInfos{
 				Id:         "testuser",
 				InstanceId: testInstanceID,
+				ProfilId:   "main",
 			},
-			StudyKey: testStudy.Key,
+			ProfileId: "main",
+			StudyKey:  testStudy.Key,
 		}
 		_, err := s.EnterStudy(context.Background(), req)
 		if err == nil {
@@ -413,7 +417,8 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID1,
 			},
-			StudyKey: "wrong",
+			ProfileId: testUserID1,
+			StudyKey:  "wrong",
 		}
 		_, err := s.PostponeSurvey(context.Background(), req)
 		if err == nil {
@@ -429,6 +434,7 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID1,
 			},
+			ProfileId: testUserID1,
 			StudyKey:  testStudy.Key,
 			SurveyKey: "s1",
 			Delay:     3600,
@@ -456,6 +462,7 @@ func TestPostponeSurveyEndpoint(t *testing.T) {
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID2,
 			},
+			ProfileId: testUserID2,
 			StudyKey:  testStudy.Key,
 			SurveyKey: "s1",
 			Delay:     3600,
@@ -690,8 +697,9 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	}
 
 	_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
-		Token:    &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
-		StudyKey: testStudyKey,
+		Token:     &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
+		ProfileId: testUserID,
+		StudyKey:  testStudyKey,
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
@@ -727,7 +735,8 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		_, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
-			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
+			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
+			ProfileId: testUserID,
 			StudyKey:  "wrong",
 			SurveyKey: "t1",
 		})
@@ -740,6 +749,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	t.Run("correct values", func(t *testing.T) {
 		resp, err := s.GetAssignedSurvey(context.Background(), &api.SurveyReferenceRequest{
 			Token:     &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
+			ProfileId: testUserID,
 			StudyKey:  testStudyKey,
 			SurveyKey: "t1",
 		})
@@ -854,6 +864,7 @@ func TestSubmitStatusReportEndpoint(t *testing.T) {
 				InstanceId: testInstanceID,
 				ProfilId:   testUserID,
 			},
+			ProfileId: testUserID,
 			StatusSurvey: &api.SurveyResponse{
 				Key:           "t1",
 				ParticipantId: pid1,
@@ -973,9 +984,10 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	t.Run("wrong study key", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
-			Token:    &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID},
-			StudyKey: "wrong_study",
-			Response: &survResp,
+			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
+			ProfileId: testUserID,
+			StudyKey:  "wrong_study",
+			Response:  &survResp,
 		})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "")
 		if !ok {
@@ -985,9 +997,10 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	t.Run("correct values", func(t *testing.T) {
 		_, err := s.SubmitResponse(context.Background(), &api.SubmitResponseReq{
-			Token:    &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
-			StudyKey: studies[0].Key,
-			Response: &survResp,
+			Token:     &api_types.TokenInfos{Id: testUserID, InstanceId: testInstanceID, ProfilId: testUserID},
+			ProfileId: testUserID,
+			StudyKey:  studies[0].Key,
+			Response:  &survResp,
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
@@ -1078,7 +1091,8 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 				Id:         testUserID1,
 				ProfilId:   testUserID1,
 			},
-			StudyKey: "wrong",
+			ProfileId: testUserID1,
+			StudyKey:  "wrong",
 		})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "mongo: no documents in result")
 		if !ok {
@@ -1093,7 +1107,8 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 				Id:         testUserID2,
 				ProfilId:   testUserID2,
 			},
-			StudyKey: testStudies[0].Key,
+			ProfileId: testUserID2,
+			StudyKey:  testStudies[0].Key,
 		})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "not active in the study")
 		if !ok {
@@ -1108,7 +1123,8 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 				Id:         testUserID1,
 				ProfilId:   testUserID1,
 			},
-			StudyKey: testStudies[0].Key,
+			ProfileId: testUserID1,
+			StudyKey:  testStudies[0].Key,
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
@@ -1164,8 +1180,9 @@ func TestResolveContextRules(t *testing.T) {
 		}
 	}
 	_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
-		Token:    &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
-		StudyKey: testStudyKey,
+		Token:     &api_types.TokenInfos{Id: testUserID, ProfilId: testUserID, InstanceId: testInstanceID},
+		ProfileId: testUserID,
+		StudyKey:  testStudyKey,
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
@@ -1288,8 +1305,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 		}
 
 		_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
-			Token:    tokenOther,
-			StudyKey: study.Key,
+			Token:     tokenOther,
+			ProfileId: "other",
+			StudyKey:  study.Key,
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -1297,8 +1315,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 		}
 
 		_, err = s.SubmitResponse(context.TODO(), &api.SubmitResponseReq{
-			Token:    tokenOther,
-			StudyKey: study.Key,
+			Token:     tokenOther,
+			ProfileId: "other",
+			StudyKey:  study.Key,
 			Response: &api.SurveyResponse{
 				Key:         "test-survey-1",
 				SubmittedAt: time.Now().Unix(),
@@ -1320,8 +1339,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 				ProfilId:         profile,
 			}
 			_, err = s.EnterStudy(context.TODO(), &api.EnterStudyRequest{
-				Token:    token,
-				StudyKey: study.Key,
+				Token:     token,
+				ProfileId: profile,
+				StudyKey:  study.Key,
 			})
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -1329,8 +1349,9 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 			}
 
 			_, err = s.SubmitResponse(context.TODO(), &api.SubmitResponseReq{
-				Token:    token,
-				StudyKey: study.Key,
+				Token:     token,
+				ProfileId: profile,
+				StudyKey:  study.Key,
 				Response: &api.SurveyResponse{
 					Key:         "test-survey-1",
 					SubmittedAt: time.Now().Unix(),

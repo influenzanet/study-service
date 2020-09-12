@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
+	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -20,8 +22,13 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "enter study:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -143,8 +150,14 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
+
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "get assigned survey:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -184,8 +197,13 @@ func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.Postpo
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "postpone survey:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -248,6 +266,11 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "submit status report:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	studies, err := s.studyDBservice.GetStudiesByStatus(req.Token.InstanceId, "active", true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -256,7 +279,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.ProfileIDtoParticipantID(req.Token.ProfilId, s.StudyGlobalSecret, study.SecretKey)
+		participantID, err := utils.ProfileIDtoParticipantID(req.ProfileId, s.StudyGlobalSecret, study.SecretKey)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -309,8 +332,13 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "submit responses study:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "could not compute participant id")
 	}
@@ -364,8 +392,13 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "leave study:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.Token.ProfilId)
+	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

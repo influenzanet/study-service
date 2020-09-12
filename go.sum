@@ -70,6 +70,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/influenzanet/go-utils v0.0.0-20200802163656-b73c42d2aa5f/go.mod h1:OY5GbpOVq5aUj5r9wxUxRKXIAMQ7CxeHGL9YpmOvObY=
 github.com/influenzanet/go-utils v0.2.4 h1:HrAeOFeCgwTaE5uqP9bkazU9tDEMbqfXQSMpWQ6DA7o=
 github.com/influenzanet/go-utils v0.2.4/go.mod h1:uHC1DNbnHH0zACsMLLP98pcH9R0BJuV4d+vUAqcqoS0=
+github.com/influenzanet/go-utils v0.2.5 h1:nzuQ9qkDNRLYxDLKufQNXagiGiwJGNQO2mgDcMJuFjw=
+github.com/influenzanet/go-utils v0.2.5/go.mod h1:uHC1DNbnHH0zACsMLLP98pcH9R0BJuV4d+vUAqcqoS0=
 github.com/influenzanet/logging-service v0.1.0 h1:9LBiyGvIVhoF8JRZge45xEj8XmSUozfpY4PgiOmArI0=
 github.com/influenzanet/logging-service v0.1.0/go.mod h1:IJ4fo8B8zMhzG3HnFDLCQWDYQmO3rejqYVcN0c/h8eU=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=

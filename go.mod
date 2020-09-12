@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
-	github.com/influenzanet/go-utils v0.2.4
+	github.com/influenzanet/go-utils v0.2.5
 	github.com/influenzanet/logging-service v0.1.0
 	go.mongodb.org/mongo-driver v1.4.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
