@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.GetStudiesForUserReq) (*api.Studies, error) {
+func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.GetStudiesForUserReq) (*api.StudiesForUser, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -29,9 +29,15 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	resp := &api.Studies{Studies: []*api.Study{}}
+	resp := &api.StudiesForUser{Studies: []*api.StudyForUser{}}
 	for _, study := range studies {
-
+		studyInfos := api.StudyForUser{
+			Key:        study.Key,
+			Props:      study.Props.ToAPI(),
+			Status:     study.Status,
+			Stats:      study.Stats.ToAPI(),
+			ProfileIds: []string{},
+		}
 		for _, profileID := range profileIDs {
 			// ParticipantID
 			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey)
@@ -50,13 +56,10 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 			}
 
 			// at least one profile in the study:
-			resp.Studies = append(resp.Studies, &api.Study{
-				Key:    study.Key,
-				Status: study.Status,
-				Props:  study.Props.ToAPI(),
-				Stats:  study.Stats.ToAPI(),
-			})
-			break
+			studyInfos.ProfileIds = append(studyInfos.ProfileIds, profileID)
+		}
+		if len(studyInfos.ProfileIds) > 0 {
+			resp.Studies = append(resp.Studies, &studyInfos)
 		}
 	}
 
