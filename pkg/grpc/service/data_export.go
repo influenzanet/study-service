@@ -20,13 +20,16 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
-		types.STUDY_ROLE_OWNER,
-		types.STUDY_ROLE_MAINTAINER,
-		"analyst"})
-	if err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Statistics: permission denied for "+req.StudyKey)
-		return nil, status.Error(codes.Internal, err.Error())
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+			"analyst"})
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Statistics: permission denied for "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	keys, err := s.studyDBservice.GetSurveyResponseKeys(req.Token.InstanceId, req.StudyKey, req.From, req.Until)
@@ -55,10 +58,16 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 		return status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{"analyst", "maintainer", "owner"})
-	if err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
-		return status.Error(codes.Internal, err.Error())
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+		})
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+			return status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	sendResponseOverGrpc := func(instanceID string, studyKey string, response types.SurveyResponse, args ...interface{}) error {
@@ -76,7 +85,7 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 		return nil
 	}
 
-	err = s.studyDBservice.PerfomActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
+	err := s.studyDBservice.PerfomActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
 		sendResponseOverGrpc, stream)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
