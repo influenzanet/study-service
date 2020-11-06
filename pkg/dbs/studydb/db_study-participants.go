@@ -14,19 +14,22 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 
 	filter := bson.M{"studyStatus": studyStatus}
 
-	var opts *options.FindOptions
+	batchSize := int32(32)
+	opts := options.FindOptions{
+		BatchSize: &batchSize,
+	}
 	if useProjection {
 		projection := bson.D{
 			primitive.E{Key: "studyStatus", Value: 1},   // {"secretKey", 1},
 			primitive.E{Key: "participantID", Value: 1}, // {"secretKey", 1},
 		}
-		opts = options.Find().SetProjection(projection)
+		opts.Projection = projection
 	}
 
 	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
 		ctx,
 		filter,
-		opts,
+		&opts,
 	)
 
 	if err != nil {
@@ -116,7 +119,13 @@ func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	// Get all active participants
 
 	filter := bson.M{"studyStatus": "active"}
-	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(ctx, filter)
+
+	batchSize := int32(32)
+	options := options.FindOptions{
+		BatchSize: &batchSize,
+	}
+
+	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(ctx, filter, &options)
 	if err != nil {
 		return err
 	}
