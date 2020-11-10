@@ -1,10 +1,13 @@
-.PHONY: build test install-dev docker api
+.PHONY: build test install-dev docker api study-service-app
 
 PROTO_BUILD_DIR = ../../..
 # TEST_ARGS = -v | grep -c RUN
 
 DOCKER_OPTS ?= --rm
 VERSION := $(shell git describe --tags --abbrev=0)
+
+# Where binary are put
+TARGET_DIR ?= ./
 
 help:
 	@echo "Service building targets"
@@ -21,9 +24,11 @@ api:
 	if [ ! -d "./pkg/api" ]; then mkdir -p "./pkg/api"; else  find "./pkg/api" -type f -delete &&  mkdir -p "./pkg/api"; fi
 	find ./api/study_service/*.proto -maxdepth 1 -type f -exec protoc {} --proto_path=./api --go_out=plugins=grpc:$(PROTO_BUILD_DIR) \;
 
-build:
-	go build .
+study-service-app:
+	go build -o $(TARGET_DIR) ./cmd/study-service-app
 
+build: study-service-app
+	
 mock:
 	mockgen github.com/influenzanet/logging-service/pkg/api LoggingServiceApiClient > test/mocks/logging_service/logging_service.go
 
