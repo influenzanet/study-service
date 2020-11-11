@@ -29,10 +29,14 @@ DB_DB_NAME_PREFIX=<db name prefix>
 # study engine settings
 #################
 STUDY_SERVICE_LISTEN_PORT=5003
-STUDY_TIMER_EVENT_FREQUENCY=2
+
+# how often the timer event should be performed (only from one instance of the service) - seconds
 STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN=2
+
+#  range of the uniform random distribution - varying the check interval to avoid a steady collisions
 STUDY_TIMER_EVENT_CHECK_INTERVAL_VAR=1
-# should be secret:
+
+# Random string to be used to build the study key, for example a base64 string (> 16 bytes of data), should be secret:
 STUDY_GLOBAL_SECRET=<global study service key to encrypt participant ids>
 
 ADDR_LOGGING_SERVICE=<url:port>
