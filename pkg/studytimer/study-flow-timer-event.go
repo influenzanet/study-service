@@ -1,6 +1,7 @@
 package studytimer
 
 import (
+	"errors"
 	"log"
 
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
@@ -26,35 +27,71 @@ func (s *StudyTimerService) StudyTimerEvent() {
 			log.Printf("performing timer event for study: %s - %s", instance.InstanceID, study.Key)
 
 			s.UpdateStudyStats(instance.InstanceID, study.Key)
-
-			if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instance.InstanceID, study.Key, s.checkAndUpdateParticipantState); err != nil {
-				log.Println(err)
-				continue
-			}
+			s.UpdateParticipantStates(instance.InstanceID, study.Key)
 		}
 	}
 }
 
-func (s *StudyTimerService) checkAndUpdateParticipantState(studyDBServ *studydb.StudyDBService, pState types.ParticipantState, instanceID string, studyKey string) error {
-	rules, err := studyDBServ.GetStudyRules(instanceID, studyKey)
+func (s *StudyTimerService) UpdateParticipantStates(instanceID string, studyKey string) {
+	rules, err := s.studyDBService.GetStudyRules(instanceID, studyKey)
 	if err != nil {
-		return err
+		log.Printf("ERROR in UpdateParticipantStates.GetStudyRules (%s, %s): %v", instanceID, studyKey, err)
+		return
 	}
 
 	studyEvent := types.StudyEvent{
 		Type: "TIMER",
 	}
 
+	if !s.hasRuleForEventType(rules, studyEvent) {
+		log.Printf("UpdateParticipantStates (%s, %s): has no timer related rules, skipped.", instanceID, studyKey)
+		return
+	}
+
+	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instanceID, studyKey, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
+		log.Printf("ERROR in UpdateParticipantStates.FindAndExecuteOnParticipantsStates (%s, %s): %v", instanceID, studyKey, err)
+	}
+}
+
+func (s *StudyTimerService) getAndUpdateParticipantState(
+	studyDBServ *studydb.StudyDBService,
+	pState types.ParticipantState,
+	instanceID string,
+	studyKey string,
+	args ...interface{},
+) (err error) {
+	if len(args) != 2 {
+		err = errors.New("unexpected number of args")
+		log.Printf("ERROR in getAndUpdateParticipantState: %v", err)
+		return
+	}
+	rules := args[0].([]types.Expression)
+	studyEvent := args[1].(types.StudyEvent)
+
 	for _, rule := range rules {
 		pState, err = studyengine.ActionEval(rule, pState, studyEvent)
 		if err != nil {
-			log.Println(err)
+			log.Printf("ERROR in getAndUpdateParticipantState.ActionEval (%s, %s): %v", instanceID, studyKey, err)
 			continue
 		}
 	}
 	// save state back to DB
 	_, err = studyDBServ.SaveParticipantState(instanceID, studyKey, pState)
 	return err
+}
+
+func (s *StudyTimerService) hasRuleForEventType(rules []types.Expression, event types.StudyEvent) bool {
+	for _, rule := range rules {
+		if len(rule.Data) < 1 {
+			continue
+		}
+		exp := rule.Data[0].Exp
+		if exp == nil || len(exp.Data) < 1 || exp.Data[0].Str != event.Type {
+			continue
+		}
+		return true
+	}
+	return false
 }
 
 func (s *StudyTimerService) UpdateStudyStats(instanceID string, studyKey string) {

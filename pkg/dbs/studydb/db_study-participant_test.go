@@ -177,7 +177,7 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 		err := testDBService.FindAndExecuteOnParticipantsStates(
 			testInstanceID,
 			testStudyKey,
-			func(dbService *StudyDBService, p types.ParticipantState, instanceID, studyKey string) error {
+			func(dbService *StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
 				_, ok := p.Flags["test1"]
 				if !ok {
 					p.Flags = map[string]string{
@@ -188,7 +188,7 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 				}
 				_, err := dbService.SaveParticipantState(instanceID, studyKey, p)
 				return err
-			})
+			}, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return

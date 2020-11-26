@@ -111,13 +111,13 @@ func (dbService *StudyDBService) GetParticipantCountByStatus(instanceID string, 
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	instanceID string,
 	studyKey string,
-	cbk func(dbService *StudyDBService, p types.ParticipantState, instanceID string, studyKey string) error,
+	cbk func(dbService *StudyDBService, p types.ParticipantState, instanceID string, studyKey string, args ...interface{}) error,
+	args ...interface{},
 ) error {
-
 	ctx, cancel := dbService.getContext()
 	defer cancel()
-	// Get all active participants
 
+	// Get all active participants
 	filter := bson.M{"studyStatus": "active"}
 
 	batchSize := int32(32)
@@ -138,7 +138,7 @@ func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 			continue
 		}
 		// Perform callback:
-		if err := cbk(dbService, pState, instanceID, studyKey); err != nil {
+		if err := cbk(dbService, pState, instanceID, studyKey, args...); err != nil {
 			continue
 		}
 	}
