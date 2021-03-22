@@ -124,6 +124,9 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	}
 
 	newSurvey := types.SurveyFromAPI(req.Survey)
+	if newSurvey.Current.VersionID == "" {
+		newSurvey.Current.VersionID = utils.GenerateSurveyVersionID()
+	}
 	createdSurvey, err := s.studyDBservice.SaveSurvey(req.Token.InstanceId, req.StudyKey, newSurvey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
