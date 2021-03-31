@@ -1,20 +1,18 @@
 package utils
 
 import (
-	"crypto/rand"
 	"encoding/base32"
-	"log"
+	"encoding/binary"
+	"time"
 )
 
-const versionIDLen = 6
-
 func GenerateSurveyVersionID() string {
-	buff := make([]byte, versionIDLen)
-	_, err := rand.Read(buff)
-	if err != nil {
-		log.Printf("unexpected error when generating survey version: %v", err)
-		return ""
-	}
-	str := base32.StdEncoding.EncodeToString(buff)
-	return str[:versionIDLen]
+	t := time.Now()
+	ms := uint64(t.UnixNano())
+
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, ms)
+
+	str := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
+	return str
 }
