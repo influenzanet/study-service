@@ -990,6 +990,22 @@ func TestEvalNOT(t *testing.T) {
 }
 
 func TestEvalTimestampWithOffset(t *testing.T) {
+	t.Run("T + 0", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 0},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > time.Now().Unix()+1 || resTS < time.Now().Unix()-1 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()+0)
+		}
+	})
+
 	t.Run("T + 10", func(t *testing.T) {
 		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
 			{DType: "num", Num: 10},
@@ -1019,6 +1035,112 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 		resTS := int64(ret.(float64))
 		if resTS < time.Now().Unix()-11 || resTS > time.Now().Unix()-9 {
 			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()-10)
+		}
+	})
+
+	t.Run("T + No num", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 1 was not num")
+			return
+		}
+	})
+
+	t.Run("R + 0", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 0},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r+1 || resTS < r-1 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r+0)
+		}
+	})
+
+	t.Run("R + 10", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 10},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r+11 || resTS < r+9 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r+10)
+		}
+	})
+
+	t.Run("R - 10", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: -10},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r-9 || resTS < r-11 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r-10)
+		}
+	})
+
+	t.Run("R + No num", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 1 was not num")
+			return
+		}
+	})
+
+	t.Run("No num + 10", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 10},
+			{DType: "str", Str: "1"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 2 was not num")
+			return
+		}
+	})
+
+	t.Run("No num + No num", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+			{DType: "str", Str: "1"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameters 1 & 2 were not num")
+			return
 		}
 	})
 }

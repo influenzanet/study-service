@@ -476,15 +476,31 @@ func (ctx EvalContext) not(exp types.Expression) (val bool, err error) {
 }
 
 func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err error) {
-	if len(exp.Data) != 1 {
-		return t, errors.New("should have one argument")
+	if len(exp.Data) != 1 && len(exp.Data) != 2 {
+		return t, errors.New("should have one or two arguments")
 	}
 
-	arg1, err := ctx.expressionArgResolver(exp.Data[0])
-	if err != nil {
-		return t, err
+	if exp.Data[0].DType != "num" {
+		return t, errors.New("argument 1 should be of type num")
+	}
+	arg1, err1 := ctx.expressionArgResolver(exp.Data[0])
+	if err1 != nil {
+		return t, err1
 	}
 	delta := int64(arg1.(float64))
-	t = float64(time.Now().Unix() + delta)
+
+	referenceTime := time.Now().Unix()
+	if len(exp.Data) == 2 {
+		if exp.Data[1].DType != "num" {
+			return t, errors.New("argument 2 should be of type num")
+		}
+		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
+		if err2 != nil {
+			return t, err2
+		}
+		referenceTime = int64(arg2.(float64))
+	}
+
+	t = float64(referenceTime + delta)
 	return
 }
