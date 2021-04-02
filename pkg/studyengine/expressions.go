@@ -20,14 +20,27 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 	switch expression.Name {
 	case "checkEventType":
 		val, err = evalCtx.checkEventType(expression)
+	// Response checkers:
 	case "checkSurveyResponseKey":
 		val, err = evalCtx.checkSurveyResponseKey(expression)
-	case "hasStudyStatus":
-		val, err = evalCtx.hasStudyStatus(expression)
-	case "lastSubmissionDateOlderThan":
-		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
 	case "responseHasKeysAny":
 		val, err = evalCtx.responseHasKeysAny(expression)
+	// Participant state:
+	case "getStudyEntryTime":
+		val, err = evalCtx.getStudyEntryTime(expression)
+	case "hasSurveyKeyAssigned":
+		val, err = evalCtx.hasSurveyKeyAssigned(expression)
+	case "getSurveyKeyAssignedFrom":
+		val, err = evalCtx.getSurveyKeyAssignedFrom(expression)
+	case "getSurveyKeyAssignedUntil":
+		val, err = evalCtx.getSurveyKeyAssignedUntil(expression)
+	case "hasStudyStatus":
+		val, err = evalCtx.hasStudyStatus(expression)
+	case "hasParticipantFlag":
+		val, err = evalCtx.hasParticipantFlag(expression)
+	case "lastSubmissionDateOlderThan":
+		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
+	// Logical and comparisions:
 	case "eq":
 		val, err = evalCtx.eq(expression)
 	case "lt":
@@ -44,6 +57,7 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.or(expression)
 	case "not":
 		val, err = evalCtx.not(expression)
+	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
 	default:
@@ -117,6 +131,31 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 	}
 
 	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+}
+
+func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err error) {
+	err = errors.New("not implemented")
+	return
+}
+
+func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (t float64, err error) {
+	err = errors.New("not implemented")
+	return
+}
+
+func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val bool, err error) {
+	err = errors.New("not implemented")
+	return
+}
+
+func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (t float64, err error) {
+	err = errors.New("not implemented")
+	return
+}
+
+func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (t float64, err error) {
+	err = errors.New("not implemented")
+	return
 }
 
 func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bool, err error) {

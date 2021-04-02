@@ -138,6 +138,54 @@ func TestEvalHasStudyStatus(t *testing.T) {
 	})
 }
 
+func TestEvalGetStudyEntryTime(t *testing.T) {
+	// TODO: add test for retrieving correct value from participant state
+	t.Run("t1", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
+func TestEvalHasSurveyKeyAssigned(t *testing.T) {
+	// TODO: add test for: participant has got survey key assigned
+	// TODO: add test for: participant hasn't got survey key assigned
+	// TODO: add test for: survey key argument invalid (not a string - current no expression - probably not useful here)
+
+	t.Run("t1", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
+func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
+	// TODO: add test for: participant hasn't got survey key assigned
+	// TODO: add test for: survey key argument invalid (not a string - current no expression - probably not useful here)
+	// TODO: add test for: participant has got survey key assigned
+	t.Run("t1", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
+func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
+	// TODO: add test for: participant hasn't got survey key assigned
+	// TODO: add test for: survey key argument invalid (not a string - current no expression - probably not useful here)
+	// TODO: add test for: participant has got survey key assigned
+	t.Run("t1", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
+func TestEvalHasParticipantFlag(t *testing.T) {
+	// TODO: add test for: participant hasn't got any participant flags (empty / nil)
+	// TODO: add test for: participant has other participant flags, but key this is missing
+	// TODO: add test for: participant has correct participant flag's key, but value is different
+	// TODO: add test for: participant has correct participant flag's key and value is same
+	// TODO: add test for: using num at 1st argument (expressions allowed, should return string)
+	// TODO: add test for: using num at 2nd argument (expressions allowed, should return string)
+
+	t.Run("t1", func(t *testing.T) {
+		t.Error("test unimplemented")
+	})
+}
+
 func TestEvalResponseHasKeysAny(t *testing.T) {
 	testEvalContext := EvalContext{
 		Event: types.StudyEvent{
