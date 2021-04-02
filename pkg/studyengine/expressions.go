@@ -486,7 +486,7 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 		return t, err1
 	}
 	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
-		return t, errors.New("argument 1 should be of resolved as type a number (float64)")
+		return t, errors.New("argument 1 should be resolved as type number (float64)")
 	}
 	delta := int64(arg1.(float64))
 
@@ -497,7 +497,7 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 			return t, err2
 		}
 		if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
-			return t, errors.New("argument 2 should be of resolved as type a number (float64)")
+			return t, errors.New("argument 2 should be resolved as type number (float64)")
 		}
 
 		referenceTime = int64(arg2.(float64))
