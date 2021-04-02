@@ -90,3 +90,11 @@ func ExpressionFromAPI(e *api.Expression) *Expression {
 func (exp ExpressionArg) IsExpression() bool {
 	return exp.DType == "exp"
 }
+
+func (exp ExpressionArg) IsNumber() bool {
+	return exp.DType == "num"
+}
+
+func (exp ExpressionArg) IsString() bool {
+	return exp.DType == "str"
+}
