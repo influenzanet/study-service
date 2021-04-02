@@ -3,6 +3,7 @@ package studyengine
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -480,24 +481,25 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 		return t, errors.New("should have one or two arguments")
 	}
 
-	if exp.Data[0].DType != "num" {
-		return t, errors.New("argument 1 should be of type num")
-	}
 	arg1, err1 := ctx.expressionArgResolver(exp.Data[0])
 	if err1 != nil {
 		return t, err1
+	}
+	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
+		return t, errors.New("argument 1 should be of resolved as type a number (float64)")
 	}
 	delta := int64(arg1.(float64))
 
 	referenceTime := time.Now().Unix()
 	if len(exp.Data) == 2 {
-		if exp.Data[1].DType != "num" {
-			return t, errors.New("argument 2 should be of type num")
-		}
 		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
 		if err2 != nil {
 			return t, err2
 		}
+		if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
+			return t, errors.New("argument 2 should be of resolved as type a number (float64)")
+		}
+
 		referenceTime = int64(arg2.(float64))
 	}
 
