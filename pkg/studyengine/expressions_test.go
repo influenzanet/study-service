@@ -1143,4 +1143,93 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 			return
 		}
 	})
+
+	t.Run("Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{
+				DType: "exp", Exp: &types.Expression{
+					Name: "timestampWithOffset", Data: []types.ExpressionArg{
+						{DType: "num", Num: -float64(time.Now().Unix())},
+					}},
+			}}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS-time.Now().Unix() > 1 {
+			t.Errorf("unexpected value: %d, expected %d", resTS, time.Now().Unix())
+		}
+	})
+
+	t.Run("Valid Exp + Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > 1 {
+			t.Errorf("unexpected value: %d, expected %d", resTS, 0)
+		}
+	})
+
+	t.Run("Not Valid Exp + Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "or", Data: []types.ExpressionArg{
+					{DType: "num", Num: 1},
+					{DType: "num", Num: 1},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error")
+			return
+		}
+	})
+
+	t.Run("Valid Exp + Not Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "or", Data: []types.ExpressionArg{
+					{DType: "num", Num: 1},
+					{DType: "num", Num: 1},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error")
+			return
+		}
+	})
 }
