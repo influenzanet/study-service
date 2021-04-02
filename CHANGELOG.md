@@ -3,12 +3,14 @@
 ## [Unreleased]
 
 ### Added
-- New expressions:
-    - `getStudyEntryTime`:
-    - `hasSurveyKeyAssigned`:
-    - `getSurveyKeyAssignedFrom`:
-    - `getSurveyKeyAssignedUntil`:
-    - `hasParticipantFlag`:
+
+#### New expressions:
+
+- `getStudyEntryTime`: method to retrieve timestamp of the event, when the participant entered the study from the participant state.
+- `hasSurveyKeyAssigned`:
+- `getSurveyKeyAssignedFrom`:
+- `getSurveyKeyAssignedUntil`:
+- `hasParticipantFlag`:
 
 ### Changed
 

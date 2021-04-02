@@ -134,8 +134,7 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 }
 
 func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err error) {
-	err = errors.New("not implemented")
-	return
+	return float64(ctx.ParticipantState.EnteredAt), nil
 }
 
 func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (t float64, err error) {

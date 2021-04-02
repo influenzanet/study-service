@@ -139,9 +139,23 @@ func TestEvalHasStudyStatus(t *testing.T) {
 }
 
 func TestEvalGetStudyEntryTime(t *testing.T) {
-	// TODO: add test for retrieving correct value from participant state
-	t.Run("t1", func(t *testing.T) {
-		t.Error("test unimplemented")
+	t.Run("try retrieve entered at time", func(t *testing.T) {
+		exp := types.Expression{Name: "getStudyEntryTime"}
+		tStart := time.Now().Unix()
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				EnteredAt:   tStart,
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != float64(tStart) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
 	})
 }
 
