@@ -4,10 +4,10 @@
 
 ### Added
 
-#### New expressions:
+#### New expressions
 
 - `getStudyEntryTime`: method to retrieve timestamp of the event, when the participant entered the study from the participant state.
-- `hasSurveyKeyAssigned`:
+- `hasSurveyKeyAssigned`: accepts one string argument with the survey key to be checked for. Return true if the survey key exists in the assigned surveys array.
 - `getSurveyKeyAssignedFrom`:
 - `getSurveyKeyAssignedUntil`:
 - `hasParticipantFlag`:

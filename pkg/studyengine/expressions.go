@@ -137,8 +137,25 @@ func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err e
 	return float64(ctx.ParticipantState.EnteredAt), nil
 }
 
-func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (t float64, err error) {
-	err = errors.New("not implemented")
+func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
+		return val, errors.New("unexpected number or wrong type of argument")
+	}
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument")
+	}
+
+	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+		if survey.SurveyKey == arg1Val {
+			val = true
+			return
+		}
+	}
 	return
 }
 
