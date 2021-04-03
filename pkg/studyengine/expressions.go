@@ -159,14 +159,50 @@ func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (val bool, err
 	return
 }
 
-func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val bool, err error) {
-	err = errors.New("not implemented")
-	return
+func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
+		return val, errors.New("unexpected number or wrong type of argument")
+	}
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument")
+	}
+
+	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+		if survey.SurveyKey == arg1Val {
+			val = float64(survey.ValidFrom)
+			return
+		}
+	}
+
+	return -1, nil
 }
 
-func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (t float64, err error) {
-	err = errors.New("not implemented")
-	return
+func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
+		return val, errors.New("unexpected number or wrong type of argument")
+	}
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument")
+	}
+
+	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+		if survey.SurveyKey == arg1Val {
+			val = float64(survey.ValidUntil)
+			return
+		}
+	}
+
+	return -1, nil
 }
 
 func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (t float64, err error) {

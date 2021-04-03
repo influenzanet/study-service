@@ -243,20 +243,172 @@ func TestEvalHasSurveyKeyAssigned(t *testing.T) {
 }
 
 func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
-	// TODO: add test for: participant hasn't got survey key assigned
-	// TODO: add test for: survey key argument invalid (not a string - current no expression - probably not useful here)
-	// TODO: add test for: participant has got survey key assigned
-	t.Run("t1", func(t *testing.T) {
-		t.Error("test unimplemented")
+	t.Run("has survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != 10 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("doesn't have the survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != -1 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about missing arg")
+			return
+		}
+	})
+
+	t.Run("wrong argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about arg type")
+			return
+		}
 	})
 }
 
 func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
-	// TODO: add test for: participant hasn't got survey key assigned
-	// TODO: add test for: survey key argument invalid (not a string - current no expression - probably not useful here)
-	// TODO: add test for: participant has got survey key assigned
-	t.Run("t1", func(t *testing.T) {
-		t.Error("test unimplemented")
+	t.Run("has survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != 100 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("doesn't have the survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != -1 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about missing arg")
+			return
+		}
+	})
+
+	t.Run("wrong argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about arg type")
+			return
+		}
 	})
 }
 

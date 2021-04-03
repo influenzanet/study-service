@@ -7,9 +7,9 @@
 #### New expressions
 
 - `getStudyEntryTime`: method to retrieve timestamp of the event, when the participant entered the study from the participant state.
-- `hasSurveyKeyAssigned`: accepts one string argument with the survey key to be checked for. Return true if the survey key exists in the assigned surveys array.
-- `getSurveyKeyAssignedFrom`:
-- `getSurveyKeyAssignedUntil`:
+- `hasSurveyKeyAssigned`: accepts one string argument with the survey key to be checked for. Returns true if the survey key exists in the assigned surveys array.
+- `getSurveyKeyAssignedFrom`:  accepts one string argument with the survey key to be checked for. Returns the timestamp for the survey's validFrom attribute or -1 if the survey key is not assigned.
+- `getSurveyKeyAssignedUntil`: accepts one string argument with the survey key to be checked for. Returns the timestamp for the survey's validUntil attribute or -1 if the survey key is not assigned.
 - `hasParticipantFlag`:
 
 ### Changed
