@@ -25,6 +25,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.checkSurveyResponseKey(expression)
 	case "responseHasKeysAny":
 		val, err = evalCtx.responseHasKeysAny(expression)
+	case "responseHasOnlyKeysOtherThan":
+		val, err = evalCtx.responseHasOnlyKeysOtherThan(expression)
 	// Participant state:
 	case "getStudyEntryTime":
 		val, err = evalCtx.getStudyEntryTime(expression)
@@ -328,6 +330,98 @@ func (ctx EvalContext) responseHasKeysAny(exp types.Expression) (val bool, err e
 		for _, item := range responseParentGroup.Items {
 			if item.Key == target {
 				anyFound = true
+				break
+			}
+		}
+		if anyFound {
+			break
+		}
+	}
+	return anyFound, nil
+}
+
+func (ctx EvalContext) responseHasOnlyKeysOtherThan(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) < 3 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+	arg2, err := ctx.expressionArgResolver(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+	arg2Val, ok := arg2.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	targetKeys := []string{}
+	for _, d := range exp.Data[2:] {
+		arg, err := ctx.expressionArgResolver(d)
+		if err != nil {
+			return val, err
+		}
+		argVal, ok := arg.(string)
+		if !ok {
+			return val, errors.New("could not cast arguments")
+		}
+		targetKeys = append(targetKeys, argVal)
+	}
+
+	// find survey item:
+	responseOfInterest := &types.SurveyItemResponse{}
+	for _, response := range ctx.Event.Response.Responses {
+		if response.Key == arg1Val {
+			responseOfInterest = &response
+			break
+		}
+	}
+	if responseOfInterest.Key == "" || responseOfInterest.Response == nil {
+		// Item not found
+		return false, nil
+	}
+	responseParentGroup := &types.ResponseItem{}
+	for i, k := range strings.Split(arg2Val, ".") {
+		if i == 0 {
+			if responseOfInterest.Response.Key != k {
+				// item not found:
+				return false, nil
+			}
+			responseParentGroup = responseOfInterest.Response
+			continue
+		}
+
+		found := false
+		for _, item := range responseParentGroup.Items {
+			if item.Key == k {
+				found = true
+				responseParentGroup = &item
+				break
+			}
+		}
+		if !found {
+			// item not found:
+			return false, nil
+		}
+	}
+
+	if len(responseParentGroup.Items) < 1 {
+		return false, nil
+	}
+
+	// Check if any of the target in response
+	anyFound := true
+	for _, target := range targetKeys {
+		for _, item := range responseParentGroup.Items {
+			if item.Key == target {
+				anyFound = false
 				break
 			}
 		}
