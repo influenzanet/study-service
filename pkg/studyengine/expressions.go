@@ -207,9 +207,38 @@ func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val floa
 	return -1, nil
 }
 
-func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (t float64, err error) {
-	err = errors.New("not implemented")
-	return
+func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	if exp.Data[0].IsNumber() || exp.Data[1].IsNumber() {
+		return val, errors.New("unexpected argument types")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument 1")
+	}
+
+	arg2, err := ctx.expressionArgResolver(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+	arg2Val, ok := arg2.(string)
+	if !ok {
+		return val, errors.New("could not cast argument 2")
+	}
+
+	value, ok := ctx.ParticipantState.Flags[arg1Val]
+	if !ok || value != arg2Val {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bool, err error) {

@@ -413,15 +413,150 @@ func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
 }
 
 func TestEvalHasParticipantFlag(t *testing.T) {
-	// TODO: add test for: participant hasn't got any participant flags (empty / nil)
-	// TODO: add test for: participant has other participant flags, but key this is missing
-	// TODO: add test for: participant has correct participant flag's key, but value is different
-	// TODO: add test for: participant has correct participant flag's key and value is same
-	// TODO: add test for: using num at 1st argument (expressions allowed, should return string)
-	// TODO: add test for: using num at 2nd argument (expressions allowed, should return string)
+	t.Run("participant hasn't got any participant flags (empty / nil)", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
 
-	t.Run("t1", func(t *testing.T) {
-		t.Error("test unimplemented")
+	t.Run("participant has other participant flags, but this key is missing", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key2": "value1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has correct participant flag's key, but value is different", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value2",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has correct participant flag's key and value is same", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Error("should be true")
+		}
+	})
+
+	t.Run("missing arguments", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
+	})
+
+	t.Run("using num at 1st argument (expressions allowed, should return string)", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "num", Num: 22},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
+	})
+
+	t.Run("missing arguments", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "num", Num: 22},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
 	})
 }
 
