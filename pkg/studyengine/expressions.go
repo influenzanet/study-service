@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,10 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.responseHasKeysAny(expression)
 	case "responseHasOnlyKeysOtherThan":
 		val, err = evalCtx.responseHasOnlyKeysOtherThan(expression)
+	case "getResponseValueAsNum":
+		val, err = evalCtx.getResponseValueAsNum(expression)
+	case "getResponseValueAsStr":
+		val, err = evalCtx.getResponseValueAsStr(expression)
 	// Participant state:
 	case "getStudyEntryTime":
 		val, err = evalCtx.getStudyEntryTime(expression)
@@ -317,40 +322,16 @@ func (ctx EvalContext) responseHasKeysAny(exp types.Expression) (val bool, err e
 	}
 
 	// find survey item:
-	responseOfInterest := &types.SurveyItemResponse{}
-	for _, response := range ctx.Event.Response.Responses {
-		if response.Key == arg1Val {
-			responseOfInterest = &response
-			break
-		}
-	}
-	if responseOfInterest.Key == "" || responseOfInterest.Response == nil {
+	responseOfInterest, err := findSurveyItemResponse(ctx.Event.Response.Responses, arg1Val)
+	if err != nil {
 		// Item not found
 		return false, nil
 	}
-	responseParentGroup := &types.ResponseItem{}
-	for i, k := range strings.Split(arg2Val, ".") {
-		if i == 0 {
-			if responseOfInterest.Response.Key != k {
-				// item not found:
-				return false, nil
-			}
-			responseParentGroup = responseOfInterest.Response
-			continue
-		}
 
-		found := false
-		for _, item := range responseParentGroup.Items {
-			if item.Key == k {
-				found = true
-				responseParentGroup = &item
-				break
-			}
-		}
-		if !found {
-			// item not found:
-			return false, nil
-		}
+	responseParentGroup, err := findResponseObject(responseOfInterest, arg2Val)
+	if err != nil {
+		// Item not found
+		return false, nil
 	}
 
 	// Check if any of the target in response
@@ -405,40 +386,16 @@ func (ctx EvalContext) responseHasOnlyKeysOtherThan(exp types.Expression) (val b
 	}
 
 	// find survey item:
-	responseOfInterest := &types.SurveyItemResponse{}
-	for _, response := range ctx.Event.Response.Responses {
-		if response.Key == arg1Val {
-			responseOfInterest = &response
-			break
-		}
-	}
-	if responseOfInterest.Key == "" || responseOfInterest.Response == nil {
+	responseOfInterest, err := findSurveyItemResponse(ctx.Event.Response.Responses, arg1Val)
+	if err != nil {
 		// Item not found
 		return false, nil
 	}
-	responseParentGroup := &types.ResponseItem{}
-	for i, k := range strings.Split(arg2Val, ".") {
-		if i == 0 {
-			if responseOfInterest.Response.Key != k {
-				// item not found:
-				return false, nil
-			}
-			responseParentGroup = responseOfInterest.Response
-			continue
-		}
 
-		found := false
-		for _, item := range responseParentGroup.Items {
-			if item.Key == k {
-				found = true
-				responseParentGroup = &item
-				break
-			}
-		}
-		if !found {
-			// item not found:
-			return false, nil
-		}
+	responseParentGroup, err := findResponseObject(responseOfInterest, arg2Val)
+	if err != nil {
+		// Item not found
+		return false, nil
 	}
 
 	if len(responseParentGroup.Items) < 1 {
@@ -459,6 +416,83 @@ func (ctx EvalContext) responseHasOnlyKeysOtherThan(exp types.Expression) (val b
 		}
 	}
 	return anyFound, nil
+}
+
+func (ctx EvalContext) getResponseValueAsNum(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+	arg2, err := ctx.expressionArgResolver(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+	arg2Val, ok := arg2.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	// find survey item:
+	surveyItem, err := findSurveyItemResponse(ctx.Event.Response.Responses, arg1Val)
+	if err != nil {
+		// Item not found
+		return 0, errors.New("item not found")
+	}
+
+	responseObject, err := findResponseObject(surveyItem, arg2Val)
+	if err != nil {
+		// Item not found
+		return 0, errors.New("item not found")
+	}
+
+	val, err = strconv.ParseFloat(responseObject.Value, 64)
+	return
+}
+
+func (ctx EvalContext) getResponseValueAsStr(exp types.Expression) (val string, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+	arg2, err := ctx.expressionArgResolver(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+	arg2Val, ok := arg2.(string)
+	if !ok {
+		return val, errors.New("could not cast arguments")
+	}
+
+	// find survey item:
+	surveyItem, err := findSurveyItemResponse(ctx.Event.Response.Responses, arg1Val)
+	if err != nil {
+		// Item not found
+		return "", errors.New("item not found")
+	}
+
+	responseObject, err := findResponseObject(surveyItem, arg2Val)
+	if err != nil {
+		// Item not found
+		return "", errors.New("item not found")
+	}
+	val = responseObject.Value
+	return
 }
 
 func (ctx EvalContext) eq(exp types.Expression) (val bool, err error) {
