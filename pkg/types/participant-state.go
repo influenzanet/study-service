@@ -12,7 +12,7 @@ type ParticipantState struct {
 	ID              primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	ParticipantID   string               `bson:"participantID"` // reference to the study specific participant ID
 	EnteredAt       int64                `bson:"enteredAt"`
-	StudyStatus     string               `bson:"studyStatus"` // shows if participant is active in the study - possible values: "active", "inactive", "paused"
+	StudyStatus     string               `bson:"studyStatus"` // shows if participant is active in the study - possible values: "active", "inactive", "paused", "finished"
 	Flags           map[string]string    `bson:"flags"`
 	AssignedSurveys []AssignedSurvey     `bson:"assignedSurveys"`
 	Reports         []SurveyItemResponse `bson:"reports"`

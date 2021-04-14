@@ -25,6 +25,7 @@ type SurveyVersion struct {
 	Published        int64      `bson:"published"`
 	UnPublished      int64      `bson:"unpublished"`
 	SurveyDefinition SurveyItem `bson:"surveyDefinition"`
+	VersionID        string     `bson:"versionID"`
 }
 
 type MaxItemsPerPage struct {
@@ -87,6 +88,7 @@ func (sv SurveyVersion) ToAPI() *api.SurveyVersion {
 		Published:        sv.Published,
 		Unpublished:      sv.UnPublished,
 		SurveyDefinition: sv.SurveyDefinition.ToAPI(),
+		VersionId:        sv.VersionID,
 	}
 }
 
@@ -98,6 +100,7 @@ func SurveyVersionFromAPI(sv *api.SurveyVersion) SurveyVersion {
 		Published:        sv.Published,
 		UnPublished:      sv.Unpublished,
 		SurveyDefinition: SurveyItemFromAPI(sv.SurveyDefinition),
+		VersionID:        sv.VersionId,
 	}
 }
 

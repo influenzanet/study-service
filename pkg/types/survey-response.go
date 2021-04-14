@@ -9,6 +9,7 @@ type SurveyResponse struct {
 	ID            primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	Key           string               `bson:"key"`
 	ParticipantID string               `bson:"participantID"`
+	VersionID     string               `bson:"versionID"`
 	SubmittedAt   int64                `bson:"submittedAt"`
 	ArrivedAt     int64                `bson:"arrivedAt"`
 	Responses     []SurveyItemResponse `bson:"responses"`
@@ -25,6 +26,7 @@ func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
 		ParticipantId: sr.ParticipantID,
 		SubmittedAt:   sr.SubmittedAt,
 		Responses:     resp,
+		VersionId:     sr.VersionID,
 		Context:       sr.Context,
 	}
 }
@@ -41,6 +43,7 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 		Key:           sr.Key,
 		ParticipantID: sr.ParticipantId,
 		SubmittedAt:   sr.SubmittedAt,
+		VersionID:     sr.VersionId,
 		Responses:     resp,
 		Context:       sr.Context,
 	}

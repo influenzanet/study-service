@@ -138,6 +138,745 @@ func TestEvalHasStudyStatus(t *testing.T) {
 	})
 }
 
+func TestEvalGetStudyEntryTime(t *testing.T) {
+	t.Run("try retrieve entered at time", func(t *testing.T) {
+		exp := types.Expression{Name: "getStudyEntryTime"}
+		tStart := time.Now().Unix()
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				EnteredAt:   tStart,
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != float64(tStart) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+}
+
+func TestEvalHasSurveyKeyAssigned(t *testing.T) {
+	t.Run("has survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "hasSurveyKeyAssigned", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1"},
+					{SurveyKey: "test2"},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("doesn't have the survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "hasSurveyKeyAssigned", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2"},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing argument", func(t *testing.T) {
+		exp := types.Expression{Name: "hasSurveyKeyAssigned", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2"},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about missing arg")
+			return
+		}
+	})
+
+	t.Run("wrong argument", func(t *testing.T) {
+		exp := types.Expression{Name: "hasSurveyKeyAssigned", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2"},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about arg type")
+			return
+		}
+	})
+}
+
+func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
+	t.Run("has survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != 10 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("doesn't have the survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != -1 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about missing arg")
+			return
+		}
+	})
+
+	t.Run("wrong argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about arg type")
+			return
+		}
+	})
+}
+
+func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
+	t.Run("has survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != 100 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("doesn't have the survey assigned", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(float64) != -1 {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about missing arg")
+			return
+		}
+	})
+
+	t.Run("wrong argument", func(t *testing.T) {
+		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				AssignedSurveys: []types.AssignedSurvey{
+					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
+					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw an error about arg type")
+			return
+		}
+	})
+}
+
+func TestEvalHasParticipantFlag(t *testing.T) {
+	t.Run("participant hasn't got any participant flags (empty / nil)", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has other participant flags, but this key is missing", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key2": "value1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has correct participant flag's key, but value is different", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value2",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has correct participant flag's key and value is same", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Error("should be true")
+		}
+	})
+
+	t.Run("missing arguments", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
+	})
+
+	t.Run("using num at 1st argument (expressions allowed, should return string)", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "num", Num: 22},
+			{DType: "str", Str: "value1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
+	})
+
+	t.Run("missing arguments", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+			{DType: "num", Num: 22},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: "active",
+				Flags: map[string]string{
+					"key1": "value1",
+				},
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should throw error")
+			return
+		}
+	})
+}
+
+func TestEvalGetResponseValueAsNum(t *testing.T) {
+	testEvalContext := EvalContext{
+		Event: types.StudyEvent{
+			Type: "SUBMIT",
+			Response: types.SurveyResponse{
+				Key: "weekly",
+				Responses: []types.SurveyItemResponse{
+					{
+						Key: "weekly.Q1", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "something"},
+								{Key: "2"},
+							}},
+					},
+					{
+						Key: "weekly.Q2", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "123.23", Dtype: "date"},
+							}},
+					},
+				},
+			},
+		},
+	}
+
+	//
+	t.Run("no survey item response found", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q3"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("repsonse item in question missing", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.wrong"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("has empty value", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.2"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("repsonse item's value is not a number", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("is number", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q2"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(float64) != 123.23 {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+}
+
+func TestEvalGetResponseValueAsStr(t *testing.T) {
+	testEvalContext := EvalContext{
+		Event: types.StudyEvent{
+			Type: "SUBMIT",
+			Response: types.SurveyResponse{
+				Key: "weekly",
+				Responses: []types.SurveyItemResponse{
+					{
+						Key: "weekly.Q1", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "something"},
+								{Key: "2"},
+							}},
+					},
+				},
+			},
+		},
+	}
+
+	//
+	t.Run("no survey item response found", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsStr", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q3"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("repsonse item in question missing", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsStr", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.wrong"},
+		}}
+		_, err := ExpressionEval(exp, testEvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("has empty value", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsStr", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.2"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if v != "" {
+			t.Errorf("unexpected value: %s instead of %s", v, "blank")
+		}
+	})
+
+	t.Run("has value", func(t *testing.T) {
+		exp := types.Expression{Name: "getResponseValueAsStr", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if v != "something" {
+			t.Errorf("unexpected value: %s instead of %s", v, "something")
+		}
+	})
+}
+
+func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
+	testEvalContext := EvalContext{
+		Event: types.StudyEvent{
+			Type: "SUBMIT",
+			Response: types.SurveyResponse{
+				Key:       "wwekly",
+				Responses: []types.SurveyItemResponse{},
+			},
+		},
+	}
+
+	t.Run("no survey item response found", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q2", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+				{Key: "0"},
+			}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+
+	})
+
+	t.Run("with response item found, but no response parent group", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "scg", Items: []types.ResponseItem{
+				{Key: "0"},
+			}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+
+	})
+
+	t.Run("response group does include at least one", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+				{Key: "0"},
+				{Key: "1"},
+				{Key: "3"},
+			}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+
+	})
+
+	t.Run("response group is empty", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+
+	})
+
+	t.Run("response group includes all and other responses", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+				{Key: "0"},
+				{Key: "1"},
+				{Key: "2"},
+			}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+
+	})
+
+	t.Run("response group includes none of the options", func(t *testing.T) {
+		exp := types.Expression{Name: "responseHasOnlyKeysOtherThan", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.G1.Q1"},
+			{DType: "str", Str: "rg.mcg"},
+			{DType: "str", Str: "1"},
+			{DType: "str", Str: "2"},
+		}}
+		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+				{Key: "0"},
+				{Key: "3"},
+			}}}}},
+		}
+		ret, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected value: %b", ret)
+		}
+	})
+}
+
 func TestEvalResponseHasKeysAny(t *testing.T) {
 	testEvalContext := EvalContext{
 		Event: types.StudyEvent{
@@ -990,6 +1729,22 @@ func TestEvalNOT(t *testing.T) {
 }
 
 func TestEvalTimestampWithOffset(t *testing.T) {
+	t.Run("T + 0", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 0},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > time.Now().Unix()+1 || resTS < time.Now().Unix()-1 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()+0)
+		}
+	})
+
 	t.Run("T + 10", func(t *testing.T) {
 		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
 			{DType: "num", Num: 10},
@@ -1019,6 +1774,201 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 		resTS := int64(ret.(float64))
 		if resTS < time.Now().Unix()-11 || resTS > time.Now().Unix()-9 {
 			t.Errorf("unexpected value: %d - expected ca. %d", ret, time.Now().Unix()-10)
+		}
+	})
+
+	t.Run("T + No num", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 1 was not num")
+			return
+		}
+	})
+
+	t.Run("R + 0", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 0},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r+1 || resTS < r-1 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r+0)
+		}
+	})
+
+	t.Run("R + 10", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 10},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r+11 || resTS < r+9 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r+10)
+		}
+	})
+
+	t.Run("R - 10", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: -10},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > r-9 || resTS < r-11 {
+			t.Errorf("unexpected value: %d - expected ca. %d", ret, r-10)
+		}
+	})
+
+	t.Run("R + No num", func(t *testing.T) {
+		r := time.Now().Unix() - 31536000
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+			{DType: "num", Num: float64(r)},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 1 was not num")
+			return
+		}
+	})
+
+	t.Run("No num + 10", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "num", Num: 10},
+			{DType: "str", Str: "1"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameter 2 was not num")
+			return
+		}
+	})
+
+	t.Run("No num + No num", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "str", Str: "0"},
+			{DType: "str", Str: "1"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error: parameters 1 & 2 were not num")
+			return
+		}
+	})
+
+	t.Run("Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{
+				DType: "exp", Exp: &types.Expression{
+					Name: "timestampWithOffset", Data: []types.ExpressionArg{
+						{DType: "num", Num: -float64(time.Now().Unix())},
+					}},
+			}}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS-time.Now().Unix() > 1 {
+			t.Errorf("unexpected value: %d, expected %d", resTS, time.Now().Unix())
+		}
+	})
+
+	t.Run("Valid Exp + Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := int64(ret.(float64))
+		if resTS > 1 {
+			t.Errorf("unexpected value: %d, expected %d", resTS, 0)
+		}
+	})
+
+	t.Run("Not Valid Exp + Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "or", Data: []types.ExpressionArg{
+					{DType: "num", Num: 1},
+					{DType: "num", Num: 1},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error")
+			return
+		}
+	})
+
+	t.Run("Valid Exp + Not Valid Exp", func(t *testing.T) {
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: -float64(time.Now().Unix())},
+				}},
+			},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "or", Data: []types.ExpressionArg{
+					{DType: "num", Num: 1},
+					{DType: "num", Num: 1},
+				}},
+			},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("unexpected lack of error")
+			return
 		}
 	})
 }
