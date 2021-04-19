@@ -15,11 +15,7 @@ jobs:
     - run: git fetch --prune --unshallow --tags
     - name: Get current version
       id: version
-      run: echo "::set-output name=version::${GITHUB_REF#refs/*/}"
-    - name: Get current version
-      id: ver
-      run: echo "::set-output name=ver::$(git describe --tags --abbrev=0)"
-    - run: echo ${{ steps.ver.outputs.ver }}
+      run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
     - name: docker login
       env:
         DOCKER_USER: ${{secrets.DOCKER_USER}}
