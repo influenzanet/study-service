@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.14.1]
+
+### Changed
+
+- Changed how survey version ID is generated, to use a shorter format (YY-MM-counter).
+
 ## [v0.14.0]
 
 ### Added

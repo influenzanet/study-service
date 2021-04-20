@@ -1,18 +1,34 @@
 package utils
 
 import (
-	"encoding/base32"
-	"encoding/binary"
+	"fmt"
 	"time"
+
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
-func GenerateSurveyVersionID() string {
+func GenerateSurveyVersionID(oldVersions []types.SurveyVersion) string {
 	t := time.Now()
-	ms := uint64(t.UnixNano())
 
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, ms)
+	date := t.Format("06-01")
 
-	str := base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(b)
-	return str
+	counter := 1
+	newID := fmt.Sprintf("%s-%d", date, counter)
+	for {
+		idAlreadyPresent := false
+		for _, v := range oldVersions {
+			if v.VersionID == newID {
+				idAlreadyPresent = true
+				break
+			}
+		}
+		if !idAlreadyPresent {
+			break
+		} else {
+			counter += 1
+			newID = fmt.Sprintf("%s-%d", date, counter)
+		}
+	}
+
+	return newID
 }
