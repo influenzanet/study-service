@@ -6,6 +6,10 @@
 
 - Changed how survey version ID is generated, to use a shorter format (YY-MM-counter).
 
+### Fixed
+
+- `HasParticipantStateWithCondition` should handle case without condition as well. (When condition is nil)
+
 ## [v0.14.0]
 
 ### Added
