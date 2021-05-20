@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- New study actions:
+    - `IF`: improved method for control flows with if-else logic
+    - `DO`: to perform a list of actions
+- Some documentation about study actions [here](docs/studyActions.md).
+
 ## [v0.14.1]
 
 ### Changed

@@ -16,6 +16,10 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 	}
 
 	switch action.Name {
+	case "IF":
+		newState, err = ifAction(action, oldState, event)
+	case "DO":
+		newState, err = doAction(action, oldState, event)
 	case "IFTHEN":
 		newState, err = ifThenAction(action, oldState, event)
 	case "UPDATE_STUDY_STATUS":
@@ -68,11 +72,51 @@ func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool
 	return bVal && ok && err == nil
 }
 
+// ifAction is used to conditionally perform actions
+func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) < 2 {
+		return newState, errors.New("ifAction must have at least two arguments")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
+	}
+	var task types.ExpressionArg
+	if checkCondition(action.Data[0], EvalContext) {
+		task = action.Data[1]
+	} else if len(action.Data) == 3 {
+		task = action.Data[2]
+	}
+
+	if task.IsExpression() {
+		newState, err = ActionEval(*task.Exp, newState, event)
+		if err != nil {
+			return newState, err
+		}
+	}
+	return
+}
+
+// doAction to perform a list of actions
+func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+	newState = oldState
+	for _, action := range action.Data {
+		if action.IsExpression() {
+			newState, err = ActionEval(*action.Exp, newState, event)
+			if err != nil {
+				return newState, err
+			}
+		}
+	}
+	return
+}
+
 // ifThenAction is used to conditionally perform a sequence of actions
 func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
-		return newState, errors.New("ifThenAction must have exactly one argument")
+		return newState, errors.New("ifThenAction must have at least one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
