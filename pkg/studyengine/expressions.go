@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -15,6 +16,7 @@ import (
 type EvalContext struct {
 	Event            types.StudyEvent
 	ParticipantState types.ParticipantState
+	DbService        *studydb.StudyDBService
 }
 
 func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val interface{}, err error) {
@@ -32,6 +34,9 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.getResponseValueAsNum(expression)
 	case "getResponseValueAsStr":
 		val, err = evalCtx.getResponseValueAsStr(expression)
+	// Old responses:
+	case "checkConditionForOldResponses":
+		val, err = evalCtx.checkConditionForOldResponses(expression)
 	// Participant state:
 	case "getStudyEntryTime":
 		val, err = evalCtx.getStudyEntryTime(expression)
@@ -138,6 +143,23 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 	}
 
 	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+}
+
+func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val bool, err error) {
+	if ctx.DbService == nil {
+		return val, errors.New("checkConditionForOldResponses: DB connection not available")
+	}
+	if len(exp.Data) < 3 {
+		return val, fmt.Errorf("checkConditionForOldResponses: unexpected numbers of arguments: %d", len(exp.Data))
+	}
+
+	oldEvalContext := EvalContext{
+		ParticipantState: ctx.ParticipantState,
+		Event: types.StudyEvent{
+			Response: types.SurveyResponse{},
+		},
+	}
+	ExpressionEval()
 }
 
 func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err error) {

@@ -40,7 +40,8 @@ func (s *StudyTimerService) UpdateParticipantStates(instanceID string, studyKey 
 	}
 
 	studyEvent := types.StudyEvent{
-		Type: "TIMER",
+		Type:     "TIMER",
+		StudyKey: studyKey,
 	}
 
 	if !s.hasRuleForEventType(rules, studyEvent) {
@@ -67,9 +68,10 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	}
 	rules := args[0].([]types.Expression)
 	studyEvent := args[1].(types.StudyEvent)
+	studyEvent.StudyKey = studyKey
 
 	for _, rule := range rules {
-		pState, err = studyengine.ActionEval(rule, pState, studyEvent)
+		pState, err = studyengine.ActionEval(rule, pState, studyEvent, s.studyDBService)
 		if err != nil {
 			log.Printf("ERROR in getAndUpdateParticipantState.ActionEval (%s, %s): %v", instanceID, studyKey, err)
 			continue

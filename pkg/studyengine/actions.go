@@ -4,10 +4,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
-func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
 	if event.Type == "SUBMIT" {
 		oldState, err = updateLastSubmissionForSurvey(oldState, event)
 		if err != nil {
@@ -17,11 +18,11 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 
 	switch action.Name {
 	case "IF":
-		newState, err = ifAction(action, oldState, event)
+		newState, err = ifAction(action, oldState, event, dbService)
 	case "DO":
-		newState, err = doAction(action, oldState, event)
+		newState, err = doAction(action, oldState, event, dbService)
 	case "IFTHEN":
-		newState, err = ifThenAction(action, oldState, event)
+		newState, err = ifThenAction(action, oldState, event, dbService)
 	case "UPDATE_STUDY_STATUS":
 		newState, err = updateStudyStatusAction(action, oldState, event)
 	case "UPDATE_FLAG":
@@ -73,7 +74,7 @@ func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool
 }
 
 // ifAction is used to conditionally perform actions
-func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 2 {
 		return newState, errors.New("ifAction must have at least two arguments")
@@ -81,6 +82,7 @@ func ifAction(action types.Expression, oldState types.ParticipantState, event ty
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState,
+		DbService:        dbService,
 	}
 	var task types.ExpressionArg
 	if checkCondition(action.Data[0], EvalContext) {
@@ -90,7 +92,7 @@ func ifAction(action types.Expression, oldState types.ParticipantState, event ty
 	}
 
 	if task.IsExpression() {
-		newState, err = ActionEval(*task.Exp, newState, event)
+		newState, err = ActionEval(*task.Exp, newState, event, dbService)
 		if err != nil {
 			return newState, err
 		}
@@ -99,11 +101,11 @@ func ifAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // doAction to perform a list of actions
-func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	for _, action := range action.Data {
 		if action.IsExpression() {
-			newState, err = ActionEval(*action.Exp, newState, event)
+			newState, err = ActionEval(*action.Exp, newState, event, dbService)
 			if err != nil {
 				return newState, err
 			}
@@ -113,7 +115,7 @@ func doAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have at least one argument")
@@ -121,13 +123,14 @@ func ifThenAction(action types.Expression, oldState types.ParticipantState, even
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState,
+		DbService:        dbService,
 	}
 	if !checkCondition(action.Data[0], EvalContext) {
 		return
 	}
 	for _, action := range action.Data[1:] {
 		if action.IsExpression() {
-			newState, err = ActionEval(*action.Exp, newState, event)
+			newState, err = ActionEval(*action.Exp, newState, event, dbService)
 			if err != nil {
 				return newState, err
 			}

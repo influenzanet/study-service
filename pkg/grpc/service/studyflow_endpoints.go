@@ -49,7 +49,8 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type: "ENTER",
+		Type:     "ENTER",
+		StudyKey: req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -231,6 +232,7 @@ func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.Postpo
 					currentEvent := types.StudyEvent{
 						Type:     "SUBMIT",
 						Response: emptyResponse,
+						StudyKey: req.StudyKey,
 					}
 					pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 					if err != nil {
@@ -306,6 +308,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		currentEvent := types.StudyEvent{
 			Type:     "SUBMIT",
 			Response: response,
+			StudyKey: study.Key,
 		}
 		pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, study.Key, pState, currentEvent)
 		if err != nil {
@@ -363,6 +366,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	currentEvent := types.StudyEvent{
 		Type:     "SUBMIT",
 		Response: response,
+		StudyKey: req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -418,7 +422,8 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	}
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type: "LEAVE",
+		Type:     "LEAVE",
+		StudyKey: req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
