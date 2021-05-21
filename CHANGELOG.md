@@ -11,6 +11,11 @@
 - Some documentation about study expression [here](docs/studyExpressions.md).
 - New study expression: `checkConditionForOldResponses`
 - New method in expression eval context: `mustGetStrValue` to retrieve an argument as string or produce an error.
+- New gRPC endpoint for `RunRules`, to trigger custom study rules.
+
+### Changed
+
+- Updated dependencies
 
 ## [v0.14.1]
 

@@ -50,7 +50,7 @@ func (s *StudyTimerService) UpdateParticipantStates(instanceID string, studyKey 
 		return
 	}
 
-	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instanceID, studyKey, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
+	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instanceID, studyKey, types.STUDY_STATUS_ACTIVE, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
 		log.Printf("ERROR in UpdateParticipantStates.FindAndExecuteOnParticipantsStates (%s, %s): %v", instanceID, studyKey, err)
 	}
 }
