@@ -25,6 +25,7 @@ type ResponseQuery struct {
 	SurveyKey     string
 	Limit         int64
 	Since         int64
+	Until         int64
 }
 
 func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey string, query ResponseQuery) (responses []types.SurveyResponse, err error) {
@@ -50,8 +51,15 @@ func (dbService *StudyDBService) FindSurveyResponses(instanceID string, studyKey
 		filter["key"] = query.SurveyKey
 	}
 
-	if query.Since > 0 {
+	if query.Since > 0 && query.Until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": query.Since}},
+			bson.M{"submittedAt": bson.M{"$lt": query.Until}},
+		}
+	} else if query.Since > 0 {
 		filter["submittedAt"] = bson.M{"$gt": query.Since}
+	} else if query.Until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": query.Until}
 	}
 
 	cur, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Find(
