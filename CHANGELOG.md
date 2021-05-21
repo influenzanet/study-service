@@ -10,6 +10,7 @@
 - Some documentation about study actions [here](docs/studyActions.md).
 - Some documentation about study expression [here](docs/studyExpressions.md).
 - New study expression: `checkConditionForOldResponses`
+- New method in expression eval context: `mustGetStrValue` to retrieve an argument as string or produce an error.
 
 ## [v0.14.1]
 
