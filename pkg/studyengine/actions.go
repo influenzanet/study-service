@@ -8,7 +8,11 @@ import (
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
-func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
+type StudyDBService interface {
+	FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error)
+}
+
+func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
 	if event.Type == "SUBMIT" {
 		oldState, err = updateLastSubmissionForSurvey(oldState, event)
 		if err != nil {
@@ -74,7 +78,7 @@ func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool
 }
 
 // ifAction is used to conditionally perform actions
-func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
+func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 2 {
 		return newState, errors.New("ifAction must have at least two arguments")
@@ -101,7 +105,7 @@ func ifAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // doAction to perform a list of actions
-func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
+func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	for _, action := range action.Data {
 		if action.IsExpression() {
@@ -115,7 +119,7 @@ func doAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService *studydb.StudyDBService) (newState types.ParticipantState, err error) {
+func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have at least one argument")

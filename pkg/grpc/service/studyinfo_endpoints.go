@@ -124,6 +124,11 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 		} else if cond.IsExpression() {
 			evalCtx := studyengine.EvalContext{
 				ParticipantState: pState,
+				DbService:        s.studyDBservice,
+				Event: types.StudyEvent{
+					InstanceID: req.InstanceId,
+					StudyKey:   study.Key,
+				},
 			}
 			resp, err := studyengine.ExpressionEval(*cond.Exp, evalCtx)
 			if err != nil {

@@ -49,8 +49,9 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:     "ENTER",
-		StudyKey: req.StudyKey,
+		Type:       "ENTER",
+		InstanceID: req.Token.InstanceId,
+		StudyKey:   req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -230,9 +231,10 @@ func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.Postpo
 					}
 					// perform study rules/actions
 					currentEvent := types.StudyEvent{
-						Type:     "SUBMIT",
-						Response: emptyResponse,
-						StudyKey: req.StudyKey,
+						Type:       "SUBMIT",
+						Response:   emptyResponse,
+						InstanceID: req.Token.InstanceId,
+						StudyKey:   req.StudyKey,
 					}
 					pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 					if err != nil {
@@ -306,9 +308,10 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 
 		// perform study rules/actions
 		currentEvent := types.StudyEvent{
-			Type:     "SUBMIT",
-			Response: response,
-			StudyKey: study.Key,
+			Type:       "SUBMIT",
+			Response:   response,
+			InstanceID: req.Token.InstanceId,
+			StudyKey:   study.Key,
 		}
 		pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, study.Key, pState, currentEvent)
 		if err != nil {
@@ -364,9 +367,10 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:     "SUBMIT",
-		Response: response,
-		StudyKey: req.StudyKey,
+		Type:       "SUBMIT",
+		Response:   response,
+		InstanceID: req.Token.InstanceId,
+		StudyKey:   req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -422,8 +426,9 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	}
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:     "LEAVE",
-		StudyKey: req.StudyKey,
+		Type:       "LEAVE",
+		InstanceID: req.Token.InstanceId,
+		StudyKey:   req.StudyKey,
 	}
 	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {

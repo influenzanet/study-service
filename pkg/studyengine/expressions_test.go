@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -136,6 +137,115 @@ func TestEvalHasStudyStatus(t *testing.T) {
 			t.Errorf("unexpected value: %b", ret)
 		}
 	})
+}
+
+type MockStudyDBService struct {
+	Responses []types.SurveyResponse
+}
+
+func (db MockStudyDBService) FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error) {
+	return []types.SurveyResponse{}, nil
+}
+
+func TestEvalCheckConditionForOldResponses(t *testing.T) {
+	testResponses := []types.SurveyResponse{
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 10, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P2", SubmittedAt: 13, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S2", ParticipantID: "P1", SubmittedAt: 15, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 17, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 22, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "2"}}},
+					},
+				}}},
+		},
+	}
+
+	t.Run("missing DB config", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: nil,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("missing instanceID", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("missing studyKey", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	// TODO: add responses
+	// TODO: use "all"
+	// TODO: use "any"
+	// TODO: use "count"
+	// TODO: use "filter for survey key"
+	// TODO: use query since
+	// TODO: use query until
+
 }
 
 func TestEvalGetStudyEntryTime(t *testing.T) {
@@ -721,6 +831,34 @@ func TestEvalGetResponseValueAsStr(t *testing.T) {
 		}
 		if v != "something" {
 			t.Errorf("unexpected value: %s instead of %s", v, "something")
+		}
+	})
+}
+
+func TestMustGetStrValue(t *testing.T) {
+	testEvalContext := EvalContext{}
+
+	t.Run("not string value", func(t *testing.T) {
+		_, err := testEvalContext.mustGetStrValue(types.ExpressionArg{
+			Num:   0,
+			DType: "num",
+		})
+		if err == nil {
+			t.Error("should produce error")
+		}
+	})
+
+	t.Run("string value", func(t *testing.T) {
+		v, err := testEvalContext.mustGetStrValue(types.ExpressionArg{
+			Str:   "hello",
+			DType: "str",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if v != "hello" {
+			t.Errorf("unexpected value: %s", v)
 		}
 	})
 }
