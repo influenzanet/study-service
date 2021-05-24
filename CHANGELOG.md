@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.15.1] - 2021-05-24
+
+### Changed
+
+- `lastSubmissionDateOlderThan`: change how first argument is used. Previously it was interpreted as delta. After this change, the first argument is resolved, and interpreted as a timestamp. If a reference from now should be used, the timestampWithOffset method can be applied.
+
+
 ## [v0.15.0]
 
 ### Added

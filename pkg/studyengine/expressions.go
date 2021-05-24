@@ -380,16 +380,12 @@ func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bo
 	if !ok {
 		return val, errors.New("could not cast argument 1")
 	}
+	refTime := int64(arg1Val)
 
-	refTime := time.Now().Unix() - int64(arg1Val)
 	if len(exp.Data) == 2 {
-		arg2, err := ctx.expressionArgResolver(exp.Data[1])
+		arg2Val, err := ctx.mustGetStrValue(exp.Data[1])
 		if err != nil {
 			return val, err
-		}
-		arg2Val, ok := arg2.(string)
-		if !ok {
-			return val, errors.New("could not cast arguments")
 		}
 		lastTs, ok := ctx.ParticipantState.LastSubmissions[arg2Val]
 		if !ok {
