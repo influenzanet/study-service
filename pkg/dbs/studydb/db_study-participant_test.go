@@ -177,6 +177,7 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 		err := testDBService.FindAndExecuteOnParticipantsStates(
 			testInstanceID,
 			testStudyKey,
+			types.STUDY_STATUS_ACTIVE,
 			func(dbService *StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
 				_, ok := p.Flags["test1"]
 				if !ok {

@@ -15,7 +15,7 @@ func TestDbInterfaceMethods(t *testing.T) {
 			t.Errorf(err.Error())
 			return
 		}
-		if len(instances) != 2 {
+		if len(instances) < 1 {
 			t.Errorf("unexpected number of instances: %d", len(instances))
 		}
 	})

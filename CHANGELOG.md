@@ -1,5 +1,39 @@
 # Changelog
 
+## [v0.15.1] - 2021-05-24
+
+### Changed
+
+- `lastSubmissionDateOlderThan`: change how first argument is used. Previously it was interpreted as delta. After this change, the first argument is resolved, and interpreted as a timestamp. If a reference from now should be used, the timestampWithOffset method can be applied.
+
+
+## [v0.15.0]
+
+### Added
+
+- New study actions:
+    - `IF`: improved method for control flows with if-else logic
+    - `DO`: to perform a list of actions
+- Some documentation about study actions [here](docs/studyActions.md).
+- Some documentation about study expression [here](docs/studyExpressions.md).
+- New study expression: `checkConditionForOldResponses`
+- New method in expression eval context: `mustGetStrValue` to retrieve an argument as string or produce an error.
+- New gRPC endpoint for `RunRules`, to trigger custom study rules.
+
+### Changed
+
+- Updated dependencies
+
+## [v0.14.1]
+
+### Changed
+
+- Changed how survey version ID is generated, to use a shorter format (YY-MM-counter).
+
+### Fixed
+
+- `HasParticipantStateWithCondition` should handle case without condition as well. (When condition is nil)
+
 ## [v0.14.0]
 
 ### Added

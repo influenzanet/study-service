@@ -26,7 +26,7 @@ func TestActions(t *testing.T) {
 		action := types.Expression{
 			Name: "WRONG",
 		}
-		_, err := ActionEval(action, participantState, event)
+		_, err := ActionEval(action, participantState, event, nil)
 		if err == nil {
 			t.Error("should return an error")
 		}
@@ -52,12 +52,12 @@ func TestActions(t *testing.T) {
 				{DType: "exp", Exp: &action2},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		if newState.StudyStatus == action2.Data[0].Str {
-			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.StudyStatus)
+			t.Errorf("error -> expected: %s, have: %s", action2.Data[0].Str, newState.StudyStatus)
 		}
 
 		action = types.Expression{
@@ -68,12 +68,72 @@ func TestActions(t *testing.T) {
 				{DType: "exp", Exp: &action3},
 			},
 		}
-		newState, err = ActionEval(action, participantState, event)
+		newState, err = ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		if newState.StudyStatus != action3.Data[0].Str {
-			t.Errorf("error -> expected: %s, have: %s", action3.Data[1].Str, newState.StudyStatus)
+			t.Errorf("error -> expected: %s, have: %s", action3.Data[0].Str, newState.StudyStatus)
+		}
+	})
+
+	t.Run("IF", func(t *testing.T) {
+		action2 := types.Expression{
+			Name: "UPDATE_STUDY_STATUS",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "testflag_cond"},
+			},
+		}
+		action3 := types.Expression{
+			Name: "UPDATE_STUDY_STATUS",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "testflag_cond2"},
+			},
+		}
+		action := types.Expression{
+			Name: "IF",
+			Data: []types.ExpressionArg{
+				{DType: "num", Num: 0},
+				{DType: "exp", Exp: &action2},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if newState.StudyStatus != "active" {
+			t.Errorf("error -> expected: %s, have: %s", "active", newState.StudyStatus)
+		}
+
+		action = types.Expression{
+			Name: "IF",
+			Data: []types.ExpressionArg{
+				{DType: "num", Num: 1},
+				{DType: "exp", Exp: &action2},
+			},
+		}
+		newState, err = ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if newState.StudyStatus != action2.Data[0].Str {
+			t.Errorf("error -> expected: %s, have: %s", action.Data[1].Str, newState.StudyStatus)
+		}
+
+		action = types.Expression{
+			Name: "IF",
+			Data: []types.ExpressionArg{
+				{DType: "num", Num: 0},
+				{DType: "exp", Exp: &action2},
+				{DType: "exp", Exp: &action3},
+			},
+		}
+		newState, err = ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if newState.StudyStatus != action3.Data[0].Str {
+			t.Errorf("error -> expected: %s, have: %s", action3.Data[0].Str, newState.StudyStatus)
 		}
 	})
 
@@ -85,7 +145,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "value"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -106,7 +166,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "health"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -129,7 +189,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -157,11 +217,11 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -174,7 +234,7 @@ func TestActions(t *testing.T) {
 		action = types.Expression{
 			Name: "REMOVE_ALL_SURVEYS",
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -196,17 +256,17 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		action.Data[0].Str = "testSurveyKey2"
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		action.Data[0].Str = "testSurveyKey1"
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -223,7 +283,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "last"},
 			},
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -249,17 +309,17 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		action.Data[0].Str = "testSurveyKey2"
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		action.Data[0].Str = "testSurveyKey1"
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -276,7 +336,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "first"},
 			},
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -301,16 +361,16 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: types.ASSIGNED_SURVEY_CATEGORY_NORMAL},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		action.Data[0].Str = "testSurveyKey2"
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -326,7 +386,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "testSurveyKey1"},
 			},
 		}
-		newState, err = ActionEval(action, newState, event)
+		newState, err = ActionEval(action, newState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -367,7 +427,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "test.2.2"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -383,7 +443,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "test.2.1"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -396,7 +456,7 @@ func TestActions(t *testing.T) {
 		action := types.Expression{
 			Name: "REMOVE_ALL_REPORTS",
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -413,7 +473,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "first"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -434,7 +494,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "last"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -454,7 +514,7 @@ func TestActions(t *testing.T) {
 				{DType: "str", Str: "test.1"},
 			},
 		}
-		newState, err := ActionEval(action, participantState, event)
+		newState, err := ActionEval(action, participantState, event, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

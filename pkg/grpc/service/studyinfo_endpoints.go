@@ -115,9 +115,20 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 		}
 
 		cond := types.ExpressionArgFromAPI(req.Condition)
-		if cond.IsExpression() {
+		if cond == nil {
+			return &api.ServiceStatus{
+				Version: apiVersion,
+				Status:  api.ServiceStatus_NORMAL,
+				Msg:     "participant found in study",
+			}, nil
+		} else if cond.IsExpression() {
 			evalCtx := studyengine.EvalContext{
 				ParticipantState: pState,
+				DbService:        s.studyDBservice,
+				Event: types.StudyEvent{
+					InstanceID: req.InstanceId,
+					StudyKey:   study.Key,
+				},
 			}
 			resp, err := studyengine.ExpressionEval(*cond.Exp, evalCtx)
 			if err != nil {

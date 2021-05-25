@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -134,6 +135,367 @@ func TestEvalHasStudyStatus(t *testing.T) {
 		}
 		if !ret.(bool) {
 			t.Errorf("unexpected value: %b", ret)
+		}
+	})
+}
+
+type MockStudyDBService struct {
+	Responses []types.SurveyResponse
+}
+
+func (db MockStudyDBService) FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error) {
+
+	for _, r := range db.Responses {
+		if query.ParticipantID != r.ParticipantID {
+			continue
+		}
+		if len(query.SurveyKey) > 0 && query.SurveyKey != r.Key {
+			continue
+		}
+		if query.Since > 0 && r.SubmittedAt < query.Since {
+			continue
+		}
+		if query.Until > 0 && r.SubmittedAt > query.Until {
+			continue
+		}
+		responses = append(responses, r)
+	}
+
+	return responses, nil
+}
+
+func TestEvalCheckConditionForOldResponses(t *testing.T) {
+	testResponses := []types.SurveyResponse{
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 10, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 13, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P2", SubmittedAt: 13, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S2", ParticipantID: "P1", SubmittedAt: 15, Responses: []types.SurveyItemResponse{
+				{Key: "S2.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 17, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					},
+				}}},
+		},
+		{
+			Key: "S1", ParticipantID: "P1", SubmittedAt: 22, Responses: []types.SurveyItemResponse{
+				{Key: "S1.Q1", Response: &types.ResponseItem{
+					Key: "rg", Items: []types.ResponseItem{
+						{Key: "scg", Items: []types.ResponseItem{{Key: "2"}}},
+					},
+				}}},
+		},
+	}
+
+	t.Run("missing DB config", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: nil,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("missing instanceID", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{},
+			Event: types.StudyEvent{
+				StudyKey: "testStudy",
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("missing studyKey", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("missing condition", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses"}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("checkType all", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("checkType any", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+			{Str: "any", DType: "str"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("checkType count - with enough", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+			{Num: 3, DType: "num"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("checkType count - with not enough", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+			{Num: 4, DType: "num"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("filter for survey type", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+			{Num: 4, DType: "num"},
+			{Str: "S2", DType: "str"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
+		}
+	})
+
+	t.Run("filter for interval type", func(t *testing.T) {
+		exp := types.Expression{Name: "checkConditionForOldResponses", Data: []types.ExpressionArg{
+			{Exp: &types.Expression{
+				Name: "responseHasKeysAny",
+				Data: []types.ExpressionArg{
+					{Str: "S1.Q1", DType: "str"},
+					{Str: "rg.scg", DType: "str"},
+					{Str: "1", DType: "str"},
+				},
+			}, DType: "exp"},
+			{Num: 2, DType: "num"},
+			{Str: "", DType: "str"},
+			{Num: 16, DType: "num"},
+			{Num: 18, DType: "num"},
+		}}
+
+		EvalContext := EvalContext{
+			DbService: MockStudyDBService{
+				Responses: testResponses,
+			},
+			Event: types.StudyEvent{
+				StudyKey:   "testStudy",
+				InstanceID: "testInstance",
+			},
+			ParticipantState: types.ParticipantState{
+				ParticipantID: "P1",
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Errorf("unexpected value retrieved: %d", ret)
 		}
 	})
 }
@@ -721,6 +1083,34 @@ func TestEvalGetResponseValueAsStr(t *testing.T) {
 		}
 		if v != "something" {
 			t.Errorf("unexpected value: %s instead of %s", v, "something")
+		}
+	})
+}
+
+func TestMustGetStrValue(t *testing.T) {
+	testEvalContext := EvalContext{}
+
+	t.Run("not string value", func(t *testing.T) {
+		_, err := testEvalContext.mustGetStrValue(types.ExpressionArg{
+			Num:   0,
+			DType: "num",
+		})
+		if err == nil {
+			t.Error("should produce error")
+		}
+	})
+
+	t.Run("string value", func(t *testing.T) {
+		v, err := testEvalContext.mustGetStrValue(types.ExpressionArg{
+			Str:   "hello",
+			DType: "str",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if v != "hello" {
+			t.Errorf("unexpected value: %s", v)
 		}
 	})
 }

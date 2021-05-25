@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -15,6 +16,7 @@ import (
 type EvalContext struct {
 	Event            types.StudyEvent
 	ParticipantState types.ParticipantState
+	DbService        StudyDBService
 }
 
 func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val interface{}, err error) {
@@ -32,6 +34,9 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.getResponseValueAsNum(expression)
 	case "getResponseValueAsStr":
 		val, err = evalCtx.getResponseValueAsStr(expression)
+	// Old responses:
+	case "checkConditionForOldResponses":
+		val, err = evalCtx.checkConditionForOldResponses(expression)
 	// Participant state:
 	case "getStudyEntryTime":
 		val, err = evalCtx.getStudyEntryTime(expression)
@@ -128,16 +133,135 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 		return val, errors.New("unexpected numbers of arguments")
 	}
 
-	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	arg1Val, err := ctx.mustGetStrValue(exp.Data[0])
 	if err != nil {
 		return val, err
 	}
-	arg1Val, ok := arg1.(string)
-	if !ok {
-		return val, errors.New("could not cast arguments")
-	}
 
 	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+}
+
+func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val bool, err error) {
+	if ctx.DbService == nil {
+		return val, errors.New("checkConditionForOldResponses: DB connection not available in the context")
+	}
+	if ctx.Event.InstanceID == "" || ctx.Event.StudyKey == "" {
+		return val, errors.New("checkConditionForOldResponses: instanceID or study key missing from context")
+	}
+
+	argNum := len(exp.Data)
+	if argNum < 1 || argNum > 5 {
+		return val, fmt.Errorf("checkConditionForOldResponses: unexpected numbers of arguments: %d", len(exp.Data))
+	}
+
+	arg1 := exp.Data[0]
+	if !arg1.IsExpression() {
+		return val, errors.New("checkConditionForOldResponses: first argument must be an expression")
+	}
+	condition := arg1.Exp
+	if condition == nil {
+		return val, errors.New("checkConditionForOldResponses: first argument must be an expression")
+	}
+
+	checkFor := "all"
+	checkForCount := 1
+	surveyKey := ""
+	since := int64(0)
+	until := int64(0)
+	if argNum > 1 {
+		arg1, err := ctx.expressionArgResolver(exp.Data[1])
+		if err != nil {
+			return val, err
+		}
+		switch arg1Val := arg1.(type) {
+		case string:
+			checkFor = arg1Val
+		case float64:
+			checkFor = "count"
+			checkForCount = int(arg1Val)
+		default:
+			return val, fmt.Errorf("type unknown %T", arg1Val)
+		}
+	}
+	if argNum > 2 {
+		surveyKey, err = ctx.mustGetStrValue(exp.Data[2])
+		if err != nil {
+			return val, err
+		}
+	}
+	if argNum > 3 {
+		arg4, err := ctx.expressionArgResolver(exp.Data[3])
+		if err != nil {
+			return val, err
+		}
+		arg4Val, ok := arg4.(float64)
+		if ok {
+			since = int64(arg4Val)
+		}
+
+	}
+	if argNum > 4 {
+		arg5, err := ctx.expressionArgResolver(exp.Data[4])
+		if err != nil {
+			return val, err
+		}
+		arg5Val, ok := arg5.(float64)
+		if ok {
+			until = int64(arg5Val)
+		}
+	}
+
+	responses, err := ctx.DbService.FindSurveyResponses(ctx.Event.InstanceID, ctx.Event.StudyKey, studydb.ResponseQuery{
+		ParticipantID: ctx.ParticipantState.ParticipantID,
+		SurveyKey:     surveyKey,
+		Since:         since,
+		Until:         until,
+	})
+	if err != nil {
+		return val, err
+	}
+
+	counter := 0
+	result := false
+	for _, resp := range responses {
+		oldEvalContext := EvalContext{
+			ParticipantState: ctx.ParticipantState,
+			Event: types.StudyEvent{
+				Response: resp,
+			},
+		}
+
+		expResult, err := ExpressionEval(*condition, oldEvalContext)
+		if err != nil {
+			return false, err
+		}
+		val := expResult.(bool)
+
+		switch checkFor {
+		case "all":
+			if val {
+				result = true
+			} else {
+				result = false
+				break
+			}
+		case "any":
+			if val {
+				result = true
+				break
+			}
+		case "count":
+			if val {
+				counter += 1
+				if counter >= checkForCount {
+					result = true
+					break
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err error) {
@@ -170,13 +294,10 @@ func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val float
 	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
 		return val, errors.New("unexpected number or wrong type of argument")
 	}
-	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+
+	arg1Val, err := ctx.mustGetStrValue(exp.Data[0])
 	if err != nil {
 		return val, err
-	}
-	arg1Val, ok := arg1.(string)
-	if !ok {
-		return val, errors.New("could not cast argument")
 	}
 
 	for _, survey := range ctx.ParticipantState.AssignedSurveys {
@@ -259,16 +380,12 @@ func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bo
 	if !ok {
 		return val, errors.New("could not cast argument 1")
 	}
+	refTime := int64(arg1Val)
 
-	refTime := time.Now().Unix() - int64(arg1Val)
 	if len(exp.Data) == 2 {
-		arg2, err := ctx.expressionArgResolver(exp.Data[1])
+		arg2Val, err := ctx.mustGetStrValue(exp.Data[1])
 		if err != nil {
 			return val, err
-		}
-		arg2Val, ok := arg2.(string)
-		if !ok {
-			return val, errors.New("could not cast arguments")
 		}
 		lastTs, ok := ctx.ParticipantState.LastSubmissions[arg2Val]
 		if !ok {
@@ -753,4 +870,16 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 
 	t = float64(referenceTime + delta)
 	return
+}
+
+func (ctx EvalContext) mustGetStrValue(arg types.ExpressionArg) (string, error) {
+	arg1, err := ctx.expressionArgResolver(arg)
+	if err != nil {
+		return "", err
+	}
+	val, ok := arg1.(string)
+	if !ok {
+		return "", errors.New("could not cast argument")
+	}
+	return val, nil
 }
