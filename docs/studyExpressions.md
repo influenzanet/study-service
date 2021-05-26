@@ -1,5 +1,13 @@
 # Study Expressions
 
+### countResponseItems
+
+`
+countResponseItems(surveyItemKey, responseGroupKey)
+`
+Method to count how many response items a response group (e.g., multiple choice group) has. If item or group are not found, it return -1.
+
+
 ### checkConditionForOldResponses
 
 `

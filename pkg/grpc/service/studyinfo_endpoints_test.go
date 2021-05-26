@@ -347,7 +347,9 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 			Condition: &api.ExpressionArg{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{
 				Name: "lastSubmissionDateOlderThan",
 				Data: []*api.ExpressionArg{
-					{Dtype: "num", Data: &api.ExpressionArg_Num{Num: 10}},
+					{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{Name: "timestampWithOffset", Data: []*api.ExpressionArg{
+						{Dtype: "num", Data: &api.ExpressionArg_Num{Num: 10}},
+					}}}},
 					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: "s3"}},
 				},
 			}}},

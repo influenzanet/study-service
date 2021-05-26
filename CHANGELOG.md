@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- New study expression: `countResponseItems`, to retrieve the numbers of how many items are in a response group.
+
+### Changed
+
+- Fix tests for `lastSubmissionDateOlderThan`.
+
 ## [v0.15.1] - 2021-05-24
 
 ### Changed
