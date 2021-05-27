@@ -4,6 +4,12 @@
 
 ### Added
 
+- New package: `exporter`, with main responsibility to process survey definition and responses provide them for export as CSV or survey info preview data object.
+- New endpoints added:
+    - `GetResponsesWideFormatCSV`: get response export in a column-wise wide format
+    - `GetResponsesLongFormatCSV`: get response export in a row-wise long format
+    - `GetSurveyInfoPreviewCSV`: get survey excerpt as a CSV file
+    - `GetSurveyInfoPreview`: get survey excerpt as a nested data format
 - New study expression: `countResponseItems`, to retrieve the numbers of how many items are in a response group.
 
 ### Changed
