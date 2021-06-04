@@ -34,6 +34,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.getResponseValueAsNum(expression)
 	case "getResponseValueAsStr":
 		val, err = evalCtx.getResponseValueAsStr(expression)
+	case "countResponseItems":
+		val, err = evalCtx.countResponseItems(expression)
 	// Old responses:
 	case "checkConditionForOldResponses":
 		val, err = evalCtx.checkConditionForOldResponses(expression)
@@ -609,6 +611,38 @@ func (ctx EvalContext) getResponseValueAsStr(exp types.Expression) (val string, 
 		return "", errors.New("item not found")
 	}
 	val = responseObject.Value
+	return
+}
+
+func (ctx EvalContext) countResponseItems(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	itemKey, err := ctx.mustGetStrValue(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	responseGroupKey, err := ctx.mustGetStrValue(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+
+	// find survey item:
+	surveyItem, err := findSurveyItemResponse(ctx.Event.Response.Responses, itemKey)
+	if err != nil {
+		// Item not found
+		return -1.0, errors.New("item not found")
+	}
+
+	responseObject, err := findResponseObject(surveyItem, responseGroupKey)
+	if err != nil {
+		// Item not found
+		return -1.0, errors.New("item not found")
+	}
+
+	val = float64(len(responseObject.Items))
 	return
 }
 
