@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.16.1] - 2021-06-09
+
+### Changed
+
+- Fix issue regarding export of likert scale groups and more generally, questions that include multiple groups, and response is not found on the first level.
+
+
 ## [v0.16.0] - 2021-05-27
 
 ### Added

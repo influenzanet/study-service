@@ -156,7 +156,7 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 
 	// Find responses:
 	for _, rSlot := range responseSlotDefs {
-		rGroup := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+rSlot.ID)
+		rGroup := retrieveResponseItemByShortKey(response, rSlot.ID)
 		if rGroup == nil {
 			continue
 		} else if len(rGroup.Items) != 1 {
@@ -414,4 +414,33 @@ func retrieveResponseItem(response *studyAPI.SurveyItemResponse, fullKey string)
 		}
 	}
 	return result
+}
+
+func retrieveResponseItemByShortKey(response *studyAPI.SurveyItemResponse, shortKey string) *studyAPI.ResponseItem {
+	if response == nil || response.Response == nil {
+		return nil
+	}
+
+	var result *studyAPI.ResponseItem
+	if response.Response.Key == shortKey {
+		return response.Response
+	}
+
+	result = response.Response
+
+	for _, item := range result.Items {
+		if item.Key == shortKey {
+			return item
+		}
+	}
+
+	for _, item := range result.Items {
+		res := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
+			Response: item,
+		}, shortKey)
+		if res != nil {
+			return res
+		}
+	}
+	return nil
 }

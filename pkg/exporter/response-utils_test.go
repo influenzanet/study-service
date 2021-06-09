@@ -842,3 +842,86 @@ func TestRetrieveResponseItem(t *testing.T) {
 		}
 	})
 }
+
+func TestRetrieveResponseItemByShortKey(t *testing.T) {
+	t.Run("nil input", func(t *testing.T) {
+		r := retrieveResponseItemByShortKey(nil, "")
+		if r != nil {
+			t.Errorf("unexpected result: %v", r)
+		}
+	})
+
+	t.Run("retrieve root", func(t *testing.T) {
+		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
+			Response: &studyAPI.ResponseItem{
+				Key: "rg",
+				Items: []*studyAPI.ResponseItem{
+					{Key: "input"},
+				},
+			},
+		}, "rg")
+		if r == nil {
+			t.Error("should find result")
+		}
+	})
+
+	t.Run("retrieve group", func(t *testing.T) {
+		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
+			Response: &studyAPI.ResponseItem{
+				Key: "rg",
+				Items: []*studyAPI.ResponseItem{
+					{Key: "scg", Items: []*studyAPI.ResponseItem{
+						{Key: "1"},
+						{Key: "2"},
+					}},
+				},
+			},
+		}, "scg")
+		if r == nil {
+			t.Error("should find result")
+			return
+		}
+		if r.Key != "scg" || len(r.Items) != 2 {
+			t.Errorf("unexpected result: %v", r)
+		}
+	})
+
+	t.Run("retrieve item", func(t *testing.T) {
+		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
+			Response: &studyAPI.ResponseItem{
+				Key: "rg",
+				Items: []*studyAPI.ResponseItem{
+					{Key: "scg", Items: []*studyAPI.ResponseItem{
+						{Key: "1"},
+						{Key: "2"},
+					}},
+				},
+			},
+		}, "1")
+		if r == nil {
+			t.Error("should find result")
+			return
+		}
+		if r.Key != "1" || len(r.Items) != 0 {
+			t.Errorf("unexpected result: %v", r)
+		}
+	})
+
+	t.Run("wrong key", func(t *testing.T) {
+		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
+			Response: &studyAPI.ResponseItem{
+				Key: "rg",
+				Items: []*studyAPI.ResponseItem{
+					{Key: "scg", Items: []*studyAPI.ResponseItem{
+						{Key: "1"},
+						{Key: "2"},
+					}},
+				},
+			},
+		}, "wrong")
+		if r != nil {
+			t.Errorf("unexpected result: %v", r)
+		}
+	})
+
+}
