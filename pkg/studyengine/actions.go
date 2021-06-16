@@ -194,6 +194,11 @@ func updateFlagAction(action types.Expression, oldState types.ParticipantState, 
 
 	if newState.Flags == nil {
 		newState.Flags = map[string]string{}
+	} else {
+		newState.Flags = make(map[string]string)
+		for k, v := range oldState.Flags {
+			newState.Flags[k] = v
+		}
 	}
 	newState.Flags[key] = value
 	return
@@ -217,6 +222,13 @@ func removeFlagAction(action types.Expression, oldState types.ParticipantState, 
 	key, ok := k.(string)
 	if !ok {
 		return newState, errors.New("could not parse key")
+	}
+
+	if newState.Flags != nil {
+		newState.Flags = make(map[string]string)
+		for k, v := range oldState.Flags {
+			newState.Flags[k] = v
+		}
 	}
 
 	delete(newState.Flags, key)
@@ -265,6 +277,9 @@ func addNewSurveyAction(action types.Expression, oldState types.ParticipantState
 		ValidUntil: int64(validUntil),
 		Category:   category,
 	}
+	newState.AssignedSurveys = make([]types.AssignedSurvey, len(oldState.AssignedSurveys))
+	copy(newState.AssignedSurveys, oldState.AssignedSurveys)
+
 	newState.AssignedSurveys = append(newState.AssignedSurveys, newSurvey)
 	return
 }

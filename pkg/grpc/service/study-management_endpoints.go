@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -421,6 +422,7 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 			counters.Participants += 1
 
 			currentState := p
+			anyChange := false
 			for index, rule := range req.Rules {
 				exp := types.ExpressionFromAPI(rule)
 				if exp == nil {
@@ -438,14 +440,16 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 
 				if !reflect.DeepEqual(newState, currentState) {
 					counters.ParticipantStateChangePerRule[index] += 1
+					anyChange = true
 				}
 				currentState = newState
 			}
 
-			if !reflect.DeepEqual(p, currentState) {
+			if anyChange {
 				// save state back to DB
 				_, err := s.studyDBservice.SaveParticipantState(instanceID, studyKey, currentState)
 				if err != nil {
+					log.Printf("RunRules: %v", err)
 					return status.Error(codes.Internal, err.Error())
 				}
 

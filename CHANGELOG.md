@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.16.2] - 2021-06-16
+
+### Changed
+
+- Fix issue about reference type values in study actions. Previously, change could not be detected, since old value was overwritten.
+
 ## [v0.16.1] - 2021-06-09
 
 ### Changed
