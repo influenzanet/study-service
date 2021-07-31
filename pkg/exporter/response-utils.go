@@ -75,6 +75,8 @@ func getResponseColumns(question SurveyQuestion, response *studyAPI.SurveyItemRe
 		return processResponseForSingleChoice(question, response, questionOptionSep)
 	case QUESTION_TYPE_LIKERT:
 		return processResponseForSingleChoice(question, response, questionOptionSep)
+	case QUESTION_TYPE_RESPONSIVE_SINGLE_CHOICE_ARRAY:
+		return processResponseForSingleChoice(question, response, questionOptionSep)
 	case QUESTION_TYPE_MULTIPLE_CHOICE:
 		return processResponseForMultipleChoice(question, response, questionOptionSep)
 	case QUESTION_TYPE_TEXT_INPUT:

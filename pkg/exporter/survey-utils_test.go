@@ -250,6 +250,22 @@ func TestExtractResponses(t *testing.T) {
 		}
 	})
 
+	t.Run("responsive single choice array", func(t *testing.T) {
+		rg := mockResponsiveSingleChoiceArray("en", []MockOpionDef{
+			{Key: "cat1", Label: "Category 1"},
+			{Key: "cat2", Label: "Category 2"},
+		}, []string{
+			"o1", "o2", "o3",
+		})
+		ro, qType := extractResponses(rg, testLang)
+		if len(ro) != 2 {
+			t.Error("shouldn't be empty")
+		}
+		if qType != QUESTION_TYPE_RESPONSIVE_SINGLE_CHOICE_ARRAY {
+			t.Errorf("unexpected question type: %s", qType)
+		}
+	})
+
 	t.Run("likerts - but not likertGroup", func(t *testing.T) {
 		rg := &studyAPI.ItemComponent{
 			Key:  "rg",

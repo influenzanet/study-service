@@ -46,7 +46,7 @@ func extractQuestions(root *studyAPI.SurveyItem, prefLang string) []SurveyQuesti
 		title := ""
 		if titleComp != nil {
 			var err error
-			title, err = getTranslation(titleComp.Content, prefLang)
+			title, err = getPreviewText(titleComp, prefLang)
 			if err != nil {
 				log.Printf("Question %s title error: %v", item.Key, err)
 			}
@@ -89,6 +89,22 @@ func getTitleComponent(question *studyAPI.SurveyItem) *studyAPI.ItemComponent {
 		}
 	}
 	return nil
+}
+
+func getPreviewText(item *studyAPI.ItemComponent, lang string) (string, error) {
+	if len(item.Items) > 0 {
+		translation := ""
+		for _, item := range item.Items {
+			part, _ := getTranslation(item.Content, lang)
+			translation += part
+		}
+		if translation == "" {
+			return "", errors.New("translation missing")
+		}
+		return translation, nil
+	} else {
+		return getTranslation(item.Content, lang)
+	}
 }
 
 func getTranslation(content []*studyAPI.LocalisedObject, lang string) (string, error) {
@@ -139,7 +155,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 	switch rItem.Role {
 	case "singleChoiceGroup":
 		for _, o := range rItem.Items {
-			label, err := getTranslation(o.Content, lang)
+			label, err := getPreviewText(o, lang)
 			if err != nil {
 				log.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -163,7 +179,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "multipleChoiceGroup":
 		for _, o := range rItem.Items {
-			label, err := getTranslation(o.Content, lang)
+			label, err := getPreviewText(o, lang)
 			if err != nil {
 				log.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -187,7 +203,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "dropDownGroup":
 		for _, o := range rItem.Items {
-			label, err := getTranslation(o.Content, lang)
+			label, err := getPreviewText(o, lang)
 			if err != nil {
 				log.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -201,7 +217,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		responseDef.ResponseType = QUESTION_TYPE_DROPDOWN
 		return []ResponseDef{responseDef}
 	case "input":
-		label, err := getTranslation(rItem.Content, lang)
+		label, err := getPreviewText(rItem, lang)
 		if err != nil {
 			log.Printf("mapToResponseDef: label not found for: %v", rItem)
 		}
@@ -209,7 +225,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		responseDef.ResponseType = QUESTION_TYPE_TEXT_INPUT
 		return []ResponseDef{responseDef}
 	case "multilineTextInput":
-		label, err := getTranslation(rItem.Content, lang)
+		label, err := getPreviewText(rItem, lang)
 		if err != nil {
 			log.Printf("mapToResponseDef: label not found for: %v", rItem)
 		}
@@ -217,7 +233,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		responseDef.ResponseType = QUESTION_TYPE_TEXT_INPUT
 		return []ResponseDef{responseDef}
 	case "numberInput":
-		label, err := getTranslation(rItem.Content, lang)
+		label, err := getPreviewText(rItem, lang)
 		if err != nil {
 			log.Printf("mapToResponseDef: label not found for: %v", rItem)
 		}
@@ -225,7 +241,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		responseDef.ResponseType = QUESTION_TYPE_NUMBER_INPUT
 		return []ResponseDef{responseDef}
 	case "dateInput":
-		label, err := getTranslation(rItem.Content, lang)
+		label, err := getPreviewText(rItem, lang)
 		if err != nil {
 			log.Printf("mapToResponseDef: label not found for: %v", rItem)
 		}
@@ -237,7 +253,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		responseDef.ResponseType = QUESTION_TYPE_EQ5D_SLIDER
 		return []ResponseDef{responseDef}
 	case "sliderNumeric":
-		label, err := getTranslation(rItem.Content, lang)
+		label, err := getPreviewText(rItem, lang)
 		if err != nil {
 			log.Printf("mapToResponseDef: label not found for: %v", rItem)
 		}
@@ -246,7 +262,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "likert":
 		for _, o := range rItem.Items {
-			label, err := getTranslation(o.Content, lang)
+			label, err := getPreviewText(o, lang)
 			if err != nil {
 				log.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -280,7 +296,54 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 			responses = append(responses, currentResponseDef)
 		}
 		return responses
+	case "responsiveSingleChoiceArray":
+		responses := []ResponseDef{}
 
+		var options *studyAPI.ItemComponent
+		for _, item := range rItem.Items {
+			if item.Role == "options" {
+				options = item
+				break
+			}
+			continue
+		}
+		if options == nil {
+			log.Printf("mapToResponseDef: responsiveSingleChoiceArray - options not found in %v", rItem)
+			return responses
+		}
+
+		for _, slot := range rItem.Items {
+			if slot.Role != "row" {
+				continue
+			}
+			subKey := slot.Key
+
+			label, err := getPreviewText(slot, lang)
+			if err != nil {
+				log.Printf("mapToResponseDef: label not found for: %v", slot)
+			}
+
+			currentResponseDef := ResponseDef{
+				ID:           subKey,
+				ResponseType: QUESTION_TYPE_RESPONSIVE_SINGLE_CHOICE_ARRAY,
+				Label:        label,
+			}
+			for _, o := range options.Items {
+				label, err := getPreviewText(o, lang)
+				if err != nil {
+					log.Printf("mapToResponseDef: label not found for: %v", o)
+				}
+
+				option := ResponseOption{
+					ID:    o.Key,
+					Label: label,
+				}
+				option.OptionType = OPTION_TYPE_RADIO
+				currentResponseDef.Options = append(currentResponseDef.Options, option)
+			}
+			responses = append(responses, currentResponseDef)
+		}
+		return responses
 	case "matrix":
 		responses := []ResponseDef{}
 		for _, row := range rItem.Items {
@@ -293,7 +356,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 					}
 					if col.Role == "dropDownGroup" {
 						for _, o := range col.Items {
-							dL, err := getTranslation(o.Content, lang)
+							dL, err := getPreviewText(o, lang)
 							if err != nil {
 								log.Printf("mapToResponseDef: label not found for: %v", o)
 							}
@@ -306,7 +369,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 						}
 						currentResponseDef.ResponseType = QUESTION_TYPE_MATRIX_DROPDOWN
 					} else if col.Role == "input" {
-						label, err := getTranslation(col.Content, lang)
+						label, err := getPreviewText(col, lang)
 						if err != nil {
 							log.Printf("mapToResponseDef: label not found for: %v", col)
 						}
@@ -315,7 +378,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 					} else if col.Role == "check" {
 						currentResponseDef.ResponseType = QUESTION_TYPE_MATRIX_CHECKBOX
 					} else if col.Role == "numberInput" {
-						label, err := getTranslation(col.Content, lang)
+						label, err := getPreviewText(col, lang)
 						if err != nil {
 							log.Printf("mapToResponseDef: label not found for: %v", col)
 						}
@@ -334,7 +397,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 				}
 				for _, o := range row.Items {
 					if o.Role == "label" {
-						label, err := getTranslation(o.Content, lang)
+						label, err := getPreviewText(o, lang)
 						if err != nil {
 							log.Printf("mapToResponseDef: label not found for: %v", o)
 						}

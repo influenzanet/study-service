@@ -91,3 +91,30 @@ func mockLikertGroup(lang string, categoryLabels []MockOpionDef, optionLabels []
 	}
 	return &rg
 }
+
+func mockResponsiveSingleChoiceArray(lang string, categoryLabels []MockOpionDef, optionLabels []string) *studyAPI.ItemComponent {
+	rg := studyAPI.ItemComponent{
+		Key:  "rg",
+		Role: "responseGroup", Items: []*studyAPI.ItemComponent{
+			{Key: "rsca", Role: "responsiveSingleChoiceArray", Items: []*studyAPI.ItemComponent{}},
+		}}
+
+	rg.Items[0].Items = append(rg.Items[0].Items, &studyAPI.ItemComponent{
+		Key:  "options",
+		Role: "options",
+	})
+	for j, label := range optionLabels {
+		rg.Items[0].Items[0].Items = append(rg.Items[0].Items[0].Items, &studyAPI.ItemComponent{Key: strconv.Itoa(j + 1), Role: "option", Content: []*studyAPI.LocalisedObject{
+			{Code: lang, Parts: []*studyAPI.ExpressionArg{{Data: &studyAPI.ExpressionArg_Str{Str: label}}}},
+		}})
+	}
+
+	for _, o := range categoryLabels {
+		rg.Items[0].Items = append(rg.Items[0].Items,
+			&studyAPI.ItemComponent{Key: o.Key, Role: "row", Content: []*studyAPI.LocalisedObject{
+				{Code: lang, Parts: []*studyAPI.ExpressionArg{{Data: &studyAPI.ExpressionArg_Str{Str: o.Label}}}},
+			}},
+		)
+	}
+	return &rg
+}
