@@ -1507,3 +1507,16 @@ func TestResolvePrefillRules(t *testing.T) {
 		}
 	})
 }
+
+func TestUploadParticipantFile(t *testing.T) {
+
+	t.Error("Test unimplemented: first iteration should be info")
+	t.Error("Test unimplemented: missing token")
+	t.Error("Test unimplemented: missing study key")
+	t.Error("Test unimplemented: missing wring file type")
+
+	t.Error("Test unimplemented: study with no permission to upload")
+	t.Error("Test unimplemented: study with hardcoded true rule")
+	t.Error("Test unimplemented: study with participant condition on flag")
+
+}

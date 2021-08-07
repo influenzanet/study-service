@@ -9,7 +9,7 @@ import (
 
 const (
 	FILE_STATUS_UPLOADING = "uploading"
-	FILE_STATUS_FINISHED  = "finished"
+	FILE_STATUS_READY     = "ready"
 )
 
 type FileInfo struct {

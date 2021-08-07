@@ -15,6 +15,7 @@ import (
 	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
+	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
@@ -508,6 +509,8 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		return status.Error(codes.InvalidArgument, "missing argument")
 	}
 
+	instanceID := info.Token.InstanceId
+
 	// Check file type
 	if info.FileType == "" {
 		return status.Error(codes.InvalidArgument, "file type missing")
@@ -532,7 +535,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 			s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, " upload participant file:"+x.ProfileId)
 			return status.Error(codes.Internal, "permission denied")
 		}
-		participantID, err = s.profileIDToParticipantID(info.Token.InstanceId, info.StudyKey, x.ProfileId)
+		participantID, err = s.profileIDToParticipantID(instanceID, info.StudyKey, x.ProfileId)
 		if err != nil {
 			return status.Error(codes.Internal, "could not compute participant id")
 		}
@@ -542,7 +545,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		return status.Error(codes.InvalidArgument, errMsg)
 	}
 
-	pState, err := s.studyDBservice.FindParticipantState(info.Token.InstanceId, info.StudyKey, participantID)
+	pState, err := s.studyDBservice.FindParticipantState(instanceID, info.StudyKey, participantID)
 	if err != nil {
 		return status.Error(codes.Internal, "participant state not found")
 	}
@@ -550,15 +553,60 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		return status.Error(codes.Internal, "user is not active in the current study")
 	}
 
-	// TODO: check upload condition
+	// get study upload condition rules
+	studyDef, err := s.studyDBservice.GetStudyByStudyKey(instanceID, info.StudyKey)
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: err at get study %v", err.Error())
+		return status.Error(codes.Internal, "could not retrieve study")
+	}
+	if studyDef.ParticipantFileUploadRule == nil {
+		s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_SAVE_SURVEY, " upload participant file not permitted")
+		return status.Error(codes.PermissionDenied, "no permission to upload files")
+	} else {
+		// TODO: check upload condition for participant
+		val, err := studyengine.ExpressionEval(*studyDef.ParticipantFileUploadRule, studyengine.EvalContext{
+			Event: types.StudyEvent{
+				InstanceID: instanceID,
+				StudyKey:   info.StudyKey,
+				Type:       "FILE_UPLOAD",
+				Response: types.SurveyResponse{
+					Context: map[string]string{
+						"fileType": info.FileType,
+					},
+				},
+			},
+			ParticipantState: pState,
+			DbService:        s.studyDBservice,
+		})
+		if err != nil {
+			log.Printf("Error UploadParticipantFile: err at eval rule %v", err.Error())
+			return status.Error(codes.PermissionDenied, "no permission to upload files")
+		}
+		if !val.(bool) {
+			return status.Error(codes.PermissionDenied, "no permission to upload files")
+		}
+
+	}
 
 	rootPath := "todo"
 	tempPath := filepath.Join(rootPath, "temp")
-	os.MkdirAll(tempPath, os.ModePerm)
+	err = os.MkdirAll(tempPath, os.ModePerm)
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
+	}
 
 	// TODO create file reference entry in DB
-	filename := "test"
+	fileInfo, err := s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, types.FileInfo{
+		ParticipantID: participantID,
+		Status:        types.FILE_STATUS_UPLOADING,
+		FileType:      info.FileType,
+	})
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: %v", err.Error())
+		return status.Error(codes.Internal, "unexpected error when creating file info object in DB.")
+	}
 
+	filename := fileInfo.ID.Hex()
 	extension := ".png" // TODO: make extension depending on file-type
 
 	fileSize := 0
@@ -608,11 +656,17 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	// TODO: move file to where it should be
 	// TODO: update file reference entry with path and finished upload
+	fileInfo.Size = int32(fileSize)
+	fileInfo.Status = types.FILE_STATUS_READY
+	fileInfo, err = s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, fileInfo)
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: %v", err.Error())
+	}
 	// TODO: if necessary, start go process to generate preview
 
-	stream.SendAndClose(&api.FileInfo{
-		Id:   "todo",
-		Size: int32(fileSize),
-	})
+	// Remove infos not necessary for client:
+	fileInfo.Path = ""
+	fileInfo.PreviewPath = ""
+	stream.SendAndClose(fileInfo.ToAPI())
 	return nil
 }
