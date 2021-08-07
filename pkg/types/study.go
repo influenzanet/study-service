@@ -16,15 +16,16 @@ const (
 )
 
 type Study struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Key            string             `bson:"key"`
-	SecretKey      string             `bson:"secretKey"`
-	Status         string             `bson:"status"`
-	Members        []StudyMember      `bson:"members"` // users with access to manage study
-	Rules          []Expression       `bson:"rules"`   // defining how the study should run
-	Props          StudyProps         `bson:"props"`
-	NextTimerEvent int64              `bson:"nextTimerEventAfter"`
-	Stats          StudyStats         `bson:"studyStats"`
+	ID                        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Key                       string             `bson:"key"`
+	SecretKey                 string             `bson:"secretKey"`
+	Status                    string             `bson:"status"`
+	Members                   []StudyMember      `bson:"members"` // users with access to manage study
+	Rules                     []Expression       `bson:"rules"`   // defining how the study should run
+	Props                     StudyProps         `bson:"props"`
+	NextTimerEvent            int64              `bson:"nextTimerEventAfter"`
+	Stats                     StudyStats         `bson:"studyStats"`
+	ParticipantFileUploadRule *Expression        `bson:"participantFileUploadRule"`
 }
 
 type StudyMember struct {
@@ -62,14 +63,15 @@ func (s Study) ToAPI() *api.Study {
 	}
 
 	return &api.Study{
-		Id:        s.ID.Hex(),
-		Key:       s.Key,
-		SecretKey: s.SecretKey,
-		Status:    s.Status,
-		Members:   members,
-		Rules:     rules,
-		Props:     s.Props.ToAPI(),
-		Stats:     s.Stats.ToAPI(),
+		Id:                        s.ID.Hex(),
+		Key:                       s.Key,
+		SecretKey:                 s.SecretKey,
+		Status:                    s.Status,
+		Members:                   members,
+		Rules:                     rules,
+		Props:                     s.Props.ToAPI(),
+		Stats:                     s.Stats.ToAPI(),
+		ParticipantFileUploadRule: s.ParticipantFileUploadRule.ToAPI(),
 	}
 }
 
@@ -87,14 +89,15 @@ func StudyFromAPI(s *api.Study) Study {
 	}
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 	return Study{
-		ID:        _id,
-		Key:       s.Key,
-		SecretKey: s.SecretKey,
-		Status:    s.Status,
-		Members:   members,
-		Rules:     rules,
-		Props:     StudyPropsFromAPI(s.Props),
-		Stats:     StudyStatsFromAPI(s.Stats),
+		ID:                        _id,
+		Key:                       s.Key,
+		SecretKey:                 s.SecretKey,
+		Status:                    s.Status,
+		Members:                   members,
+		Rules:                     rules,
+		Props:                     StudyPropsFromAPI(s.Props),
+		Stats:                     StudyStatsFromAPI(s.Stats),
+		ParticipantFileUploadRule: ExpressionFromAPI(s.ParticipantFileUploadRule),
 	}
 }
 

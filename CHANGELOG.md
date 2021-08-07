@@ -6,6 +6,7 @@
 
 - Data exporter can parse composite question titles or option labels (when text contains multiple parts).
 - Data exporter logic to handle question type: "responsive single choice array"
+- Participant File Upload endpoint: method to upload files for study participants
 
 ## [v0.16.2] - 2021-06-16
 

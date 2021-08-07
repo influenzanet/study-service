@@ -2,7 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/influenzanet/go-utils/pkg/api_types"
@@ -488,4 +492,127 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 		Status: api.ServiceStatus_NORMAL,
 		Msg:    "all responses deleted",
 	}, nil
+}
+
+const maxParticipantFileSize = 1 << 25
+
+func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_UploadParticipantFileServer) error {
+	req, err := stream.Recv()
+	if err != nil {
+		log.Println("Error: UploadParticipantFile missing file info")
+		return status.Errorf(codes.Unknown, "file info missing")
+	}
+
+	info := req.GetInfo()
+	if info == nil || token_checks.IsTokenEmpty(info.Token) || info.StudyKey == "" {
+		return status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// Check file type
+	if info.FileType == "" {
+		return status.Error(codes.InvalidArgument, "file type missing")
+	}
+
+	// ParticipantID
+	participantID := ""
+	switch x := info.Participant.(type) {
+	case *api.UploadParticipantFileReq_Info_ParticipantId:
+		participantID = x.ParticipantId
+		if !token_checks.CheckRoleInToken(info.Token, constants.USER_ROLE_ADMIN) {
+			err := s.HasRoleInStudy(info.Token.InstanceId, info.StudyKey, info.Token.Id,
+				[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+			)
+			if err != nil {
+				s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_RUN_CUSTOM_RULES, fmt.Sprintf("permission denied for uploading participant file in study %s  ", info.StudyKey))
+				return status.Error(codes.Internal, err.Error())
+			}
+		}
+	case *api.UploadParticipantFileReq_Info_ProfileId:
+		if err := utils.CheckIfProfileIDinToken(info.Token, x.ProfileId); err != nil {
+			s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, " upload participant file:"+x.ProfileId)
+			return status.Error(codes.Internal, "permission denied")
+		}
+		participantID, err = s.profileIDToParticipantID(info.Token.InstanceId, info.StudyKey, x.ProfileId)
+		if err != nil {
+			return status.Error(codes.Internal, "could not compute participant id")
+		}
+	default:
+		errMsg := fmt.Sprintf("Participant has unexpected type %T", x)
+		log.Printf("Error UploadParticipantFile: %s", errMsg)
+		return status.Error(codes.InvalidArgument, errMsg)
+	}
+
+	pState, err := s.studyDBservice.FindParticipantState(info.Token.InstanceId, info.StudyKey, participantID)
+	if err != nil {
+		return status.Error(codes.Internal, "participant state not found")
+	}
+	if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
+		return status.Error(codes.Internal, "user is not active in the current study")
+	}
+
+	// TODO: check upload condition
+
+	rootPath := "todo"
+	tempPath := filepath.Join(rootPath, "temp")
+	os.MkdirAll(tempPath, os.ModePerm)
+
+	// TODO create file reference entry in DB
+	filename := "test"
+
+	extension := ".png" // TODO: make extension depending on file-type
+
+	fileSize := 0
+	var newFile *os.File
+	newFile, err = os.Create(filepath.Join(tempPath, filename+extension))
+	if err != nil {
+		log.Printf("error at creating file: %s", err.Error())
+		return status.Error(codes.Internal, "todo")
+	}
+
+	for {
+		log.Print("waiting to receive more data")
+
+		req, err := stream.Recv()
+		if err == io.EOF {
+			// no more data
+			break
+		}
+		if err != nil {
+			return status.Errorf(codes.Unknown, "cannot receive chunk data: %v", err)
+		}
+
+		chunk := req.GetChunk()
+		size := len(chunk)
+
+		log.Printf("received a chunk with size: %d", size)
+
+		fileSize += size
+		if fileSize > maxParticipantFileSize {
+			// TODO: remove temp file and DB reference
+			return status.Errorf(codes.InvalidArgument, "file is too large: %d > %d", fileSize, maxParticipantFileSize)
+		}
+
+		if newFile == nil {
+			return status.Error(codes.Internal, "todo")
+		}
+		_, err = newFile.Write(chunk)
+		if err != nil {
+			return status.Error(codes.Internal, "todo")
+		}
+
+	}
+	if newFile == nil {
+		return status.Error(codes.Internal, "todo")
+	}
+	newFile.Close()
+
+	// TODO: move file to where it should be
+	// TODO: update file reference entry with path and finished upload
+	// TODO: if necessary, start go process to generate preview
+
+	stream.SendAndClose(&api.FileInfo{
+		Id:   "todo",
+		Size: int32(fileSize),
+	})
+	return nil
 }

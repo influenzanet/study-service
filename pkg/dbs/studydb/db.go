@@ -66,6 +66,10 @@ func (dbService *StudyDBService) collectionRefSurveyResponses(instanceID string,
 	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_surveyResponses")
 }
 
+func (dbService *StudyDBService) collectionRefParticipantFiles(instanceID string, studyKey string) *mongo.Collection {
+	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_participantFiles")
+}
+
 // DB utils
 func (dbService *StudyDBService) getContext() (ctx context.Context, cancel context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(dbService.timeout)*time.Second)
