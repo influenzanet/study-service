@@ -512,7 +512,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	instanceID := info.Token.InstanceId
 
 	// Check file type
-	if info.FileType == "" {
+	if info.FileType == nil {
 		return status.Error(codes.InvalidArgument, "file type missing")
 	}
 
@@ -571,7 +571,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 				Type:       "FILE_UPLOAD",
 				Response: types.SurveyResponse{
 					Context: map[string]string{
-						"fileType": info.FileType,
+						"fileType": info.FileType.Value,
 					},
 				},
 			},
@@ -599,7 +599,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	fileInfo, err := s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, types.FileInfo{
 		ParticipantID: participantID,
 		Status:        types.FILE_STATUS_UPLOADING,
-		FileType:      info.FileType,
+		FileType:      info.FileType.Value,
 	})
 	if err != nil {
 		log.Printf("Error UploadParticipantFile: %v", err.Error())
@@ -607,11 +607,13 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	}
 
 	filename := fileInfo.ID.Hex()
-	extension := ".png" // TODO: make extension depending on file-type
+	if info.FileType != nil && len(info.FileType.Subtype) > 0 {
+		filename += "." + info.FileType.Subtype
+	}
 
 	fileSize := 0
 	var newFile *os.File
-	newFile, err = os.Create(filepath.Join(tempPath, filename+extension))
+	newFile, err = os.Create(filepath.Join(tempPath, filename))
 	if err != nil {
 		log.Printf("error at creating file: %s", err.Error())
 		return status.Error(codes.Internal, "todo")

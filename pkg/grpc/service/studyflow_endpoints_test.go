@@ -1509,6 +1509,7 @@ func TestResolvePrefillRules(t *testing.T) {
 }
 
 func TestUploadParticipantFile(t *testing.T) {
+	//log.New(, "ERROR", )
 
 	t.Error("Test unimplemented: first iteration should be info")
 	t.Error("Test unimplemented: missing token")
@@ -1519,4 +1520,12 @@ func TestUploadParticipantFile(t *testing.T) {
 	t.Error("Test unimplemented: study with hardcoded true rule")
 	t.Error("Test unimplemented: study with participant condition on flag")
 
+	t.Run("find last survey by type and extract items", func(t *testing.T) {})
+
+	/*
+		s := studyServiceServer{
+			globalDBService:   testGlobalDBService,
+			studyDBservice:    testStudyDBService,
+			StudyGlobalSecret: "globsecretfortest1234",
+		}*/
 }
