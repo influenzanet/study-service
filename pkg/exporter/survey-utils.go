@@ -92,6 +92,9 @@ func getTitleComponent(question *studyAPI.SurveyItem) *studyAPI.ItemComponent {
 }
 
 func getPreviewText(item *studyAPI.ItemComponent, lang string) (string, error) {
+	if item == nil {
+		return "", errors.New("getPreviewText: item nil")
+	}
 	if len(item.Items) > 0 {
 		translation := ""
 		for _, item := range item.Items {
@@ -284,7 +287,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 			subKey := likertComp.Key
 			currentResponseDef := ResponseDef{
 				ID:           subKey,
-				ResponseType: QUESTION_TYPE_LIKERT,
+				ResponseType: QUESTION_TYPE_LIKERT_GROUP,
 			}
 			for _, o := range likertComp.Items {
 				option := ResponseOption{
@@ -337,6 +340,68 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 				option := ResponseOption{
 					ID:    o.Key,
 					Label: label,
+				}
+				option.OptionType = OPTION_TYPE_RADIO
+				currentResponseDef.Options = append(currentResponseDef.Options, option)
+			}
+			responses = append(responses, currentResponseDef)
+		}
+		return responses
+	case "responsiveBipolarLikertScaleArray":
+		responses := []ResponseDef{}
+
+		var options *studyAPI.ItemComponent
+		for _, item := range rItem.Items {
+			if item.Role == "options" {
+				options = item
+				break
+			}
+			continue
+		}
+		if options == nil {
+			log.Printf("mapToResponseDef: responsiveBipolarLikertScaleArray - options not found in %v", rItem)
+			return responses
+		}
+
+		for _, slot := range rItem.Items {
+			if slot.Role != "row" {
+				continue
+			}
+			subKey := slot.Key
+
+			var start *studyAPI.ItemComponent
+			var end *studyAPI.ItemComponent
+			for _, item := range slot.Items {
+				if start != nil && end != nil {
+					break
+				}
+				if item.Role == "start" {
+					start = item
+					continue
+				} else if item.Role == "end" {
+					end = item
+					continue
+				}
+			}
+
+			startLabel, err := getPreviewText(start, lang)
+			if err != nil {
+				log.Printf("mapToResponseDef: start label not found for: %v", slot)
+			}
+			endLabel, err := getPreviewText(end, lang)
+			if err != nil {
+				log.Printf("mapToResponseDef: end label not found for: %v", slot)
+			}
+
+			currentResponseDef := ResponseDef{
+				ID:           subKey,
+				ResponseType: QUESTION_TYPE_RESPONSIVE_BIPOLAR_LIKERT_ARRAY,
+				Label:        startLabel + " vs. " + endLabel,
+			}
+			for _, o := range options.Items {
+				option := ResponseOption{
+					ID:    o.Key,
+					Label: o.Key,
 				}
 				option.OptionType = OPTION_TYPE_RADIO
 				currentResponseDef.Options = append(currentResponseDef.Options, option)

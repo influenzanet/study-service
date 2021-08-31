@@ -612,8 +612,9 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	}
 
 	fileSize := 0
+	tempFileName := filepath.Join(tempPath, filename)
 	var newFile *os.File
-	newFile, err = os.Create(filepath.Join(tempPath, filename))
+	newFile, err = os.Create(tempFileName)
 	if err != nil {
 		log.Printf("error at creating file: %s", err.Error())
 		return status.Error(codes.Internal, "todo")
@@ -657,9 +658,24 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	newFile.Close()
 
 	// TODO: move file to where it should be
+	relativeTargetFolder := filepath.Join(instanceID, info.StudyKey)
+	absoluteTargetFolder := filepath.Join(rootPath, relativeTargetFolder)
+	targetFileRelativePath := filepath.Join(relativeTargetFolder, filename)
+	targetFileAbsolutePath := filepath.Join(absoluteTargetFolder, filename)
+
+	err = os.MkdirAll(absoluteTargetFolder, os.ModePerm)
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: err at target path mkdir %v", err.Error())
+	}
+	err = os.Rename(tempFileName, targetFileAbsolutePath)
+	if err != nil {
+		log.Printf("Error UploadParticipantFile: err at moving target %v", err.Error())
+	}
+
 	// TODO: update file reference entry with path and finished upload
 	fileInfo.Size = int32(fileSize)
 	fileInfo.Status = types.FILE_STATUS_READY
+	fileInfo.Path = targetFileRelativePath
 	fileInfo, err = s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, fileInfo)
 	if err != nil {
 		log.Printf("Error UploadParticipantFile: %v", err.Error())

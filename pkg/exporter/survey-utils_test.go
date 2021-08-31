@@ -245,7 +245,7 @@ func TestExtractResponses(t *testing.T) {
 		if len(ro) != 2 {
 			t.Error("shouldn't be empty")
 		}
-		if qType != QUESTION_TYPE_LIKERT {
+		if qType != QUESTION_TYPE_LIKERT_GROUP {
 			t.Errorf("unexpected question type: %s", qType)
 		}
 	})
