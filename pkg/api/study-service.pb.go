@@ -2296,7 +2296,7 @@ var file_study_service_study_service_proto_rawDesc = []byte{
 	0x28, 0x05, 0x52, 0x1d, 0x70, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x53,
 	0x74, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6e, 0x67, 0x65, 0x50, 0x65, 0x72, 0x52, 0x75, 0x6c,
 	0x65, 0x12, 0x1a, 0x0a, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xe2, 0x1b,
+	0x01, 0x28, 0x03, 0x52, 0x08, 0x64, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x32, 0xd0, 0x1c,
 	0x0a, 0x0f, 0x53, 0x74, 0x75, 0x64, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x41, 0x70,
 	0x69, 0x12, 0x4b, 0x0a, 0x06, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f,
 	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d,
@@ -2504,25 +2504,32 @@ var file_study_service_study_service_proto_rawDesc = []byte{
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51, 0x75, 0x65, 0x72,
 	0x79, 0x1a, 0x21, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74,
 	0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x43,
-	0x68, 0x75, 0x6e, 0x6b, 0x30, 0x01, 0x12, 0x71, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x53, 0x75, 0x72,
-	0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x50, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x43, 0x53,
-	0x56, 0x12, 0x31, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74,
-	0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53,
-	0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x1a, 0x21, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61,
-	0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x2e, 0x43, 0x68, 0x75, 0x6e, 0x6b, 0x30, 0x01, 0x12, 0x77, 0x0a, 0x14, 0x47, 0x65, 0x74,
-	0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x50, 0x72, 0x65, 0x76, 0x69, 0x65,
-	0x77, 0x12, 0x31, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74,
-	0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53,
-	0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51,
-	0x75, 0x65, 0x72, 0x79, 0x1a, 0x2c, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61,
-	0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63,
-	0x65, 0x2e, 0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f,
-	0x72, 0x74, 0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74,
-	0x75, 0x64, 0x79, 0x2d, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f,
-	0x61, 0x70, 0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x68, 0x75, 0x6e, 0x6b, 0x30, 0x01, 0x12, 0x6c, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x73, 0x46, 0x6c, 0x61, 0x74, 0x4a, 0x53, 0x4f, 0x4e, 0x12, 0x2f,
+	0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73, 0x74,
+	0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51, 0x75, 0x65, 0x72, 0x79, 0x1a,
+	0x21, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x43, 0x68, 0x75,
+	0x6e, 0x6b, 0x30, 0x01, 0x12, 0x71, 0x0a, 0x17, 0x47, 0x65, 0x74, 0x53, 0x75, 0x72, 0x76, 0x65,
+	0x79, 0x49, 0x6e, 0x66, 0x6f, 0x50, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x43, 0x53, 0x56, 0x12,
+	0x31, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72,
+	0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x1a, 0x21, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65,
+	0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
+	0x43, 0x68, 0x75, 0x6e, 0x6b, 0x30, 0x01, 0x12, 0x77, 0x0a, 0x14, 0x47, 0x65, 0x74, 0x53, 0x75,
+	0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x50, 0x72, 0x65, 0x76, 0x69, 0x65, 0x77, 0x12,
+	0x31, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x53, 0x75, 0x72,
+	0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x51, 0x75, 0x65,
+	0x72, 0x79, 0x1a, 0x2c, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65,
+	0x74, 0x2e, 0x73, 0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
+	0x53, 0x75, 0x72, 0x76, 0x65, 0x79, 0x49, 0x6e, 0x66, 0x6f, 0x45, 0x78, 0x70, 0x6f, 0x72, 0x74,
+	0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69,
+	0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74, 0x75, 0x64,
+	0x79, 0x2d, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70,
+	0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2657,43 +2664,45 @@ var file_study_service_study_service_proto_depIdxs = []int32{
 	6,  // 64: influenzanet.study_service.StudyServiceApi.StreamStudyResponses:input_type -> influenzanet.study_service.SurveyResponseQuery
 	43, // 65: influenzanet.study_service.StudyServiceApi.GetResponsesWideFormatCSV:input_type -> influenzanet.study_service.ResponseExportQuery
 	43, // 66: influenzanet.study_service.StudyServiceApi.GetResponsesLongFormatCSV:input_type -> influenzanet.study_service.ResponseExportQuery
-	44, // 67: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreviewCSV:input_type -> influenzanet.study_service.SurveyInfoExportQuery
-	44, // 68: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreview:input_type -> influenzanet.study_service.SurveyInfoExportQuery
-	9,  // 69: influenzanet.study_service.StudyServiceApi.Status:output_type -> influenzanet.study_service.ServiceStatus
-	45, // 70: influenzanet.study_service.StudyServiceApi.EnterStudy:output_type -> influenzanet.study_service.AssignedSurveys
-	45, // 71: influenzanet.study_service.StudyServiceApi.GetAssignedSurveys:output_type -> influenzanet.study_service.AssignedSurveys
-	11, // 72: influenzanet.study_service.StudyServiceApi.GetAssignedSurvey:output_type -> influenzanet.study_service.SurveyAndContext
-	45, // 73: influenzanet.study_service.StudyServiceApi.PostponeSurvey:output_type -> influenzanet.study_service.AssignedSurveys
-	45, // 74: influenzanet.study_service.StudyServiceApi.SubmitStatusReport:output_type -> influenzanet.study_service.AssignedSurveys
-	45, // 75: influenzanet.study_service.StudyServiceApi.SubmitResponse:output_type -> influenzanet.study_service.AssignedSurveys
-	45, // 76: influenzanet.study_service.StudyServiceApi.LeaveStudy:output_type -> influenzanet.study_service.AssignedSurveys
-	9,  // 77: influenzanet.study_service.StudyServiceApi.DeleteParticipantData:output_type -> influenzanet.study_service.ServiceStatus
-	5,  // 78: influenzanet.study_service.StudyServiceApi.UploadParticipantFile:output_type -> influenzanet.study_service.FileInfo
-	1,  // 79: influenzanet.study_service.StudyServiceApi.GetStudiesForUser:output_type -> influenzanet.study_service.StudiesForUser
-	22, // 80: influenzanet.study_service.StudyServiceApi.GetActiveStudies:output_type -> influenzanet.study_service.Studies
-	13, // 81: influenzanet.study_service.StudyServiceApi.GetStudySurveyInfos:output_type -> influenzanet.study_service.SurveyInfoResp
-	9,  // 82: influenzanet.study_service.StudyServiceApi.HasParticipantStateWithCondition:output_type -> influenzanet.study_service.ServiceStatus
-	34, // 83: influenzanet.study_service.StudyServiceApi.CreateNewStudy:output_type -> influenzanet.study_service.Study
-	22, // 84: influenzanet.study_service.StudyServiceApi.GetAllStudies:output_type -> influenzanet.study_service.Studies
-	34, // 85: influenzanet.study_service.StudyServiceApi.GetStudy:output_type -> influenzanet.study_service.Study
-	34, // 86: influenzanet.study_service.StudyServiceApi.SaveStudyMember:output_type -> influenzanet.study_service.Study
-	34, // 87: influenzanet.study_service.StudyServiceApi.RemoveStudyMember:output_type -> influenzanet.study_service.Study
-	34, // 88: influenzanet.study_service.StudyServiceApi.SaveStudyRules:output_type -> influenzanet.study_service.Study
-	34, // 89: influenzanet.study_service.StudyServiceApi.SaveStudyStatus:output_type -> influenzanet.study_service.Study
-	34, // 90: influenzanet.study_service.StudyServiceApi.SaveStudyProps:output_type -> influenzanet.study_service.Study
-	35, // 91: influenzanet.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> influenzanet.study_service.Survey
-	35, // 92: influenzanet.study_service.StudyServiceApi.GetSurveyDefForStudy:output_type -> influenzanet.study_service.Survey
-	9,  // 93: influenzanet.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> influenzanet.study_service.ServiceStatus
-	9,  // 94: influenzanet.study_service.StudyServiceApi.DeleteStudy:output_type -> influenzanet.study_service.ServiceStatus
-	27, // 95: influenzanet.study_service.StudyServiceApi.RunRules:output_type -> influenzanet.study_service.RuleRunSummary
-	7,  // 96: influenzanet.study_service.StudyServiceApi.GetStudyResponseStatistics:output_type -> influenzanet.study_service.StudyResponseStatistics
-	37, // 97: influenzanet.study_service.StudyServiceApi.StreamStudyResponses:output_type -> influenzanet.study_service.SurveyResponse
-	46, // 98: influenzanet.study_service.StudyServiceApi.GetResponsesWideFormatCSV:output_type -> influenzanet.study_service.Chunk
-	46, // 99: influenzanet.study_service.StudyServiceApi.GetResponsesLongFormatCSV:output_type -> influenzanet.study_service.Chunk
-	46, // 100: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreviewCSV:output_type -> influenzanet.study_service.Chunk
-	47, // 101: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreview:output_type -> influenzanet.study_service.SurveyInfoExport
-	69, // [69:102] is the sub-list for method output_type
-	36, // [36:69] is the sub-list for method input_type
+	43, // 67: influenzanet.study_service.StudyServiceApi.GetResponsesFlatJSON:input_type -> influenzanet.study_service.ResponseExportQuery
+	44, // 68: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreviewCSV:input_type -> influenzanet.study_service.SurveyInfoExportQuery
+	44, // 69: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreview:input_type -> influenzanet.study_service.SurveyInfoExportQuery
+	9,  // 70: influenzanet.study_service.StudyServiceApi.Status:output_type -> influenzanet.study_service.ServiceStatus
+	45, // 71: influenzanet.study_service.StudyServiceApi.EnterStudy:output_type -> influenzanet.study_service.AssignedSurveys
+	45, // 72: influenzanet.study_service.StudyServiceApi.GetAssignedSurveys:output_type -> influenzanet.study_service.AssignedSurveys
+	11, // 73: influenzanet.study_service.StudyServiceApi.GetAssignedSurvey:output_type -> influenzanet.study_service.SurveyAndContext
+	45, // 74: influenzanet.study_service.StudyServiceApi.PostponeSurvey:output_type -> influenzanet.study_service.AssignedSurveys
+	45, // 75: influenzanet.study_service.StudyServiceApi.SubmitStatusReport:output_type -> influenzanet.study_service.AssignedSurveys
+	45, // 76: influenzanet.study_service.StudyServiceApi.SubmitResponse:output_type -> influenzanet.study_service.AssignedSurveys
+	45, // 77: influenzanet.study_service.StudyServiceApi.LeaveStudy:output_type -> influenzanet.study_service.AssignedSurveys
+	9,  // 78: influenzanet.study_service.StudyServiceApi.DeleteParticipantData:output_type -> influenzanet.study_service.ServiceStatus
+	5,  // 79: influenzanet.study_service.StudyServiceApi.UploadParticipantFile:output_type -> influenzanet.study_service.FileInfo
+	1,  // 80: influenzanet.study_service.StudyServiceApi.GetStudiesForUser:output_type -> influenzanet.study_service.StudiesForUser
+	22, // 81: influenzanet.study_service.StudyServiceApi.GetActiveStudies:output_type -> influenzanet.study_service.Studies
+	13, // 82: influenzanet.study_service.StudyServiceApi.GetStudySurveyInfos:output_type -> influenzanet.study_service.SurveyInfoResp
+	9,  // 83: influenzanet.study_service.StudyServiceApi.HasParticipantStateWithCondition:output_type -> influenzanet.study_service.ServiceStatus
+	34, // 84: influenzanet.study_service.StudyServiceApi.CreateNewStudy:output_type -> influenzanet.study_service.Study
+	22, // 85: influenzanet.study_service.StudyServiceApi.GetAllStudies:output_type -> influenzanet.study_service.Studies
+	34, // 86: influenzanet.study_service.StudyServiceApi.GetStudy:output_type -> influenzanet.study_service.Study
+	34, // 87: influenzanet.study_service.StudyServiceApi.SaveStudyMember:output_type -> influenzanet.study_service.Study
+	34, // 88: influenzanet.study_service.StudyServiceApi.RemoveStudyMember:output_type -> influenzanet.study_service.Study
+	34, // 89: influenzanet.study_service.StudyServiceApi.SaveStudyRules:output_type -> influenzanet.study_service.Study
+	34, // 90: influenzanet.study_service.StudyServiceApi.SaveStudyStatus:output_type -> influenzanet.study_service.Study
+	34, // 91: influenzanet.study_service.StudyServiceApi.SaveStudyProps:output_type -> influenzanet.study_service.Study
+	35, // 92: influenzanet.study_service.StudyServiceApi.SaveSurveyToStudy:output_type -> influenzanet.study_service.Survey
+	35, // 93: influenzanet.study_service.StudyServiceApi.GetSurveyDefForStudy:output_type -> influenzanet.study_service.Survey
+	9,  // 94: influenzanet.study_service.StudyServiceApi.RemoveSurveyFromStudy:output_type -> influenzanet.study_service.ServiceStatus
+	9,  // 95: influenzanet.study_service.StudyServiceApi.DeleteStudy:output_type -> influenzanet.study_service.ServiceStatus
+	27, // 96: influenzanet.study_service.StudyServiceApi.RunRules:output_type -> influenzanet.study_service.RuleRunSummary
+	7,  // 97: influenzanet.study_service.StudyServiceApi.GetStudyResponseStatistics:output_type -> influenzanet.study_service.StudyResponseStatistics
+	37, // 98: influenzanet.study_service.StudyServiceApi.StreamStudyResponses:output_type -> influenzanet.study_service.SurveyResponse
+	46, // 99: influenzanet.study_service.StudyServiceApi.GetResponsesWideFormatCSV:output_type -> influenzanet.study_service.Chunk
+	46, // 100: influenzanet.study_service.StudyServiceApi.GetResponsesLongFormatCSV:output_type -> influenzanet.study_service.Chunk
+	46, // 101: influenzanet.study_service.StudyServiceApi.GetResponsesFlatJSON:output_type -> influenzanet.study_service.Chunk
+	46, // 102: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreviewCSV:output_type -> influenzanet.study_service.Chunk
+	47, // 103: influenzanet.study_service.StudyServiceApi.GetSurveyInfoPreview:output_type -> influenzanet.study_service.SurveyInfoExport
+	70, // [70:104] is the sub-list for method output_type
+	36, // [36:70] is the sub-list for method input_type
 	36, // [36:36] is the sub-list for extension type_name
 	36, // [36:36] is the sub-list for extension extendee
 	0,  // [0:36] is the sub-list for field type_name
@@ -3127,6 +3136,7 @@ type StudyServiceApiClient interface {
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
+	GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error)
 	GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error)
 	GetSurveyInfoPreview(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (*SurveyInfoExport, error)
 }
@@ -3512,8 +3522,40 @@ func (x *studyServiceApiGetResponsesLongFormatCSVClient) Recv() (*Chunk, error) 
 	return m, nil
 }
 
+func (c *studyServiceApiClient) GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_StudyServiceApi_serviceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSON", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiGetResponsesFlatJSONClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_GetResponsesFlatJSONClient interface {
+	Recv() (*Chunk, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiGetResponsesFlatJSONClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONClient) Recv() (*Chunk, error) {
+	m := new(Chunk)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_StudyServiceApi_serviceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &_StudyServiceApi_serviceDesc.Streams[5], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3594,6 +3636,7 @@ type StudyServiceApiServer interface {
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
+	GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error
 	GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error
 	GetSurveyInfoPreview(context.Context, *SurveyInfoExportQuery) (*SurveyInfoExport, error)
 }
@@ -3694,6 +3737,9 @@ func (*UnimplementedStudyServiceApiServer) GetResponsesWideFormatCSV(*ResponseEx
 }
 func (*UnimplementedStudyServiceApiServer) GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetResponsesLongFormatCSV not implemented")
+}
+func (*UnimplementedStudyServiceApiServer) GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetResponsesFlatJSON not implemented")
 }
 func (*UnimplementedStudyServiceApiServer) GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSurveyInfoPreviewCSV not implemented")
@@ -4281,6 +4327,27 @@ func (x *studyServiceApiGetResponsesLongFormatCSVServer) Send(m *Chunk) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_GetResponsesFlatJSON_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResponseExportQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).GetResponsesFlatJSON(m, &studyServiceApiGetResponsesFlatJSONServer{stream})
+}
+
+type StudyServiceApi_GetResponsesFlatJSONServer interface {
+	Send(*Chunk) error
+	grpc.ServerStream
+}
+
+type studyServiceApiGetResponsesFlatJSONServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONServer) Send(m *Chunk) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _StudyServiceApi_GetSurveyInfoPreviewCSV_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SurveyInfoExportQuery)
 	if err := stream.RecvMsg(m); err != nil {
@@ -4456,6 +4523,11 @@ var _StudyServiceApi_serviceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetResponsesLongFormatCSV",
 			Handler:       _StudyServiceApi_GetResponsesLongFormatCSV_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetResponsesFlatJSON",
+			Handler:       _StudyServiceApi_GetResponsesFlatJSON_Handler,
 			ServerStreams: true,
 		},
 		{

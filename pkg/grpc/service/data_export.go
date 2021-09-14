@@ -186,6 +186,69 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 	return StreamFile(stream, buf)
 }
 
+func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Permission denied for "+req.StudyKey)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	if err != nil {
+		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	responseExporter, err := exporter.NewResponseExporter(
+		surveyDef.ToAPI(),
+		"ignored",
+		req.ShortQuestionKeys,
+		req.Separator,
+	)
+	if err != nil {
+		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	// Download responses
+	err = s.studyDBservice.PerfomActionForSurveyResponses(
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 1 {
+				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
+			}
+			return rExp.AddResponse(response.ToAPI())
+		},
+		responseExporter,
+	)
+	if err != nil {
+		log.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	buf := new(bytes.Buffer)
+
+	err = responseExporter.GetResponsesJSON(buf, &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		ItemVersion:    req.IncludeMeta.ItemVersion,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	})
+	if err != nil {
+		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		return err
+	}
+	return StreamFile(stream, buf)
+}
+
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return status.Error(codes.InvalidArgument, "missing argument")

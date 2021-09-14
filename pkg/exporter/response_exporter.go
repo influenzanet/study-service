@@ -2,6 +2,7 @@ package exporter
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -168,6 +169,46 @@ func (rp ResponseExporter) GetSurveyVersionDefs() []SurveyVersionPreview {
 
 func (rp ResponseExporter) GetResponses() []ParsedResponse {
 	return rp.responses
+}
+
+func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *IncludeMeta) error {
+	responseArray := []map[string]interface{}{}
+	for _, resp := range rp.responses {
+
+		currentResp := map[string]interface{}{
+			"participantID": resp.ParticipantID,
+			"version":       resp.Version,
+			"submitted":     resp.SubmittedAt,
+		}
+		for k, v := range resp.Responses {
+			currentResp[k] = v
+		}
+		if includeMeta != nil {
+
+			if !includeMeta.Postion {
+				currentResp["metaPosition"] = resp.Meta.Position
+			}
+			if !includeMeta.InitTimes {
+				currentResp["metaInit"] = resp.Meta.Initialised
+			}
+			if !includeMeta.DisplayedTimes {
+				currentResp["metaDisplayed"] = resp.Meta.Displayed
+			}
+			if !includeMeta.ResponsedTimes {
+				currentResp["metaResponse"] = resp.Meta.Responded
+			}
+			if !includeMeta.ItemVersion {
+				currentResp["metaItemVersion"] = resp.Meta.ItemVersion
+			}
+		}
+		responseArray = append(responseArray, currentResp)
+	}
+	b, err := json.Marshal(responseArray)
+	if err != nil {
+		return err
+	}
+	_, err = writer.Write(b)
+	return err
 }
 
 func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *IncludeMeta) error {
