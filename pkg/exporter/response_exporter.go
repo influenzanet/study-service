@@ -180,11 +180,18 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 			"version":       resp.Version,
 			"submitted":     resp.SubmittedAt,
 		}
-		for k, v := range resp.Responses {
-			currentResp[k] = v
-		}
-		if includeMeta != nil {
 
+		responseCols := rp.responseColNames
+		for _, colName := range responseCols {
+			r, ok := resp.Responses[colName]
+			if !ok {
+				currentResp[colName] = ""
+			} else {
+				currentResp[colName] = r
+			}
+		}
+
+		/*if includeMeta != nil {
 			if !includeMeta.Postion {
 				currentResp["metaPosition"] = resp.Meta.Position
 			}
@@ -200,7 +207,7 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 			if !includeMeta.ItemVersion {
 				currentResp["metaItemVersion"] = resp.Meta.ItemVersion
 			}
-		}
+		}*/
 		responseArray = append(responseArray, currentResp)
 	}
 	b, err := json.Marshal(responseArray)
