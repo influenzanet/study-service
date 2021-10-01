@@ -3,9 +3,9 @@ package studydb
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -182,7 +182,7 @@ func (dbService *StudyDBService) PerfomActionForSurveyResponses(
 		}
 
 		if err := cbk(instanceID, studyKey, result, args...); err != nil {
-			log.Printf("PerfomActionForSurveyResponses: %v", err)
+			logger.Error.Println(err)
 		}
 	}
 	if err := cur.Err(); err != nil {

@@ -23,6 +23,8 @@ func main() {
 
 	clients := &types.APIClients{}
 
+	// TODO: set log level logger.SetLevel(logger.LEVEL_ERROR)
+
 	loggingClient, close := gc.ConnectToLoggingService(conf.ServiceURLs.LoggingService)
 	defer close()
 	clients.LoggingService = loggingClient

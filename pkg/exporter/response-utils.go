@@ -3,10 +3,10 @@ package exporter
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
+	"github.com/coneno/logger"
 	studyAPI "github.com/influenzanet/study-service/pkg/api"
 )
 
@@ -132,7 +132,7 @@ func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseD
 	rGroup := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+responseSlotDef.ID)
 	if rGroup != nil {
 		if len(rGroup.Items) != 1 {
-			log.Printf("unexpected response group for question %s: %v", questionKey, rGroup)
+			logger.Debug.Printf("unexpected response group for question %s: %v", questionKey, rGroup)
 		} else {
 			selection := rGroup.Items[0]
 			responseCols[questionKey] = selection.Key
@@ -166,7 +166,7 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 		if rGroup == nil {
 			continue
 		} else if len(rGroup.Items) != 1 {
-			log.Printf("unexpected response group for question %s: %v", questionKey, rGroup)
+			logger.Debug.Printf("unexpected response group for question %s: %v", questionKey, rGroup)
 			continue
 		}
 
@@ -325,7 +325,7 @@ func processResponseForMatrix(question SurveyQuestion, response *studyAPI.Survey
 			responseCols[slotKey] = ""
 			if rGroup != nil {
 				if len(rGroup.Items) != 1 {
-					log.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
+					logger.Debug.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
 				} else {
 					selection := rGroup.Items[0]
 					responseCols[slotKey] = selection.Key
@@ -336,7 +336,7 @@ func processResponseForMatrix(question SurveyQuestion, response *studyAPI.Survey
 			responseCols[slotKey] = ""
 			if rGroup != nil {
 				if len(rGroup.Items) != 1 {
-					log.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
+					logger.Debug.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
 				} else {
 					selection := rGroup.Items[0]
 					value := selection.Key
@@ -370,7 +370,7 @@ func processResponseForUnknown(question SurveyQuestion, response *studyAPI.Surve
 		if rGroup != nil {
 			if len(rGroup.Items) > 0 {
 				if len(rGroup.Items) > 1 {
-					log.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
+					logger.Debug.Printf("unexpected response group for question %s: %v", question.ID, rGroup)
 				} else {
 					selection := rGroup.Items[0]
 					responseCols[slotKey] = selection.Key

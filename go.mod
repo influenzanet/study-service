@@ -3,6 +3,7 @@ module github.com/influenzanet/study-service
 go 1.16
 
 require (
+	github.com/coneno/logger v1.0.0 // indirect
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.2
 	github.com/influenzanet/go-utils v0.2.9
