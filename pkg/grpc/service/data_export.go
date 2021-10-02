@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
@@ -51,7 +51,7 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 	for _, k := range keys {
 		count, err := s.studyDBservice.CountSurveyResponsesByKey(req.Token.InstanceId, req.StudyKey, k, req.From, req.Until)
 		if err != nil {
-			log.Printf("GetStudyResponseStatistics: unexpected error: %v", err)
+			logger.Error.Printf("unexpected error: %v", err)
 			continue
 		}
 		resp.SurveyResponseCounts[k] = count
@@ -135,7 +135,7 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 
 	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		log.Printf("[GetResponsesLongFormatCSV]: %v", err)
+		logger.Info.Printf("[GetResponsesLongFormatCSV]: %v", err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -146,7 +146,7 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 		req.Separator,
 	)
 	if err != nil {
-		log.Printf("[GetResponsesLongFormatCSV]: %v", err)
+		logger.Info.Printf("[GetResponsesLongFormatCSV]: %v", err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -166,7 +166,7 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 		responseExporter,
 	)
 	if err != nil {
-		log.Print(err)
+		logger.Info.Print(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -180,7 +180,7 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
 	})
 	if err != nil {
-		log.Printf("[GetResponsesLongFormatCSV]: %v", err)
+		logger.Info.Println(err)
 		return err
 	}
 	return StreamFile(stream, buf)
@@ -198,7 +198,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 
 	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -209,7 +209,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 		req.Separator,
 	)
 	if err != nil {
-		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -229,7 +229,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 		responseExporter,
 	)
 	if err != nil {
-		log.Print(err)
+		logger.Info.Print(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -243,7 +243,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
 	})
 	if err != nil {
-		log.Printf("[GetResponsesFlatJSON]: %v", err)
+		logger.Info.Println(err)
 		return err
 	}
 	return StreamFile(stream, buf)
@@ -261,7 +261,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 
 	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		log.Printf("[GetResponsesWideFormatCSV]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -272,7 +272,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 		req.Separator,
 	)
 	if err != nil {
-		log.Printf("[GetResponsesWideFormatCSV]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -292,7 +292,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 		responseExporter,
 	)
 	if err != nil {
-		log.Print(err)
+		logger.Info.Print(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -306,7 +306,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
 	})
 	if err != nil {
-		log.Printf("[GetResponsesWideFormatCSV]: %v", err)
+		logger.Info.Println(err)
 		return err
 	}
 	return StreamFile(stream, buf)
@@ -324,7 +324,7 @@ func (s *studyServiceServer) GetSurveyInfoPreviewCSV(req *api.SurveyInfoExportQu
 
 	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		log.Printf("[GetSurveyInfoCSV]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -335,14 +335,14 @@ func (s *studyServiceServer) GetSurveyInfoPreviewCSV(req *api.SurveyInfoExportQu
 		"ignored",
 	)
 	if err != nil {
-		log.Printf("[GetSurveyInfoCSV]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
 	buf := new(bytes.Buffer)
 	err = responseExporter.GetSurveyInfoCSV(buf)
 	if err != nil {
-		log.Printf("[GetSurveyInfoCSV]: %v", err)
+		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
 
@@ -361,7 +361,7 @@ func (s *studyServiceServer) GetSurveyInfoPreview(ctx context.Context, req *api.
 
 	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		log.Printf("[GetSurveyInfoCSV]: %v", err)
+		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -372,7 +372,7 @@ func (s *studyServiceServer) GetSurveyInfoPreview(ctx context.Context, req *api.
 		"ignored",
 	)
 	if err != nil {
-		log.Printf("[GetSurveyInfoCSV]: %v", err)
+		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
