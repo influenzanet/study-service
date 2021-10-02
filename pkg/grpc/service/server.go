@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
@@ -68,14 +69,14 @@ func RunServer(ctx context.Context, port string,
 	go func() {
 		for range c {
 			// sig is a ^C, handle it
-			log.Println("shutting down gRPC server...")
+			logger.Info.Println("shutting down gRPC server...")
 			server.GracefulStop()
 			<-ctx.Done()
 		}
 	}()
 
 	// start gRPC server
-	log.Println("starting gRPC server...")
-	log.Println("wait connections on port " + port)
+	logger.Info.Println("starting gRPC server...")
+	logger.Info.Println("wait connections on port " + port)
 	return server.Serve(lis)
 }

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"log"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
@@ -25,7 +25,7 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 
 	studies, err := s.studyDBservice.GetStudiesByStatus(req.Token.InstanceId, "", false)
 	if err != nil {
-		log.Printf("GetStudiesForUser.GetStudiesByStatus: %v", err)
+		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -73,7 +73,7 @@ func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api_type
 
 	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", false)
 	if err != nil {
-		log.Printf("GetActiveStudies.GetStudiesByStatus: %v", err)
+		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -132,7 +132,7 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 			}
 			resp, err := studyengine.ExpressionEval(*cond.Exp, evalCtx)
 			if err != nil {
-				log.Printf("HasParticipantStateWithCondition.ExpressionEval: %v", err)
+				logger.Debug.Println(err)
 				// profile not in the study
 				continue
 			}
@@ -144,7 +144,6 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 					Msg:     "participant found in study",
 				}, nil
 			}
-			//log.Println(pState)
 		} else if cond.Num > 0 {
 			// hardcoded true
 			return &api.ServiceStatus{

@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
@@ -449,7 +449,7 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 				// save state back to DB
 				_, err := s.studyDBservice.SaveParticipantState(instanceID, studyKey, currentState)
 				if err != nil {
-					log.Printf("RunRules: %v", err)
+					logger.Error.Printf("RunRules: %v", err)
 					return status.Error(codes.Internal, err.Error())
 				}
 
