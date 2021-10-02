@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
@@ -41,7 +42,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	// Exists already?
 	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID, "active")
 	if exists {
-		log.Printf("error: participant (%s) already exists for this study", participantID)
+		logger.Debug.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
 	}
 
@@ -217,7 +218,7 @@ func (s *studyServiceServer) PostponeSurvey(ctx context.Context, req *api.Postpo
 
 	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
 	if err != nil {
-		log.Println("PostponeSurvey: participant state not found")
+		logger.Debug.Println("PostponeSurvey: participant state not found")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -475,7 +476,7 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 			// ParticipantID
 			participantID, err := s.profileIDToParticipantID(req.InstanceId, study.Key, profileID)
 			if err != nil {
-				log.Printf("DeleteParticipantData: %v", err)
+				logger.Error.Printf("DeleteParticipantData: %v", err)
 				continue
 			}
 			err = s.studyDBservice.DeleteParticipantState(req.InstanceId, study.Key, participantID)
@@ -500,7 +501,7 @@ const maxParticipantFileSize = 1 << 25
 func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_UploadParticipantFileServer) error {
 	req, err := stream.Recv()
 	if err != nil {
-		log.Println("Error: UploadParticipantFile missing file info")
+		logger.Error.Println("Error: UploadParticipantFile missing file info")
 		return status.Errorf(codes.Unknown, "file info missing")
 	}
 
