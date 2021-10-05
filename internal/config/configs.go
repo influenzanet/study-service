@@ -6,12 +6,14 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
 // Config is the structure that holds all global configuration data
 type Config struct {
 	Port           string
+	LogLevel       logger.LogLevel
 	StudyDBConfig  types.DBConfig
 	GlobalDBConfig types.DBConfig
 	Study          types.StudyConfig
@@ -24,10 +26,26 @@ func InitConfig() Config {
 	conf := Config{}
 	conf.Port = os.Getenv("STUDY_SERVICE_LISTEN_PORT")
 	conf.ServiceURLs.LoggingService = os.Getenv("ADDR_LOGGING_SERVICE")
+	conf.LogLevel = getLogLevel()
 	conf.StudyDBConfig = getStudyDBConfig()
 	conf.GlobalDBConfig = getGlobalDBConfig()
 	conf.Study = getStudyConfig()
 	return conf
+}
+
+func getLogLevel() logger.LogLevel {
+	switch os.Getenv("LOG_LEVEL") {
+	case "debug":
+		return logger.LEVEL_DEBUG
+	case "info":
+		return logger.LEVEL_INFO
+	case "error":
+		return logger.LEVEL_ERROR
+	case "warning":
+		return logger.LEVEL_WARNING
+	default:
+		return logger.LEVEL_INFO
+	}
 }
 
 func getStudyConfig() types.StudyConfig {

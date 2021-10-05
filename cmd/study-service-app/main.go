@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/internal/config"
 	"github.com/influenzanet/study-service/pkg/dbs/globaldb"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
@@ -15,6 +16,9 @@ import (
 
 func main() {
 	conf := config.InitConfig()
+
+	logger.SetLevel(conf.LogLevel)
+
 	studyDBService := studydb.NewStudyDBService(conf.StudyDBConfig)
 	globalDBService := globaldb.NewGlobalDBService(conf.GlobalDBConfig)
 
@@ -23,11 +27,14 @@ func main() {
 
 	clients := &types.APIClients{}
 
-	// TODO: set log level logger.SetLevel(logger.LEVEL_ERROR)
-
 	loggingClient, close := gc.ConnectToLoggingService(conf.ServiceURLs.LoggingService)
 	defer close()
 	clients.LoggingService = loggingClient
+
+	logger.Error.Println("error")
+	logger.Warning.Println("warning")
+	logger.Info.Println("info")
+	logger.Debug.Println("debug")
 
 	ctx := context.Background()
 	if err := service.RunServer(

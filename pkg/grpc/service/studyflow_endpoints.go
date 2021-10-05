@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -542,7 +541,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		}
 	default:
 		errMsg := fmt.Sprintf("Participant has unexpected type %T", x)
-		log.Printf("Error UploadParticipantFile: %s", errMsg)
+		logger.Info.Printf("Error UploadParticipantFile: %s", errMsg)
 		return status.Error(codes.InvalidArgument, errMsg)
 	}
 
@@ -557,7 +556,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	// get study upload condition rules
 	studyDef, err := s.studyDBservice.GetStudyByStudyKey(instanceID, info.StudyKey)
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: err at get study %v", err.Error())
+		logger.Info.Printf("Error UploadParticipantFile: err at get study %v", err.Error())
 		return status.Error(codes.Internal, "could not retrieve study")
 	}
 	if studyDef.ParticipantFileUploadRule == nil {
@@ -580,7 +579,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 			DbService:        s.studyDBservice,
 		})
 		if err != nil {
-			log.Printf("Error UploadParticipantFile: err at eval rule %v", err.Error())
+			logger.Info.Printf("Error UploadParticipantFile: err at eval rule %v", err.Error())
 			return status.Error(codes.PermissionDenied, "no permission to upload files")
 		}
 		if !val.(bool) {
@@ -593,7 +592,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	tempPath := filepath.Join(rootPath, "temp")
 	err = os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
+		logger.Info.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
 	}
 
 	// TODO create file reference entry in DB
@@ -603,7 +602,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		FileType:      info.FileType.Value,
 	})
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: %v", err.Error())
+		logger.Info.Printf("Error UploadParticipantFile: %v", err.Error())
 		return status.Error(codes.Internal, "unexpected error when creating file info object in DB.")
 	}
 
@@ -617,12 +616,12 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	var newFile *os.File
 	newFile, err = os.Create(tempFileName)
 	if err != nil {
-		log.Printf("error at creating file: %s", err.Error())
+		logger.Info.Printf("error at creating file: %s", err.Error())
 		return status.Error(codes.Internal, "todo")
 	}
 
 	for {
-		log.Print("waiting to receive more data")
+		logger.Info.Print("waiting to receive more data")
 
 		req, err := stream.Recv()
 		if err == io.EOF {
@@ -636,7 +635,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		chunk := req.GetChunk()
 		size := len(chunk)
 
-		log.Printf("received a chunk with size: %d", size)
+		logger.Debug.Printf("received a chunk with size: %d", size)
 
 		fileSize += size
 		if fileSize > maxParticipantFileSize {
@@ -666,11 +665,11 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	err = os.MkdirAll(absoluteTargetFolder, os.ModePerm)
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: err at target path mkdir %v", err.Error())
+		logger.Info.Printf("Error UploadParticipantFile: err at target path mkdir %v", err.Error())
 	}
 	err = os.Rename(tempFileName, targetFileAbsolutePath)
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: err at moving target %v", err.Error())
+		logger.Info.Printf("Error UploadParticipantFile: err at moving target %v", err.Error())
 	}
 
 	// TODO: update file reference entry with path and finished upload
@@ -679,7 +678,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	fileInfo.Path = targetFileRelativePath
 	fileInfo, err = s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, fileInfo)
 	if err != nil {
-		log.Printf("Error UploadParticipantFile: %v", err.Error())
+		logger.Debug.Printf("Error UploadParticipantFile: %v", err.Error())
 	}
 	// TODO: if necessary, start go process to generate preview
 
