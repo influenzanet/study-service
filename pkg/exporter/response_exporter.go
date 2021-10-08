@@ -191,23 +191,65 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 			}
 		}
 
-		/*if includeMeta != nil {
-			if !includeMeta.Postion {
-				currentResp["metaPosition"] = resp.Meta.Position
+		metaCols := rp.metaColNames
+		sort.Strings(metaCols)
+
+		if includeMeta != nil {
+			for _, colName := range metaCols {
+				if strings.Contains(colName, "metaInit") {
+					if !includeMeta.InitTimes {
+						continue
+					}
+					v, ok := resp.Meta.Initialised[colName]
+					if !ok {
+						currentResp[colName] = ""
+					} else {
+						currentResp[colName] = v
+					}
+				} else if strings.Contains(colName, "metaDisplayed") {
+					if !includeMeta.DisplayedTimes {
+						continue
+					}
+					v, ok := resp.Meta.Displayed[colName]
+					if !ok {
+						currentResp[colName] = ""
+					} else {
+						currentResp[colName] = v
+					}
+				} else if strings.Contains(colName, "metaResponse") {
+					if !includeMeta.ResponsedTimes {
+						continue
+					}
+					v, ok := resp.Meta.Responded[colName]
+					if !ok {
+						currentResp[colName] = ""
+					} else {
+						currentResp[colName] = v
+					}
+				} else if strings.Contains(colName, "metaItemVersion") {
+					if !includeMeta.ItemVersion {
+						continue
+					}
+					v, ok := resp.Meta.ItemVersion[colName]
+					if !ok {
+						currentResp[colName] = ""
+					} else {
+						currentResp[colName] = v
+					}
+				} else if strings.Contains(colName, "metaPosition") {
+					if !includeMeta.Postion {
+						continue
+					}
+					v, ok := resp.Meta.Position[colName]
+					if !ok {
+						currentResp[colName] = ""
+					} else {
+						currentResp[colName] = v
+					}
+				}
 			}
-			if !includeMeta.InitTimes {
-				currentResp["metaInit"] = resp.Meta.Initialised
-			}
-			if !includeMeta.DisplayedTimes {
-				currentResp["metaDisplayed"] = resp.Meta.Displayed
-			}
-			if !includeMeta.ResponsedTimes {
-				currentResp["metaResponse"] = resp.Meta.Responded
-			}
-			if !includeMeta.ItemVersion {
-				currentResp["metaItemVersion"] = resp.Meta.ItemVersion
-			}
-		}*/
+		}
+
 		responseArray = append(responseArray, currentResp)
 	}
 	b, err := json.Marshal(responseArray)
