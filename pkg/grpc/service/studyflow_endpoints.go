@@ -106,7 +106,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 		}
 		for _, profileID := range profileIDs {
 
-			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey)
+			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -288,7 +288,7 @@ func (s *studyServiceServer) SubmitStatusReport(ctx context.Context, req *api.St
 		Surveys: []*api.AssignedSurvey{},
 	}
 	for _, study := range studies {
-		participantID, err := utils.ProfileIDtoParticipantID(req.ProfileId, s.StudyGlobalSecret, study.SecretKey)
+		participantID, err := utils.ProfileIDtoParticipantID(req.ProfileId, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -559,12 +559,12 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		logger.Info.Printf("Error UploadParticipantFile: err at get study %v", err.Error())
 		return status.Error(codes.Internal, "could not retrieve study")
 	}
-	if studyDef.ParticipantFileUploadRule == nil {
+	if studyDef.Configs.ParticipantFileUploadRule == nil {
 		s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_SAVE_SURVEY, " upload participant file not permitted")
 		return status.Error(codes.PermissionDenied, "no permission to upload files")
 	} else {
 		// TODO: check upload condition for participant
-		val, err := studyengine.ExpressionEval(*studyDef.ParticipantFileUploadRule, studyengine.EvalContext{
+		val, err := studyengine.ExpressionEval(*studyDef.Configs.ParticipantFileUploadRule, studyengine.EvalContext{
 			Event: types.StudyEvent{
 				InstanceID: instanceID,
 				StudyKey:   info.StudyKey,

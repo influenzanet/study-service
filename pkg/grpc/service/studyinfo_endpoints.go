@@ -40,7 +40,7 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 		}
 		for _, profileID := range profileIDs {
 			// ParticipantID
-			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey)
+			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 			if err != nil {
 				continue
 			}
@@ -103,7 +103,7 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 
 	for _, profileID := range req.ProfileIds {
 		// ParticipantID
-		participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey)
+		participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 		if err != nil {
 			continue
 		}

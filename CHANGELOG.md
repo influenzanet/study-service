@@ -2,8 +2,12 @@
 
 ## [v0.17.0] - ???
 
+
+
 ### Added
 
+- Study data model now includes the attribute `idMappingMethod`, which allows to select the method used to convert profile ID into participant ID. This configuration is per study. Currently available methods are: 'aesctr' (default for backwards compatibility), 'sha224', 'sha256', 'same'.
+- Include improved logger, using configurable log levels. Use the environment variable `LOG_LEVEL` to select which level should be applied. Possible values are: `debug info warning error`.
 - New endpoint (`GetResponsesFlatJSON`) and data exporter code to export repsonses in a flat JSON list.
 - Data exporter can parse composite question titles or option labels (when text contains multiple parts).
 - Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"

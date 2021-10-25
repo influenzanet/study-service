@@ -8,6 +8,7 @@ import (
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 )
 
 func TestGetStudiesForUserEndpoint(t *testing.T) {
@@ -228,6 +229,9 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 			Status:    "active",
 			Key:       "studyfor_hasParticipantWithConditionStudies_1",
 			SecretKey: "testsecret",
+			Configs: types.StudyConfigs{
+				IdMappingMethod: utils.ID_MAPPING_AESCTR,
+			},
 		},
 	}
 

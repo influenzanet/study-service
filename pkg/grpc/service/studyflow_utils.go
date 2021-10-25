@@ -11,11 +11,11 @@ import (
 )
 
 func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
-	studySecret, err := s.studyDBservice.GetStudySecretKey(instanceID, studyKey)
+	idMappingMethod, studySecret, err := s.studyDBservice.GetStudySecretKey(instanceID, studyKey)
 	if err != nil {
 		return "", err
 	}
-	return utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret)
+	return utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret, idMappingMethod)
 }
 
 func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string, withStatus string) bool {

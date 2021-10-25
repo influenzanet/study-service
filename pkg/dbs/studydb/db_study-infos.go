@@ -71,9 +71,10 @@ func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status st
 	return studies, nil
 }
 
-func (dbService *StudyDBService) GetStudySecretKey(instanceID string, studyKey string) (secretKey string, err error) {
+func (dbService *StudyDBService) GetStudySecretKey(instanceID string, studyKey string) (idMappingMethod string, secretKey string, err error) {
 	projection := bson.D{
-		primitive.E{Key: "secretKey", Value: 1}, // {"secretKey", 1},
+		primitive.E{Key: "secretKey", Value: 1},               // {"secretKey", 1},
+		primitive.E{Key: "configs.idMappingMethod", Value: 1}, // {"secretKey", 1},
 	}
 
 	var study types.Study
@@ -84,9 +85,9 @@ func (dbService *StudyDBService) GetStudySecretKey(instanceID string, studyKey s
 		},
 		options.FindOne().SetProjection(projection),
 	).Decode(&study); err != nil {
-		return "", err
+		return "", "", err
 	}
-	return study.SecretKey, nil
+	return study.Configs.IdMappingMethod, study.SecretKey, nil
 }
 
 func (dbService *StudyDBService) GetStudyMembers(instanceID string, studyKey string) (members []types.StudyMember, err error) {

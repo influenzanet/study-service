@@ -116,12 +116,17 @@ func TestDbGetStudyInfos(t *testing.T) {
 				{Name: "IFTHEN"}, // These here are not complete and won't be evaluated in this test
 				{Name: "TEST"},
 			},
+			Configs: types.StudyConfigs{
+				IdMappingMethod: "sha256",
+			},
 		},
 		{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
+		}, Configs: types.StudyConfigs{
+			IdMappingMethod: "same",
 		}},
 	}
 
@@ -133,13 +138,16 @@ func TestDbGetStudyInfos(t *testing.T) {
 	}
 
 	t.Run("Get secret key", func(t *testing.T) {
-		secret, err := testDBService.GetStudySecretKey(testInstanceID, testStudies[0].Key)
+		idMapping, secret, err := testDBService.GetStudySecretKey(testInstanceID, testStudies[0].Key)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
 		if secret != testStudies[0].SecretKey {
 			t.Errorf("unexpected value: %s, %s (have, want)", secret, testStudies[0].SecretKey)
+		}
+		if idMapping != testStudies[0].Configs.IdMappingMethod {
+			t.Errorf("unexpected value: %s, %s (have, want)", idMapping, testStudies[0].Configs.IdMappingMethod)
 		}
 	})
 

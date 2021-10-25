@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 )
 
@@ -16,11 +17,48 @@ func createHash(key string) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
+const (
+	ID_MAPPING_SAME   = "same"
+	ID_MAPPING_AESCTR = "aesctr"
+	ID_MAPPING_SHA224 = "sha224"
+	ID_MAPPING_SHA256 = "sha256"
+)
+
 // ProfileIDtoParticipantID encrypts userID to be used as participant ID
-func ProfileIDtoParticipantID(userID string, globalSecret string, studySecret string) (string, error) {
-	if studySecret == "" {
+func ProfileIDtoParticipantID(userID string, globalSecret string, studySecret string, method string) (string, error) {
+	switch method {
+	case ID_MAPPING_SAME:
 		return userID, nil
+	case ID_MAPPING_SHA224:
+		return idMappingSHA224(userID, globalSecret, studySecret)
+	case ID_MAPPING_SHA256:
+		return idMappingSHA256(userID, globalSecret, studySecret)
+	case ID_MAPPING_AESCTR:
+		return idMappingAESCTR(userID, globalSecret, studySecret)
+	default:
+		return idMappingAESCTR(userID, globalSecret, studySecret)
 	}
+}
+
+func idMappingSHA224(userID string, globalSecret string, studySecret string) (string, error) {
+	hasher := sha256.New224()
+	_, err := hasher.Write([]byte(userID + globalSecret + studySecret))
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hasher.Sum(nil)), nil
+}
+
+func idMappingSHA256(userID string, globalSecret string, studySecret string) (string, error) {
+	hasher := sha256.New()
+	_, err := hasher.Write([]byte(userID + globalSecret + studySecret))
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hasher.Sum(nil)), nil
+}
+
+func idMappingAESCTR(userID string, globalSecret string, studySecret string) (string, error) {
 	key, err := createHash(globalSecret + studySecret)
 	if err != nil {
 		return "", err

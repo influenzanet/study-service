@@ -16,16 +16,16 @@ const (
 )
 
 type Study struct {
-	ID                        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Key                       string             `bson:"key"`
-	SecretKey                 string             `bson:"secretKey"`
-	Status                    string             `bson:"status"`
-	Members                   []StudyMember      `bson:"members"` // users with access to manage study
-	Rules                     []Expression       `bson:"rules"`   // defining how the study should run
-	Props                     StudyProps         `bson:"props"`
-	NextTimerEvent            int64              `bson:"nextTimerEventAfter"`
-	Stats                     StudyStats         `bson:"studyStats"`
-	ParticipantFileUploadRule *Expression        `bson:"participantFileUploadRule"`
+	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Key            string             `bson:"key"`
+	SecretKey      string             `bson:"secretKey"`
+	Status         string             `bson:"status"`
+	Members        []StudyMember      `bson:"members"` // users with access to manage study
+	Rules          []Expression       `bson:"rules"`   // defining how the study should run
+	Props          StudyProps         `bson:"props"`
+	NextTimerEvent int64              `bson:"nextTimerEventAfter"`
+	Stats          StudyStats         `bson:"studyStats"`
+	Configs        StudyConfigs       `bson:"configs"`
 }
 
 type StudyMember struct {
@@ -41,6 +41,11 @@ type StudyProps struct {
 	StartDate          int64             `bson:"startDate"`
 	EndDate            int64             `bson:"endDate"`
 	SystemDefaultStudy bool              `bson:"systemDefaultStudy"`
+}
+
+type StudyConfigs struct {
+	ParticipantFileUploadRule *Expression `bson:"participantFileUploadRule"`
+	IdMappingMethod           string      `bson:"idMappingMethod"`
 }
 
 type StudyStats struct {
@@ -63,15 +68,32 @@ func (s Study) ToAPI() *api.Study {
 	}
 
 	return &api.Study{
-		Id:                        s.ID.Hex(),
-		Key:                       s.Key,
-		SecretKey:                 s.SecretKey,
-		Status:                    s.Status,
-		Members:                   members,
-		Rules:                     rules,
-		Props:                     s.Props.ToAPI(),
-		Stats:                     s.Stats.ToAPI(),
+		Id:        s.ID.Hex(),
+		Key:       s.Key,
+		SecretKey: s.SecretKey,
+		Status:    s.Status,
+		Members:   members,
+		Rules:     rules,
+		Props:     s.Props.ToAPI(),
+		Stats:     s.Stats.ToAPI(),
+		Congfigs:  s.Configs.ToAPI(),
+	}
+}
+
+func (s StudyConfigs) ToAPI() *api.Study_Configs {
+	return &api.Study_Configs{
 		ParticipantFileUploadRule: s.ParticipantFileUploadRule.ToAPI(),
+		IdMappingMethod:           s.IdMappingMethod,
+	}
+}
+
+func StudyConfigsFromAPI(s *api.Study_Configs) StudyConfigs {
+	if s == nil {
+		return StudyConfigs{}
+	}
+	return StudyConfigs{
+		ParticipantFileUploadRule: ExpressionFromAPI(s.ParticipantFileUploadRule),
+		IdMappingMethod:           s.IdMappingMethod,
 	}
 }
 
@@ -89,15 +111,15 @@ func StudyFromAPI(s *api.Study) Study {
 	}
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 	return Study{
-		ID:                        _id,
-		Key:                       s.Key,
-		SecretKey:                 s.SecretKey,
-		Status:                    s.Status,
-		Members:                   members,
-		Rules:                     rules,
-		Props:                     StudyPropsFromAPI(s.Props),
-		Stats:                     StudyStatsFromAPI(s.Stats),
-		ParticipantFileUploadRule: ExpressionFromAPI(s.ParticipantFileUploadRule),
+		ID:        _id,
+		Key:       s.Key,
+		SecretKey: s.SecretKey,
+		Status:    s.Status,
+		Members:   members,
+		Rules:     rules,
+		Props:     StudyPropsFromAPI(s.Props),
+		Stats:     StudyStatsFromAPI(s.Stats),
+		Configs:   StudyConfigsFromAPI(s.Congfigs),
 	}
 }
 
