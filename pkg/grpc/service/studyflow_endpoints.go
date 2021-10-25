@@ -595,7 +595,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		logger.Info.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
 	}
 
-	// TODO create file reference entry in DB
+	// Create file reference entry in DB
 	fileInfo, err := s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, types.FileInfo{
 		ParticipantID: participantID,
 		Status:        types.FILE_STATUS_UPLOADING,
@@ -621,7 +621,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	}
 
 	for {
-		logger.Info.Print("waiting to receive more data")
+		logger.Debug.Print("waiting to receive more data")
 
 		req, err := stream.Recv()
 		if err == io.EOF {

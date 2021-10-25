@@ -1,3 +1,6 @@
+# loglevels: debug info warning error
+LOG_LEVEL="debug"
+
 #################
 # GlobalDB
 #################
