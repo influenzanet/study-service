@@ -12,16 +12,21 @@ This document describes the currently available study actions provided by CASE.
 The functions executing actions are listed in the following.
 The header denotes the string keyword leading to the decision which kind of action will be performed. The block code indicates the header of the function that will be executed in case of the keyword specified.
 
-
 ## 1.  IF
 
+This function is used for control flow implementing the typical if-else structure. Conditions are checked in order to decide which actions will be performed.
+
+Functional description:
+```
+IF(condition, action[, action_else])
+```
+
+Go Implementation:
 ```go
 ifAction(action, oldState, event, dbService)
 ```
-This function is used for control flow implementing the typical if-else structure. Conditions are checked in order to decide which actions will be performed.
 
-
-**Required Parameter in this function:**
+**Required Parameter:**
     
 >   `action.Data[0]` :  condition, evaluated to a boolean value \
 >   `action.Data[1]` : perform this action if condition is true  \
@@ -33,17 +38,21 @@ This function is used for control flow implementing the typical if-else structur
 **Return:** `(types.ParticipantState, error)`
 
 
-
 ### 2. DO
 
+Performs a list of actions by iterating through the `action.Data` argument. This function can be used to group actions together as a defined list of arguments.
+
+Functional description:
+```
+DO(action...)
+```
+
+Go Implementation:
 ```go
 doAction(action, oldState, event, dbService)
 ```
 
-performs a list of actions by iterating through the `action.Data` argument. This function can be used to group actions together as a defined list of arguments.
-
-
-**Required Parameter in this function:**
+**Required Parameters:**
     
 >   `action.Data[0:]` :  list of actions that will be performed successively
 
@@ -52,14 +61,19 @@ performs a list of actions by iterating through the `action.Data` argument. This
 
 ### 3. IFTHEN
 
+Conditionally performs a list of actions. The function checks the first argument as condition deciding if actions will be performed. In case of `true` it iterates through the following entries arguments. 
+
+Functional description:
+```
+IFTHEN(condtion, actions...)
+```
+
+Go Implementation:
 ```go
 ifThenAction(action, oldState, event, dbService)
 ```
 
-conditionally performs a list of actions. The function checks the first entry of the `action.Data` argument as condition deciding if actions will be performed. In case of `true` it iterates through the following entries of the `action.Data` argument. 
-
-
-**Required Parameter in this function:**
+**Required Parameters:**
     
 >   `action.Data[0]` :  condition, evaluated to a boolean value \
 >   `action.Data[1:]` : perform this sequence of actions if condition is true  
@@ -71,53 +85,66 @@ conditionally performs a list of actions. The function checks the first entry of
 
 ## 4. UPDATE_STUDY_STATUS
 
+Updates the status of the participant (e.g. from active to inactive). possible status values: "active", "inactive", "paused", "finished").
+
+Functional description:
+```
+UPDATE_STUDY_STATUS(status)
+```
+
+Go Implementation:
 ```go
 updateStudyStatusAction(action, oldState, event)
 ```
-updates the status of the participant (e.g. from active to inactive). possible status values: "active", "inactive", "paused", "finished")
 
-
-**Required Parameter in this method:**
+**Required Parameter:**
     
->   `action.Data[0]` : the new status of the participant convertible to `string`. Possible values are: `"active"`, `"inactive"`, `"paused"`, `"finished"`.
-
+>   `action.Data[0]` : the new status of the participant convertible to `string`. 
 
  **Note:** 
  The length of `action.Data` must be 1.
 
 **Return:** `(types.ParticipantState, error)`
 
-
-<!-- example for flag: “vaccinatationStatus”: “2" -->
 ## 5. UPDATE_FLAG
 
+Updates one flag of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
+
+Functional description:
+```
+UPDATE_FLAG(flag_key, value)
+```
+
+Go Implementation:
 ```go
 updateFlagAction(action, oldState, event)
 ```
-updates one flag of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
 
-
-**Required Parameter in this method:**
+**Required Parameters:**
     
 >   `action.Data[0]` : the string key of the flag to be updated \
 >   `action.Data[1]` : the string value of the flag to be updated 
-
 
  **Note:** 
  The length of `action.Data` must be 2.
 
 **Return:** `(types.ParticipantState, error)`
 
-
 ## 6. REMOVE_FLAG
 
+Deletes the flag with the specified key of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
+
+Functional description:
+```
+REMOVE_FLAG(flag_key)
+```
+
+Go Implementation:
 ```go
 removeFlagAction(action, oldState, event)
 ```
-deletes the flag with the specified key of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
 
-
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the flag to be removed
 
@@ -130,17 +157,23 @@ deletes the flag with the specified key of the participant state. The flag attri
 
 ## 7. ADD_NEW_SURVEY
 
+Appends a new survey to the assigned surveys of the participant state (expressed by the attribute `AssignedSurveys` of `ParticipantState`).
+
+Functional description:
+```
+  ADD_NEW_SURVEY(survey, since, until, mode )
+```
+
+Go Implementation:
 ```go
 addNewSurveyAction(action, oldState, event)
 ```
-appends a new survey to the assigned surveys of the participant state (expressed by the attribute `AssignedSurveys` of `ParticipantState`).
 
-
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the survey to be assigned to the participant \
 >   `action.Data[1]` : a float value indicating the timestamp from which the assigned survey is visible \
->   `action.Data[2]` :  a float value indicating the time until the assigned survey is visible and should be submitted \
+>   `action.Data[2]` : a float value indicating the time until the assigned survey is visible and should be submitted \
 >   `action.Data[3]` : a string value indicating the mode of displaying the assigned survey. Possible values are `"prio"`, `"normal"`, `"quick"` or `"update"`.
 
 
@@ -152,10 +185,17 @@ appends a new survey to the assigned surveys of the participant state (expressed
 
 ## 8. REMOVE_ALL_SURVEYS
 
+Clears the list of assigned surveys of participant state.
+
+Functional description:
+```
+  REMOVE_ALL_SURVEYS()
+```
+
+Go Implementation:
 ```go
 removeAllSurveys(action, oldState, event)
 ```
-clears the list of assigned surveys of participant state.
 
  **Note:** 
  Arguments of `action.Data` are permitted for this function.
@@ -165,51 +205,65 @@ clears the list of assigned surveys of participant state.
 
 ## 9. REMOVE_SURVEY_BY_KEY
 
+Removes the first or last occurence of a survey with specific key in the list of assigned surveys of the participant state.
+
+Functional description:
+```
+  REMOVE_SURVEY_BY_KEY(survey, position)
+```
+
+Go Implementation:
 ```go
 removeSurveyByKey(action, oldState, event)
 ```
 
-removes the first or last occurence of a survey with specific key in the list of assigned surveys of the participant state.
-
-**Required Parameter in this method:**
+**Required Parameters :**
     
 >   `action.Data[0]` : the string key of the survey to be removed at first or last occurence. \
 >   `action.Data[1]` : a string value indicating if the first or last occurence of an asssigned survey should be removed. Expected values are `"first"` or `"last"`.
 
-
- **Note:** 
- The length of `action.Data` must be 2.
-
 **Return:** `(types.ParticipantState, error)`
 
-
-
 ## 10. REMOVE_SURVEYS_BY_KEY
+
+Removes all surveys with the specified key in the list of assigned surveys of the participant state.
+
+Functional description:
+```
+  REMOVE_SURVEYS_BY_KEY(survey)
+```
+
+Go Implementation:
 
 ```go
 removeSurveysByKey(action, oldState, event)
 ```
-removes all surveys with the specified key in the list of assigned surveys of the participant state.
 
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the surveys to be removed.
 
- **Note:** 
- The length of `action.Data` must be 1.
-
+ 
 **Return:** `(types.ParticipantState, error)`
 
 <!--reports currently not used. Will be potentially removed or renamed by Peter-->
 
 ## 11. ADD_REPORT
 
+Finds and appends a response to a survey item (expressed by the `SurveyItemResponse` object) to the reports array of the participant state.
+
+Functional description:
+```
+  ADD_REPORT(survey)
+```
+
+Go Implementation:
+
 ```go
 addReport(action, oldState, event)
 ```
-finds and appends a response to a survey item (expressed by the `SurveyItemResponse` object) to the reports array of the participant state.
 
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the survey item response to be added to reports array.
 
@@ -218,30 +272,39 @@ finds and appends a response to a survey item (expressed by the `SurveyItemRespo
 
 **Return:** `(types.ParticipantState, error)`
 
-
 ## 12. REMOVE_ALL_REPORTS
 
+Clears the reports array of participant state.
+
+Functional description:
+```
+  REMOVE_ALL_REPORTS()
+```
+
+Go Implementation:
 ```go
 removeAllReports(action, oldState, event)
 ```
-clears the reports array of participant state.
 
-
- **Note:** 
- Arguments of `action.Data` are permitted for this function.
+ **Note:**  No arguments are allowed.
 
 **Return:** `(types.ParticipantState, error)`
 
-
 ## 13. REMOVE_REPORT_BY_KEY
 
+Removes the first or last occurence of a survey item response with specific key in the list of reports of the participant state.
+
+Functional description:
+```
+  REMOVE_REPORT_BY_KEY(survey, position)
+```
+
+Go Implementation:
 ```go
 removeReportByKey(action, oldState, event)
 ```
 
-removes the first or last occurence of a survey item response with specific key in the list of reports of the participant state.
-
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the survey item response to be removed at first or last occurence in reports. \
 >   `action.Data[1]` : a string value indicating if the first or last occurence of an survey item response should be removed. Expected values are `"first"` or `"last"`.
@@ -255,17 +318,20 @@ removes the first or last occurence of a survey item response with specific key 
 
 ## 14. REMOVE_REPORTS_BY_KEY
 
+Removes all survey item responses with the specified key in the list of reports of the participant state.
+
+Functional description:
+```
+  REMOVE_REPORTS_BY_KEY(survey)
+```
+
+Go Implementation:
 ```go
 removeReportsByKey(action, oldState, event)
 ```
-removes all survey item responses with the specified key in the list of reports of the participant state.
 
-
-**Required Parameter in this method:**
+**Required Parameter:**
     
 >   `action.Data[0]` : the string key of the survey item reponses to be removed.
-
- **Note:** 
- The length of `action.Data` must be 1.
-
+ 
 **Return:** `(types.ParticipantState, error)`
