@@ -19,7 +19,7 @@ Counts the number of selected reponse items of a response group.
 
 Functional Description:
 ```
-    countResponseItems(survey, rg): float
+countResponseItems(survey, rg): float
 ```
 
 Go Implementation:
@@ -46,7 +46,7 @@ Checks if the latest event is of the same type as specified in the parameter exp
 
 Functional Description:
 ```
-    countResponseItems(event_type): bool
+checkEventType(event_type): bool
 ```
 
 Go Implementation:
@@ -76,7 +76,7 @@ Checks if the key of the survey submitted during `Event` is the same as in expre
 
 Functional Description:
 ```
-    checkSurveyResponseKey(survey): bool
+checkSurveyResponseKey(survey): bool
 ```
 
 Go Implementation:
@@ -101,7 +101,7 @@ checks if the participant has selected any of the specified item keys.
 
 Functional Description:
 ```
-    responseHasKeysAny(survey, rg_prefix, comp_key...): bool
+responseHasKeysAny(survey, rg_prefix, comp_key...): bool
 ```
 
 Go Implementation:
@@ -228,7 +228,7 @@ Evaluates the specified expression on old responses.
 
 Functional Description:
 ```
-checkConditionForOldResponses(condtion[, check][, survey][,since][,until]): bool
+checkConditionForOldResponses(condition[, check][, survey][,since][,until]): bool
 ```
 
 Go Implementation:
