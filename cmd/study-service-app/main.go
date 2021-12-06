@@ -31,11 +31,6 @@ func main() {
 	defer close()
 	clients.LoggingService = loggingClient
 
-	logger.Error.Println("error")
-	logger.Warning.Println("warning")
-	logger.Info.Println("info")
-	logger.Debug.Println("debug")
-
 	ctx := context.Background()
 	if err := service.RunServer(
 		ctx,
