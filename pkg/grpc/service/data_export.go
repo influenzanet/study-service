@@ -22,9 +22,17 @@ import (
 
 const chunkSize = 64 * 1024 // 64 KiB
 
+type ResponseFormat int
+
+const (
+	FlatJSON      ResponseFormat = iota
+	WideFormatCSV ResponseFormat = iota
+	LongFormatCSV ResponseFormat = iota
+)
+
 func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req *api.SurveyResponseQuery) (*api.StudyResponseStatistics, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return nil, status.Error(codes.InvalidArgument, "missing argument")
+		return nil, s.missingArgumentError()
 	}
 
 	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
@@ -62,7 +70,7 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 
 func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, stream api.StudyServiceApi_StreamStudyResponsesServer) error {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return status.Error(codes.InvalidArgument, "missing argument")
+		return s.missingArgumentError()
 	}
 
 	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
@@ -123,220 +131,44 @@ func (s *studyServiceServer) HasAccessToDownload(t *api_types.TokenInfos, studyK
 	return err
 }
 
-func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesLongFormatCSVServer) error {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return status.Error(codes.InvalidArgument, "missing argument")
-	}
-
-	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Permission denied for "+req.StudyKey)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
-	if err != nil {
-		logger.Info.Printf("[GetResponsesLongFormatCSV]: %v", err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
-		"ignored",
-		req.ShortQuestionKeys,
-		req.Separator,
-	)
-	if err != nil {
-		logger.Info.Printf("[GetResponsesLongFormatCSV]: %v", err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	// Download responses
-	err = s.studyDBservice.PerformActionForSurveyResponses(
-		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
-		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
-			if len(args) != 1 {
-				return errors.New("[GetResponsesLongFormatCSV]: wrong DB method argument")
-			}
-			rExp, ok := args[0].(*exporter.ResponseExporter)
-			if !ok {
-				return errors.New("[GetResponsesLongFormatCSV]: wrong DB method argument")
-			}
-			return rExp.AddResponse(response.ToAPI())
-		},
-		responseExporter,
-	)
-	if err != nil {
-		logger.Info.Print(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	buf := new(bytes.Buffer)
-
-	err = responseExporter.GetResponsesLongFormatCSV(buf, &exporter.IncludeMeta{
-		Postion:        req.IncludeMeta.Position,
-		ItemVersion:    req.IncludeMeta.ItemVersion,
-		InitTimes:      req.IncludeMeta.InitTimes,
-		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
-		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
-	})
-	if err != nil {
-		logger.Info.Println(err)
-		return err
-	}
-	return StreamFile(stream, buf)
-}
-
+// TODO: Test GetResponsesFlatJSON
 func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return status.Error(codes.InvalidArgument, "missing argument")
-	}
+	buf, err := s.getResponseExportBuffer(req, FlatJSON)
 
-	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Permission denied for "+req.StudyKey)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
-		"ignored",
-		req.ShortQuestionKeys,
-		req.Separator,
-	)
-	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	// Download responses
-	err = s.studyDBservice.PerformActionForSurveyResponses(
-		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
-		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
-			if len(args) != 1 {
-				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
-			}
-			rExp, ok := args[0].(*exporter.ResponseExporter)
-			if !ok {
-				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
-			}
-			return rExp.AddResponse(response.ToAPI())
-		},
-		responseExporter,
-	)
-	if err != nil {
-		logger.Info.Print(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	buf := new(bytes.Buffer)
-
-	err = responseExporter.GetResponsesJSON(buf, &exporter.IncludeMeta{
-		Postion:        req.IncludeMeta.Position,
-		ItemVersion:    req.IncludeMeta.ItemVersion,
-		InitTimes:      req.IncludeMeta.InitTimes,
-		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
-		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
-	})
-	if err != nil {
-		logger.Info.Println(err)
 		return err
 	}
+
 	return StreamFile(stream, buf)
 }
 
+// TODO: Test GetResponsesWideFormatCSV
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return status.Error(codes.InvalidArgument, "missing argument")
-	}
+	buf, err := s.getResponseExportBuffer(req, WideFormatCSV)
 
-	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Permission denied for "+req.StudyKey)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
 	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
-		"ignored",
-		req.ShortQuestionKeys,
-		req.Separator,
-	)
-	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	// Download responses
-	err = s.studyDBservice.PerformActionForSurveyResponses(
-		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
-		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
-			if len(args) != 1 {
-				return errors.New("[GetResponsesWideFormatCSV]: wrong DB method argument")
-			}
-			rExp, ok := args[0].(*exporter.ResponseExporter)
-			if !ok {
-				return errors.New("[GetResponsesWideFormatCSV]: wrong DB method argument")
-			}
-			return rExp.AddResponse(response.ToAPI())
-		},
-		responseExporter,
-	)
-	if err != nil {
-		logger.Info.Print(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	buf := new(bytes.Buffer)
-
-	err = responseExporter.GetResponsesCSV(buf, &exporter.IncludeMeta{
-		Postion:        req.IncludeMeta.Position,
-		ItemVersion:    req.IncludeMeta.ItemVersion,
-		InitTimes:      req.IncludeMeta.InitTimes,
-		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
-		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
-	})
-	if err != nil {
-		logger.Info.Println(err)
 		return err
 	}
+
 	return StreamFile(stream, buf)
 }
 
+// TODO: Test GetResponsesLongFormatCSV
+func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesLongFormatCSVServer) error {
+	buf, err := s.getResponseExportBuffer(req, LongFormatCSV)
+
+	if err != nil {
+		return err
+	}
+
+	return StreamFile(stream, buf)
+}
+
+// TODO: Test GetSurveyInfoPreviewCSV
 func (s *studyServiceServer) GetSurveyInfoPreviewCSV(req *api.SurveyInfoExportQuery, stream api.StudyServiceApi_GetSurveyInfoPreviewCSVServer) error {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return status.Error(codes.InvalidArgument, "missing argument")
-	}
-
-	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_SURVEY_DEF, "Permission denied for "+req.StudyKey)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	responseExporter, err := s.getResponseExporterSurveyInfo(req)
 	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
-	}
-
-	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
-		req.PreviewLanguage,
-		req.ShortQuestionKeys,
-		"ignored",
-	)
-	if err != nil {
-		logger.Info.Println(err)
-		return status.Error(codes.Internal, err.Error())
+		return err
 	}
 
 	buf := new(bytes.Buffer)
@@ -349,31 +181,11 @@ func (s *studyServiceServer) GetSurveyInfoPreviewCSV(req *api.SurveyInfoExportQu
 	return StreamFile(stream, buf)
 }
 
+// TODO: Test GetSurveyInfoPreview
 func (s *studyServiceServer) GetSurveyInfoPreview(ctx context.Context, req *api.SurveyInfoExportQuery) (*api.SurveyInfoExport, error) {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
-		return nil, status.Error(codes.InvalidArgument, "missing argument")
-	}
-
-	if err := s.HasAccessToDownload(req.Token, req.StudyKey); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_SURVEY_DEF, "Permission denied for "+req.StudyKey)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	responseExporter, err := s.getResponseExporterSurveyInfo(req)
 	if err != nil {
-		logger.Info.Println(err)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
-		req.PreviewLanguage,
-		req.ShortQuestionKeys,
-		"ignored",
-	)
-	if err != nil {
-		logger.Info.Println(err)
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, err
 	}
 
 	resp := responseExporter.GetSurveyVersionDefs()
@@ -410,4 +222,111 @@ func StreamFile(stream StreamObj, buf *bytes.Buffer) error {
 		}
 	}
 	return nil
+}
+
+func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuery, fmt ResponseFormat) (*bytes.Buffer, error) {
+	responseExporter, err := s.getResponseExporterResponseExport(req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Download responses
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 1 {
+				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
+			}
+			return rExp.AddResponse(response.ToAPI())
+		},
+		responseExporter,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	buf := new(bytes.Buffer)
+	includeMeta := &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		ItemVersion:    req.IncludeMeta.ItemVersion,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	}
+
+	switch fmt {
+	case FlatJSON:
+		err = responseExporter.GetResponsesJSON(buf, includeMeta)
+	case WideFormatCSV:
+		err = responseExporter.GetResponsesCSV(buf, includeMeta)
+	case LongFormatCSV:
+		err = responseExporter.GetResponsesLongFormatCSV(buf, includeMeta)
+	default:
+		return nil, status.Error(codes.Internal, errors.New("[getResponseExportBuffer]: wrong response format").Error())
+	}
+
+	if err != nil {
+		logger.Info.Println(err)
+		return nil, err
+	}
+	return buf, nil
+}
+
+func (s *studyServiceServer) getResponseExporterSurveyInfo(req *api.SurveyInfoExportQuery) (*exporter.ResponseExporter, error) {
+	if req == nil {
+		return nil, s.missingArgumentError()
+	}
+	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, req.PreviewLanguage, req.ShortQuestionKeys, "ignored")
+}
+
+func (s *studyServiceServer) getResponseExporterResponseExport(req *api.ResponseExportQuery) (*exporter.ResponseExporter, error) {
+	if req == nil {
+		return nil, s.missingArgumentError()
+	}
+	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, "ignored", req.ShortQuestionKeys, req.Separator)
+}
+
+func (s *studyServiceServer) getResponseExporter(
+	token *api_types.TokenInfos,
+	studyKey string,
+	surveyKey string,
+	previewLanguage string,
+	shortQuestionKeys bool,
+	separator string) (*exporter.ResponseExporter, error) {
+	if token_checks.IsTokenEmpty(token) || studyKey == "" {
+		return nil, s.missingArgumentError()
+	}
+
+	if err := s.HasAccessToDownload(token, studyKey); err != nil {
+		s.SaveLogEvent(token.InstanceId, token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_SURVEY_DEF, "Permission denied for "+studyKey)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	surveyDef, err := s.studyDBservice.FindSurveyDef(token.InstanceId, studyKey, surveyKey)
+	if err != nil {
+		logger.Info.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	responseExporter, err := exporter.NewResponseExporter(
+		surveyDef.ToAPI(),
+		previewLanguage,
+		shortQuestionKeys,
+		separator,
+	)
+	if err != nil {
+		logger.Info.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return responseExporter, nil
+}
+
+func (s *studyServiceServer) missingArgumentError() error {
+	return status.Error(codes.InvalidArgument, "missing argument")
 }
