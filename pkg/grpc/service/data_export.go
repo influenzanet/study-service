@@ -20,7 +20,7 @@ import (
 	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
 )
 
-const chunkSize = 64 * 1024 // 64 KiB
+const CHUNK_SIZE = 64 * 1024 // 64 KiB
 
 type ResponseFormat int
 
@@ -207,11 +207,11 @@ type StreamObj interface {
 func StreamFile(stream StreamObj, buf *bytes.Buffer) error {
 	chnk := &api.Chunk{}
 
-	for currentByte := 0; currentByte < len(buf.Bytes()); currentByte += chunkSize {
-		if currentByte+chunkSize > len(buf.Bytes()) {
+	for currentByte := 0; currentByte < len(buf.Bytes()); currentByte += CHUNK_SIZE {
+		if currentByte+CHUNK_SIZE > len(buf.Bytes()) {
 			chnk.Chunk = buf.Bytes()[currentByte:len(buf.Bytes())]
 		} else {
-			chnk.Chunk = buf.Bytes()[currentByte : currentByte+chunkSize]
+			chnk.Chunk = buf.Bytes()[currentByte : currentByte+CHUNK_SIZE]
 		}
 
 		if err := stream.Send(chnk); err != nil {
