@@ -92,7 +92,7 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 		return nil
 	}
 
-	err := s.studyDBservice.PerfomActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
+	err := s.studyDBservice.PerformActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
 		sendResponseOverGrpc, stream)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -151,7 +151,7 @@ func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQu
 	}
 
 	// Download responses
-	err = s.studyDBservice.PerfomActionForSurveyResponses(
+	err = s.studyDBservice.PerformActionForSurveyResponses(
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
 			if len(args) != 1 {
@@ -214,7 +214,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 	}
 
 	// Download responses
-	err = s.studyDBservice.PerfomActionForSurveyResponses(
+	err = s.studyDBservice.PerformActionForSurveyResponses(
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
 			if len(args) != 1 {
@@ -277,7 +277,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 	}
 
 	// Download responses
-	err = s.studyDBservice.PerfomActionForSurveyResponses(
+	err = s.studyDBservice.PerformActionForSurveyResponses(
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
 			if len(args) != 1 {

@@ -47,14 +47,14 @@ func NewResponseExporter(
 		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang))
 	}
 
-	for versionInd, sv := range rp.surveyVersions {
-		for qInd, question := range sv.Questions {
-			if shortQuestionKeys {
+	if shortQuestionKeys {
+		for versionInd, sv := range rp.surveyVersions {
+			for qInd, question := range sv.Questions {
 				rp.surveyVersions[versionInd].Questions[qInd].ID = strings.TrimPrefix(question.ID, rp.surveyKey+".")
 			}
 		}
-
 	}
+
 	return &rp, nil
 }
 

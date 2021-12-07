@@ -141,7 +141,7 @@ func (dbService *StudyDBService) CountSurveyResponsesByKey(instanceID string, st
 	return count, err
 }
 
-func (dbService *StudyDBService) PerfomActionForSurveyResponses(
+func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	instanceID string,
 	studyKey string, surveyKey string, from int64, until int64,
 	cbk func(instanceID string, studyKey string, response types.SurveyResponse, args ...interface{}) error,
