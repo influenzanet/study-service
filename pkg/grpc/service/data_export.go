@@ -25,9 +25,9 @@ const chunkSize = 64 * 1024 // 64 KiB
 type ResponseFormat int
 
 const (
-	FlatJSON      ResponseFormat = iota
-	WideFormatCSV ResponseFormat = iota
-	LongFormatCSV ResponseFormat = iota
+	FLAT_JSON       ResponseFormat = iota
+	WIDE_FORMAT_CSV ResponseFormat = iota
+	LONG_FORMAT_CSV ResponseFormat = iota
 )
 
 func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req *api.SurveyResponseQuery) (*api.StudyResponseStatistics, error) {
@@ -133,7 +133,7 @@ func (s *studyServiceServer) HasAccessToDownload(t *api_types.TokenInfos, studyK
 
 // TODO: Test GetResponsesFlatJSON
 func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
-	buf, err := s.getResponseExportBuffer(req, FlatJSON)
+	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
 
 	if err != nil {
 		return err
@@ -144,7 +144,7 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 
 // TODO: Test GetResponsesWideFormatCSV
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
-	buf, err := s.getResponseExportBuffer(req, WideFormatCSV)
+	buf, err := s.getResponseExportBuffer(req, WIDE_FORMAT_CSV)
 
 	if err != nil {
 		return err
@@ -155,7 +155,7 @@ func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQu
 
 // TODO: Test GetResponsesLongFormatCSV
 func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesLongFormatCSVServer) error {
-	buf, err := s.getResponseExportBuffer(req, LongFormatCSV)
+	buf, err := s.getResponseExportBuffer(req, LONG_FORMAT_CSV)
 
 	if err != nil {
 		return err
@@ -260,11 +260,11 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 	}
 
 	switch fmt {
-	case FlatJSON:
+	case FLAT_JSON:
 		err = responseExporter.GetResponsesJSON(buf, includeMeta)
-	case WideFormatCSV:
+	case WIDE_FORMAT_CSV:
 		err = responseExporter.GetResponsesCSV(buf, includeMeta)
-	case LongFormatCSV:
+	case LONG_FORMAT_CSV:
 		err = responseExporter.GetResponsesLongFormatCSV(buf, includeMeta)
 	default:
 		return nil, status.Error(codes.Internal, errors.New("[getResponseExportBuffer]: wrong response format").Error())
