@@ -414,7 +414,8 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 		ParticipantStateChangePerRule: make([]int32, len(req.Rules)),
 	}
 
-	s.studyDBservice.FindAndExecuteOnParticipantsStates(
+	err := s.studyDBservice.FindAndExecuteOnParticipantsStates(
+		ctx,
 		req.Token.InstanceId,
 		req.StudyKey,
 		"",
@@ -458,6 +459,9 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 			return nil
 		},
 	)
+	if err != nil {
+		logger.Error.Println(err)
+	}
 
 	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_RUN_CUSTOM_RULES, fmt.Sprintf("rules run for study %s: %v", req.StudyKey, req.Rules))
 	resp := api.RuleRunSummary{

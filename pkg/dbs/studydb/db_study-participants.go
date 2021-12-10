@@ -1,6 +1,9 @@
 package studydb
 
 import (
+	"context"
+
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -109,15 +112,13 @@ func (dbService *StudyDBService) GetParticipantCountByStatus(instanceID string, 
 
 // FindParticipantState retrieves the participant state for a given participant from a study
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
+	ctx context.Context,
 	instanceID string,
 	studyKey string,
 	filterByStatus string,
 	cbk func(dbService *StudyDBService, p types.ParticipantState, instanceID string, studyKey string, args ...interface{}) error,
 	args ...interface{},
 ) error {
-	ctx, cancel := dbService.getContext()
-	defer cancel()
-
 	filter := bson.M{}
 	if len(filterByStatus) > 0 {
 		filter["studyStatus"] = filterByStatus
@@ -135,9 +136,14 @@ func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	defer cur.Close(ctx)
 
 	for cur.Next(ctx) {
+		if ctx.Err() != nil {
+			logger.Debug.Println(ctx.Err())
+			return ctx.Err()
+		}
 		// Update state of every participant
 		var pState types.ParticipantState
 		if err := cur.Decode(&pState); err != nil {
+			logger.Error.Printf("wrong data model: %v, %v", pState, err)
 			continue
 		}
 		// Perform callback:

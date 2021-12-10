@@ -1,6 +1,7 @@
 package studydb
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -174,7 +175,9 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 	}
 
 	t.Run("Finding inactive status ", func(t *testing.T) {
+		ctx := context.Background()
 		err := testDBService.FindAndExecuteOnParticipantsStates(
+			ctx,
 			testInstanceID,
 			testStudyKey,
 			types.STUDY_STATUS_ACTIVE,
