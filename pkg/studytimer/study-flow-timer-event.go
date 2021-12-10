@@ -1,6 +1,7 @@
 package studytimer
 
 import (
+	"context"
 	"errors"
 
 	"github.com/coneno/logger"
@@ -50,7 +51,8 @@ func (s *StudyTimerService) UpdateParticipantStates(instanceID string, studyKey 
 		return
 	}
 
-	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(instanceID, studyKey, types.STUDY_STATUS_ACTIVE, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
+	ctx := context.Background()
+	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(ctx, instanceID, studyKey, types.STUDY_STATUS_ACTIVE, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
 		logger.Error.Printf("ERROR in UpdateParticipantStates.FindAndExecuteOnParticipantsStates (%s, %s): %v", instanceID, studyKey, err)
 	}
 }

@@ -1,6 +1,7 @@
 package studydb
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -142,14 +143,12 @@ func (dbService *StudyDBService) CountSurveyResponsesByKey(instanceID string, st
 }
 
 func (dbService *StudyDBService) PerformActionForSurveyResponses(
+	ctx context.Context,
 	instanceID string,
 	studyKey string, surveyKey string, from int64, until int64,
 	cbk func(instanceID string, studyKey string, response types.SurveyResponse, args ...interface{}) error,
 	args ...interface{},
 ) (err error) {
-	ctx, cancel := dbService.getContext()
-	defer cancel()
-
 	filter := bson.M{}
 	if len(surveyKey) > 0 {
 		filter["key"] = surveyKey

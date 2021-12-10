@@ -100,7 +100,14 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 		return nil
 	}
 
-	err := s.studyDBservice.PerformActionForSurveyResponses(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until,
+	ctx := context.Background()
+	err := s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId,
+		req.StudyKey,
+		req.SurveyKey,
+		req.From,
+		req.Until,
 		sendResponseOverGrpc, stream)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -231,7 +238,9 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 	}
 
 	// Download responses
+	ctx := context.Background()
 	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
 			if len(args) != 1 {
