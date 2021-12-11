@@ -10,6 +10,7 @@ type SurveyResponse struct {
 	Key           string               `bson:"key"`
 	ParticipantID string               `bson:"participantID"`
 	VersionID     string               `bson:"versionID"`
+	OpenedAt      int64                `bson:"openedAt"`
 	SubmittedAt   int64                `bson:"submittedAt"`
 	ArrivedAt     int64                `bson:"arrivedAt"`
 	Responses     []SurveyItemResponse `bson:"responses"`
@@ -25,6 +26,7 @@ func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
 		Id:            sr.ID.Hex(),
 		Key:           sr.Key,
 		ParticipantId: sr.ParticipantID,
+		OpenedAt:      sr.OpenedAt,
 		SubmittedAt:   sr.SubmittedAt,
 		Responses:     resp,
 		VersionId:     sr.VersionID,
@@ -46,6 +48,7 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 		ID:            _id,
 		Key:           sr.Key,
 		ParticipantID: sr.ParticipantId,
+		OpenedAt:      sr.OpenedAt,
 		SubmittedAt:   sr.SubmittedAt,
 		VersionID:     sr.VersionId,
 		Responses:     resp,
