@@ -22,6 +22,7 @@ func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
 		resp[i] = r.ToAPI()
 	}
 	return &api.SurveyResponse{
+		Id:            sr.ID.Hex(),
 		Key:           sr.Key,
 		ParticipantId: sr.ParticipantID,
 		SubmittedAt:   sr.SubmittedAt,
@@ -40,6 +41,7 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 		resp[i] = SurveyItemResponseFromAPI(r)
 	}
 	return SurveyResponse{
+		ID:            primitive.ObjectIDFromHex(sr.Id),
 		Key:           sr.Key,
 		ParticipantID: sr.ParticipantId,
 		SubmittedAt:   sr.SubmittedAt,
