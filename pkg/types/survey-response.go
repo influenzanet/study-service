@@ -40,6 +40,7 @@ func SurveyResponseFromAPI(sr *api.SurveyResponse) SurveyResponse {
 	for i, r := range sr.Responses {
 		resp[i] = SurveyItemResponseFromAPI(r)
 	}
+
 	return SurveyResponse{
 		ID:            primitive.ObjectIDFromHex(sr.Id),
 		Key:           sr.Key,
