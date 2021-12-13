@@ -2,9 +2,12 @@ package exporter
 
 import (
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
 	"testing"
 
 	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 /*
@@ -135,41 +138,19 @@ func TestResponseExporter(t *testing.T) {
 	})
 }
 
-func TestGetResponseCSV(t *testing.T) {
-	testLang := "en"
-	questionOptionSep := "-"
-	testSurveyDef := &studyAPI.SurveyItem{
-		Key: "weekly",
-		Items: []*studyAPI.SurveyItem{
-			mockQuestion("weekly.Q1", testLang, "Title of Q1", mockSingleChoiceGroup(testLang, []MockOpionDef{
-				{Key: "1", Role: "option", Label: "Yes"},
-				{Key: "2", Role: "option", Label: "No"},
-				{Key: "3", Role: "input", Label: "Other"},
-			})),
-			mockQuestion("weekly.Q2", testLang, "Title of Q2", mockMultipleChoiceGroup(testLang, []MockOpionDef{
-				{Key: "1", Role: "option", Label: "Option 1"},
-				{Key: "2", Role: "option", Label: "Option 2"},
-				{Key: "3", Role: "input", Label: "Other"},
-			})),
-			{Key: "weekly.G1", Items: []*studyAPI.SurveyItem{
-				mockQuestion("weekly.G1.Q1", testLang, "Title of Group 1's Q1", mockLikertGroup(testLang, []MockOpionDef{
-					{Key: "cat1", Label: "Category 1"},
-					{Key: "cat2", Label: "Category 2"},
-				}, []string{
-					"o1", "o2", "o3",
-				})),
-			}},
-		},
+func readTestFileToBytes(t *testing.T, fileName string) []byte {
+	content, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		t.Errorf("Failed to read test-file: %s - %v", fileName, err)
 	}
-	testSurvey := studyAPI.Survey{
-		Id: "surveyIDfromDB",
-		Current: &studyAPI.SurveyVersion{
-			Published:        10,
-			VersionId:        "3",
-			SurveyDefinition: testSurveyDef,
-		},
-	}
-	parser, err := NewResponseExporter(&testSurvey, "en", true, questionOptionSep)
+	return content
+}
+
+func TestExportFormats(t *testing.T) {
+	var testSurvey types.Survey
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+
+	parser, err := NewResponseExporter(testSurvey.ToAPI(), "nl", true, "-")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -183,56 +164,50 @@ func TestGetResponseCSV(t *testing.T) {
 		}
 	})
 
-	err = parser.AddResponse(&studyAPI.SurveyResponse{Key: "weekly", ParticipantId: "part1", SubmittedAt: 10,
-		Context: map[string]string{
-			"engineVersion": "v0923",
-			"language":      "en",
-		},
-		VersionId: "3",
-		Responses: []*studyAPI.SurveyItemResponse{
-			{Key: "weekly.Q1", Meta: &studyAPI.ResponseMeta{}, Response: &studyAPI.ResponseItem{
-				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
-						{Key: "3", Value: "hello, \"how are you\""},
-					}},
-				},
-			}},
-			{Key: "weekly.Q2", Meta: &studyAPI.ResponseMeta{}, Response: &studyAPI.ResponseItem{
-				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "mcg", Items: []*studyAPI.ResponseItem{
-						{Key: "1"},
-					}},
-				},
-			}},
-			{Key: "weekly.G1.Q1", Meta: &studyAPI.ResponseMeta{}, Response: &studyAPI.ResponseItem{
-				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "cat1", Items: []*studyAPI.ResponseItem{
-						{Key: "o1"},
-					}},
-					{Key: "cat2", Items: []*studyAPI.ResponseItem{
-						{Key: "o2"},
-					}},
-				},
-			}},
-		},
-	})
-	if err != nil {
-		t.Errorf("unexpected error: %v", err.Error())
-		return
+	var testResponses []types.SurveyResponse
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
+
+	for _, response := range testResponses {
+		err = parser.AddResponse(response.ToAPI())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err.Error())
+			return
+		}
 	}
 
-	t.Run("with one response added", func(t *testing.T) {
+	wideCSV := string(readTestFileToBytes(t, "./test_files/export_wide.csv"))
+	t.Run("Wide CSV", func(t *testing.T) {
 		buf := new(bytes.Buffer)
 		err := parser.GetResponsesCSV(buf, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-		if buf.String() != "" {
-			return
+		if buf.String() != wideCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
 		}
 	})
 
+	longCSV := string(readTestFileToBytes(t, "./test_files/export_long.csv"))
+	t.Run("Long CSV", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesLongFormatCSV(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != longCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
+		}
+	})
+
+	json := string(readTestFileToBytes(t, "./test_files/export.json"))
+	t.Run("JSON", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesJSON(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != json {
+			t.Errorf("Unexpected output: %v", buf.String())
+		}
+	})
 }
