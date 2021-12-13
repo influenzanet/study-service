@@ -1,2 +1,4 @@
 vendor
 test.sh
+run.sh
+tools/db_exporter/exports
