@@ -24,6 +24,49 @@ type ResponseExporter struct {
 	questionOptionKeySep string
 }
 
+var fixedColumnKeys = []string{
+	"ID",
+	"participantID",
+	"version",
+	"opened",
+	"submitted",
+}
+
+func (rp ResponseExporter) getFixedColumns(resp ParsedResponse) map[string]interface{} {
+	// Must always assign every entry of fixedColumnKeys
+	return map[string]interface{}{
+		fixedColumnKeys[0]: resp.ID,
+		fixedColumnKeys[1]: resp.ParticipantID,
+		fixedColumnKeys[2]: resp.Version,
+		fixedColumnKeys[3]: resp.OpenedAt,
+		fixedColumnKeys[4]: resp.SubmittedAt,
+	}
+}
+
+func (rp ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []string {
+	fixedColumns := rp.getFixedColumns(resp)
+	valueStrings := make([]string, 0, len(fixedColumnKeys))
+
+	for _, k := range fixedColumnKeys {
+		var stringValue string
+		c, ok := fixedColumns[k]
+		if !ok {
+			stringValue = ""
+		} else {
+			switch value := c.(type) {
+			case string:
+				stringValue = value
+			default:
+				stringValue = fmt.Sprint(value)
+			}
+		}
+
+		valueStrings = append(valueStrings, stringValue)
+	}
+
+	return valueStrings
+}
+
 func NewResponseExporter(
 	surveyDef *studyAPI.Survey,
 	previewLang string,
@@ -60,8 +103,10 @@ func NewResponseExporter(
 
 func (rp *ResponseExporter) AddResponse(rawResp *studyAPI.SurveyResponse) error {
 	parsedResponse := ParsedResponse{
+		ID:            rawResp.Id,
 		ParticipantID: rawResp.ParticipantId,
 		Version:       rawResp.VersionId,
+		OpenedAt:      rawResp.OpenedAt,
 		SubmittedAt:   rawResp.SubmittedAt,
 		Context:       rawResp.Context,
 		Responses:     map[string]string{},
@@ -175,11 +220,7 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 	responseArray := []map[string]interface{}{}
 	for _, resp := range rp.responses {
 
-		currentResp := map[string]interface{}{
-			"participantID": resp.ParticipantID,
-			"version":       resp.Version,
-			"submitted":     resp.SubmittedAt,
-		}
+		currentResp := rp.getFixedColumns(resp)
 
 		responseCols := rp.responseColNames
 		for _, colName := range responseCols {
@@ -274,11 +315,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 	sort.Strings(metaCols)
 
 	// Prepare csv header
-	header := []string{
-		"participantID",
-		"version",
-		"submitted",
-	}
+	header := fixedColumnKeys
 	header = append(header, contextCols...)
 	header = append(header, responseCols...)
 	if includeMeta != nil {
@@ -313,11 +350,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 
 	// Write responses
 	for _, resp := range rp.responses {
-		line := []string{
-			resp.ParticipantID,
-			resp.Version,
-			fmt.Sprint(resp.SubmittedAt),
-		}
+		line := rp.getFixedColumnValueStrings(resp)
 
 		for _, colName := range contextCols {
 			v, ok := resp.Context[colName]
@@ -416,11 +449,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 	sort.Strings(metaCols)
 
 	// Prepare csv header
-	header := []string{
-		"participantID",
-		"version",
-		"submitted",
-	}
+	header := fixedColumnKeys
 	header = append(header, contextCols...)
 	header = append(header, "responseSlot")
 	header = append(header, "value")
@@ -436,11 +465,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 
 	// Write responses
 	for _, resp := range rp.responses {
-		line := []string{
-			resp.ParticipantID,
-			resp.Version,
-			fmt.Sprint(resp.SubmittedAt),
-		}
+		line := rp.getFixedColumnValueStrings(resp)
 
 		for _, colName := range contextCols {
 			v, ok := resp.Context[colName]
