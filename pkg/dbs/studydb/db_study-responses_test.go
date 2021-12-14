@@ -140,3 +140,48 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 		}
 	})
 }
+
+func TestDbUpdateParticipantID(t *testing.T) {
+	testStudyKey := "teststudy_for_updating_pid"
+
+	surveyResps := []types.SurveyResponse{
+		// mix participants and order for submittedAt
+		{Key: "s1", ParticipantID: "u1", SubmittedAt: time.Now().Add(-30 * time.Hour * 24).Unix()},
+		{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-29 * time.Hour * 24).Unix()},
+		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
+	}
+	for _, sr := range surveyResps {
+		err := testDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+	}
+
+	t.Run("not existing participant", func(t *testing.T) {
+		count, err := testDBService.UpdateParticipantIDonResponses(testInstanceID, testStudyKey, "u3", "n3")
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if count > 0 {
+			t.Errorf("unexpected number of modified respones found: %d", count)
+		}
+	})
+
+	t.Run("u2", func(t *testing.T) {
+		count, err := testDBService.UpdateParticipantIDonResponses(testInstanceID, testStudyKey, "u2", "u3")
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if count != 2 {
+			t.Errorf("unexpected number of modified respones found: %d", count)
+		}
+
+		r, _ := testDBService.FindSurveyResponses(testInstanceID, testStudyKey, ResponseQuery{
+			ParticipantID: "u3",
+		})
+		if len(r) != 2 {
+			t.Errorf("unexpected number of respones found: %d", len(r))
+		}
+	})
+}

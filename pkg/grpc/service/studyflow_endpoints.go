@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/coneno/logger"
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
@@ -19,6 +18,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -50,7 +50,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	pState := types.ParticipantState{
 		ParticipantID: participantID,
 		EnteredAt:     time.Now().Unix(),
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 	}
 
 	// perform study rules/actions
@@ -82,12 +82,132 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	return &resp, nil
 }
 
-func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, _ *empty.Empty) (*api.RegisterTempParticipantResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "endpoint not implemented")
+func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, req *api.RegisterTempParticipantReq) (*api.RegisterTempParticipantResponse, error) {
+	if req == nil || req.StudyKey == "" || req.InstanceId == "" {
+		logger.Debug.Println("missing argument in request")
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// Generate new participantID
+	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, primitive.NewObjectID().Hex())
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Exists already?
+	exists := s.checkIfParticipantExists(req.InstanceId, req.StudyKey, participantID, "active")
+	if exists {
+		logger.Debug.Printf("error: participant (%s) already exists for this study", participantID)
+		return nil, status.Error(codes.Internal, "participant already exists for this study")
+	}
+
+	// Init state and perform rules
+	pState := types.ParticipantState{
+		ParticipantID: participantID,
+		EnteredAt:     time.Now().Unix(),
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_TEMPORARY,
+	}
+
+	// perform study rules/actions
+	currentEvent := types.StudyEvent{
+		Type:       "ENTER",
+		InstanceID: req.InstanceId,
+		StudyKey:   req.StudyKey,
+	}
+	pState, err = s.getAndPerformStudyRules(req.InstanceId, req.StudyKey, pState, currentEvent)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// save state back to DB
+	_, err = s.studyDBservice.SaveParticipantState(req.InstanceId, req.StudyKey, pState)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Prepare response
+	resp := api.RegisterTempParticipantResponse{
+		TemporaryParticipantId: participantID,
+	}
+	return &resp, nil
 }
 
 func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, req *api.ConvertTempParticipantReq) (*api.ServiceStatus, error) {
-	return nil, status.Error(codes.Unimplemented, "endpoint not implemented")
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	// Find temporary participant:
+	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
+		logger.Debug.Println(err)
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_PARTICIPANT_ACTION, fmt.Sprintf("user attempted to convert wrong temporary participant (ID: %s)", req.TemporaryParticipantId))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Calculate real participant ID:
+	realParticipantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// Exists already?
+	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, realParticipantID, "active")
+	if exists {
+		existingPState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, realParticipantID)
+		if err != nil {
+			logger.Debug.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		// Merge participant states
+		existingPState.AssignedSurveys = append(existingPState.AssignedSurveys, pState.AssignedSurveys...)
+		for k, v := range pState.Flags {
+			existingPState.Flags[k] = v
+		}
+		for k, v := range pState.LastSubmissions {
+			existingPState.LastSubmissions[k] = v
+		}
+
+		_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, existingPState)
+		if err != nil {
+			logger.Debug.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		err = s.studyDBservice.DeleteParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+		if err != nil {
+			logger.Debug.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	} else {
+		// Participant did not exist before:
+		pState.ParticipantID = realParticipantID
+		pState.StudyStatus = types.PARTICIPANT_STUDY_STATUS_ACTIVE
+
+		_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+		if err != nil {
+			logger.Debug.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	count, err := s.studyDBservice.UpdateParticipantIDonResponses(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId, realParticipantID)
+	if err != nil {
+		logger.Error.Println(err)
+	} else {
+		logger.Debug.Printf("updated %d responses for participant %s", count, realParticipantID)
+	}
+	// TODO: update participant ID to all history object
+	// TODO: update participant ID to all personal info responses
+
+	return &api.ServiceStatus{
+		Status:  api.ServiceStatus_NORMAL,
+		Msg:     "conversion successful",
+		Version: apiVersion,
+	}, nil
 }
 
 func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_types.TokenInfos) (*api.AssignedSurveys, error) {
