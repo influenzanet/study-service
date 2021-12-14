@@ -5,6 +5,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	SURVEY_AVAILABLE_FOR_PUBLIC                 = "public"
+	SURVEY_AVAILABLE_FOR_TEMPORARY_PARTICIPANTS = "temporary_participants"
+	SURVEY_AVAILABLE_FOR_ACTIVE_PARTICIPANTS    = "active_participants"
+)
+
 type Survey struct {
 	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Props           SurveyProps        `bson:"props,omitempty"`
@@ -13,6 +19,7 @@ type Survey struct {
 	PrefillRules    []Expression       `bson:"prefillRules,omitempty"`
 	ContextRules    *SurveyContextDef  `bson:"contextRules,omitempty"`
 	MaxItemsPerPage *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
+	AvailableFor    string             `bson:"availableFor,omitempty"`
 }
 
 type SurveyProps struct {
@@ -55,6 +62,7 @@ func (s Survey) ToAPI() *api.Survey {
 	if s.MaxItemsPerPage != nil {
 		as.MaxItemsPerPage = s.MaxItemsPerPage.ToAPI()
 	}
+	as.AvailableFor = s.AvailableFor
 	return as
 }
 
@@ -80,6 +88,7 @@ func SurveyFromAPI(s *api.Survey) Survey {
 		PrefillRules:    prefills,
 		ContextRules:    SurveyContextDefFromAPI(s.ContextRules),
 		MaxItemsPerPage: MaxItemsPerPageFromAPI(s.MaxItemsPerPage),
+		AvailableFor:    s.AvailableFor,
 	}
 }
 
