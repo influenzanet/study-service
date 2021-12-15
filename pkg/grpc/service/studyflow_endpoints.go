@@ -318,7 +318,7 @@ func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.Sur
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if req.Token == nil {
+	if token_checks.IsTokenEmpty(req.Token) {
 		if req.InstanceId == "" {
 			return nil, status.Error(codes.InvalidArgument, "missing argument")
 		}
