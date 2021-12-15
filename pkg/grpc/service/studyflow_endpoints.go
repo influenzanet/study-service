@@ -242,7 +242,6 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		for _, profileID := range profileIDs {
-
 			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
