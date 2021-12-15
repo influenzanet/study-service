@@ -123,7 +123,7 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 	// save state back to DB
 	_, err = s.studyDBservice.SaveParticipantState(req.InstanceId, req.StudyKey, pState)
 	if err != nil {
-		logger.Debug.Println(err)
+		logger.Error.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
