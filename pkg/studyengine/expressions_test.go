@@ -106,10 +106,10 @@ func TestEvalCheckSurveyResponseKey(t *testing.T) {
 func TestEvalHasStudyStatus(t *testing.T) {
 	t.Run("with not matching state", func(t *testing.T) {
 		exp := types.Expression{Name: "hasStudyStatus", Data: []types.ExpressionArg{
-			{DType: "str", Str: "exited"},
+			{DType: "str", Str: types.PARTICIPANT_STUDY_STATUS_EXITED},
 		}}
 		EvalContext := EvalContext{
-			ParticipantState: types.ParticipantState{StudyStatus: "active"},
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE},
 		}
 		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
@@ -123,10 +123,10 @@ func TestEvalHasStudyStatus(t *testing.T) {
 
 	t.Run("with matching state", func(t *testing.T) {
 		exp := types.Expression{Name: "hasStudyStatus", Data: []types.ExpressionArg{
-			{DType: "str", Str: "active"},
+			{DType: "str", Str: types.PARTICIPANT_STUDY_STATUS_ACTIVE},
 		}}
 		EvalContext := EvalContext{
-			ParticipantState: types.ParticipantState{StudyStatus: "active"},
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE},
 		}
 		ret, err := ExpressionEval(exp, EvalContext)
 		if err != nil {
@@ -506,7 +506,7 @@ func TestEvalGetStudyEntryTime(t *testing.T) {
 		tStart := time.Now().Unix()
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				EnteredAt:   tStart,
 			},
 		}
@@ -528,7 +528,7 @@ func TestEvalHasSurveyKeyAssigned(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1"},
 					{SurveyKey: "test2"},
@@ -551,7 +551,7 @@ func TestEvalHasSurveyKeyAssigned(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test2"},
 				},
@@ -571,7 +571,7 @@ func TestEvalHasSurveyKeyAssigned(t *testing.T) {
 		exp := types.Expression{Name: "hasSurveyKeyAssigned", Data: []types.ExpressionArg{}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test2"},
 				},
@@ -590,7 +590,7 @@ func TestEvalHasSurveyKeyAssigned(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test2"},
 				},
@@ -611,7 +611,7 @@ func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -634,7 +634,7 @@ func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
 				},
@@ -654,7 +654,7 @@ func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
 		exp := types.Expression{Name: "getSurveyKeyAssignedFrom", Data: []types.ExpressionArg{}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -674,7 +674,7 @@ func TestEvalGetSurveyKeyAssignedFrom(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -696,7 +696,7 @@ func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -719,7 +719,7 @@ func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
 				},
@@ -739,7 +739,7 @@ func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
 		exp := types.Expression{Name: "getSurveyKeyAssignedUntil", Data: []types.ExpressionArg{}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -759,7 +759,7 @@ func TestEvalGetSurveyKeyAssignedUntil(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				AssignedSurveys: []types.AssignedSurvey{
 					{SurveyKey: "test1", ValidFrom: 10, ValidUntil: 100},
 					{SurveyKey: "test2", ValidFrom: 10, ValidUntil: 100},
@@ -782,7 +782,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 			},
 		}
 		ret, err := ExpressionEval(exp, EvalContext)
@@ -802,7 +802,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key2": "value1",
 				},
@@ -825,7 +825,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key1": "value2",
 				},
@@ -848,7 +848,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key1": "value1",
 				},
@@ -868,7 +868,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		exp := types.Expression{Name: "hasParticipantFlag", Data: []types.ExpressionArg{}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key1": "value1",
 				},
@@ -888,7 +888,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key1": "value1",
 				},
@@ -908,7 +908,7 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				Flags: map[string]string{
 					"key1": "value1",
 				},
@@ -1488,7 +1488,7 @@ func TestEvalLastSubmissionDateOlderThan(t *testing.T) {
 			}}},
 		}}
 		EvalContext := EvalContext{
-			ParticipantState: types.ParticipantState{StudyStatus: "active",
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				LastSubmissions: map[string]int64{
 					"s1": time.Now().Unix() - 2,
 				},
@@ -1512,7 +1512,7 @@ func TestEvalLastSubmissionDateOlderThan(t *testing.T) {
 			{DType: "str", Str: "s2"},
 		}}
 		EvalContext := EvalContext{
-			ParticipantState: types.ParticipantState{StudyStatus: "active",
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				LastSubmissions: map[string]int64{
 					"s1": time.Now().Unix() - 2,
 					"s2": time.Now().Unix() - 20,
@@ -1534,7 +1534,7 @@ func TestEvalLastSubmissionDateOlderThan(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				LastSubmissions: map[string]int64{
 					"s1": time.Now().Unix() - 2,
 					"s2": time.Now().Unix() - 20,
@@ -1559,7 +1559,7 @@ func TestEvalLastSubmissionDateOlderThan(t *testing.T) {
 		}}
 		EvalContext := EvalContext{
 			ParticipantState: types.ParticipantState{
-				StudyStatus: "active",
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 				LastSubmissions: map[string]int64{
 					"s1": time.Now().Unix() - 25,
 					"s2": time.Now().Unix() - 20,

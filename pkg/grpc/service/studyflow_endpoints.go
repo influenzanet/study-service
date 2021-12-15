@@ -40,7 +40,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// Exists already?
-	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID, "active")
+	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, participantID, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 	if exists {
 		logger.Debug.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
@@ -96,7 +96,7 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 	}
 
 	// Exists already?
-	exists := s.checkIfParticipantExists(req.InstanceId, req.StudyKey, participantID, "active")
+	exists := s.checkIfParticipantExists(req.InstanceId, req.StudyKey, participantID, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 	if exists {
 		logger.Debug.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
@@ -154,7 +154,7 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 	}
 
 	// Exists already?
-	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, realParticipantID, "active")
+	exists := s.checkIfParticipantExists(req.Token.InstanceId, req.StudyKey, realParticipantID, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 	if exists {
 		existingPState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, realParticipantID)
 		if err != nil {

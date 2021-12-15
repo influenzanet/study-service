@@ -10,7 +10,7 @@ import (
 func TestActions(t *testing.T) {
 	participantState := types.ParticipantState{
 		ParticipantID: "participant1234",
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		Flags: map[string]string{
 			"health": "test",
 		},
@@ -101,8 +101,8 @@ func TestActions(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		if newState.StudyStatus != "active" {
-			t.Errorf("error -> expected: %s, have: %s", "active", newState.StudyStatus)
+		if newState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
+			t.Errorf("error -> expected: %s, have: %s", types.PARTICIPANT_STUDY_STATUS_ACTIVE, newState.StudyStatus)
 		}
 
 		action = types.Expression{
@@ -399,7 +399,7 @@ func TestActions(t *testing.T) {
 	// Report actions
 	participantState = types.ParticipantState{
 		ParticipantID: "participant1234",
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		Flags: map[string]string{
 			"health": "test",
 		},

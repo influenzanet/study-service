@@ -74,12 +74,12 @@ conditionally performs a list of actions. The function checks the first entry of
 ```go
 updateStudyStatusAction(action, oldState, event)
 ```
-updates the status of the participant (e.g. from active to inactive). possible status values: "active", "inactive", "paused", "finished")
+updates the status of the participant (e.g. from active to exited). Possible status values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
 
 
 **Required Parameter in this method:**
     
->   `action.Data[0]` : the new status of the participant convertible to `string`. Possible values are: `"active"`, `"inactive"`, `"paused"`, `"finished"`.
+>   `action.Data[0]` : the new status of the participant convertible to `string`. Possible values are: `"active"`, `"temporary"`, `"exited"`. Other values are possible and are handled like `"exited"` on the server.
 
 
  **Note:** 
