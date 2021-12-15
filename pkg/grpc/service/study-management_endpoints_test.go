@@ -1082,7 +1082,7 @@ func TestSaveStudyStatusEndpoint(t *testing.T) {
 				Role:   "maintainer",
 			},
 		},
-		Status: "active",
+		Status: types.STUDY_STATUS_ACTIVE,
 	}
 
 	_, err := testStudyDBService.CreateStudy(testInstanceID, testStudy)
@@ -1181,7 +1181,7 @@ func TestSaveStudyPropsEndpoint(t *testing.T) {
 				Role:   "maintainer",
 			},
 		},
-		Status: "active",
+		Status: types.STUDY_STATUS_ACTIVE,
 		Props: types.StudyProps{
 			Name: []types.LocalisedObject{
 				{Code: "en "},
@@ -1295,7 +1295,7 @@ func TestDeleteStudyEndpoint(t *testing.T) {
 				Role:   "maintainer",
 			},
 		},
-		Status: "active",
+		Status: types.STUDY_STATUS_ACTIVE,
 		Props: types.StudyProps{
 			Name: []types.LocalisedObject{
 				{Code: "en "},

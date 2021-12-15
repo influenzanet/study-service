@@ -38,13 +38,13 @@ func TestDbCreateStudyInfos(t *testing.T) {
 
 func TestDbUpdateStudyInfos(t *testing.T) {
 	testStudies := []types.Study{
-		{Key: "test1", Status: "active", Members: []types.StudyMember{
+		{Key: "test1", Status: types.STUDY_STATUS_ACTIVE, Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
 			},
 		}},
-		{Key: "test2", Status: "active", Members: []types.StudyMember{
+		{Key: "test2", Status: types.STUDY_STATUS_ACTIVE, Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
@@ -72,7 +72,7 @@ func TestDbUpdateStudyInfos(t *testing.T) {
 	})
 
 	t.Run("Update study status", func(t *testing.T) {
-		if err := testDBService.UpdateStudyStatus(testInstanceID, "test1", "inactive"); err != nil {
+		if err := testDBService.UpdateStudyStatus(testInstanceID, "test1", types.STUDY_STATUS_INACTIVE); err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 	})
@@ -105,7 +105,7 @@ func TestDbGetStudyInfos(t *testing.T) {
 		{
 			Key:       "testg1",
 			SecretKey: "testsecret",
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Members: []types.StudyMember{
 				{
 					UserID: "testuser",
@@ -120,7 +120,7 @@ func TestDbGetStudyInfos(t *testing.T) {
 				IdMappingMethod: "sha256",
 			},
 		},
-		{Key: "testG2", SecretKey: "testsecret", Status: "inactive", Members: []types.StudyMember{
+		{Key: "testG2", SecretKey: "testsecret", Status: types.STUDY_STATUS_INACTIVE, Members: []types.StudyMember{
 			{
 				UserID: "testuser",
 				Role:   "maintainer",
@@ -163,7 +163,7 @@ func TestDbGetStudyInfos(t *testing.T) {
 	})
 
 	t.Run("Get studies by status", func(t *testing.T) {
-		studies, err := testDBService.GetStudiesByStatus(testInstanceID, "inactive", true)
+		studies, err := testDBService.GetStudiesByStatus(testInstanceID, types.STUDY_STATUS_INACTIVE, true)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return

@@ -16,7 +16,7 @@ func (s *StudyTimerService) StudyTimerEvent() {
 		logger.Error.Printf("unexpected error: %s", err.Error())
 	}
 	for _, instance := range instances {
-		studies, err := s.studyDBService.GetStudiesByStatus(instance.InstanceID, "active", true)
+		studies, err := s.studyDBService.GetStudiesByStatus(instance.InstanceID, types.STUDY_STATUS_ACTIVE, true)
 		if err != nil {
 			logger.Error.Printf("unexpected error: %s", err.Error())
 			return

@@ -137,7 +137,7 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	})
 
 	t.Run("Finding not existing status", func(t *testing.T) {
-		count, err := testDBService.GetParticipantCountByStatus(testInstanceID, testStudyKey, "active")
+		count, err := testDBService.GetParticipantCountByStatus(testInstanceID, testStudyKey, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
