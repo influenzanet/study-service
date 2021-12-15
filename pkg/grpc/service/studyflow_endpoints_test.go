@@ -320,17 +320,17 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey1",
 			SecretKey: "testsecret",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey2",
 			SecretKey: "testsecret2",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey3",
 			SecretKey: "testsecret3",
 		},
@@ -429,7 +429,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	testUserID := "234234laaabbb3423"
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       testStudyKey,
 			SecretKey: "testsecret",
 		},
@@ -602,17 +602,17 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey1",
 			SecretKey: "testsecret",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey2",
 			SecretKey: "testsecret2",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey3",
 			SecretKey: "testsecret3",
 		},
@@ -724,7 +724,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 
 	testStudies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_leave_study",
 			SecretKey: "testsecret",
 		},
@@ -987,7 +987,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 		{
 			Key:       "test_for_delete_p_data_1",
 			SecretKey: "test1",
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 		},
 		{
 			Key:       "test_for_delete_p_data_2",

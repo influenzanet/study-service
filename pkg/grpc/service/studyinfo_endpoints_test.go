@@ -19,7 +19,7 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 	}
 	testStudies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_getstudiesforuser_1",
 			SecretKey: "testsecret",
 		}, {
@@ -27,7 +27,7 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 			Key:       "studyfor_getstudiesforuser_2",
 			SecretKey: "testsecret2",
 		}, {
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_getstudiesforuser_3",
 			SecretKey: "testsecret3",
 		}, {
@@ -158,7 +158,7 @@ func TestGetActiveStudiesEndpoint(t *testing.T) {
 	}
 	testStudies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_getactivestudies_1",
 			SecretKey: "testsecret",
 		}, {
@@ -166,11 +166,11 @@ func TestGetActiveStudiesEndpoint(t *testing.T) {
 			Key:       "studyfor_getactivestudies_2",
 			SecretKey: "testsecret2",
 		}, {
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_getactivestudies_3",
 			SecretKey: "testsecret3",
 		}, {
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_getactivestudies_4",
 			SecretKey: "testsecret4",
 		},
@@ -226,7 +226,7 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 	// create study for user in it
 	testStudies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_hasParticipantWithConditionStudies_1",
 			SecretKey: "testsecret",
 			Configs: types.StudyConfigs{
