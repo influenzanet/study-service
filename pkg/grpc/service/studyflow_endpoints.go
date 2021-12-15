@@ -98,7 +98,7 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 	// Exists already?
 	exists := s.checkIfParticipantExists(req.InstanceId, req.StudyKey, participantID, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 	if exists {
-		logger.Debug.Printf("error: participant (%s) already exists for this study", participantID)
+		logger.Error.Printf("error: participant (%s) already exists for this study", participantID)
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
 	}
 
