@@ -181,13 +181,13 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 
 		_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, existingPState)
 		if err != nil {
-			logger.Debug.Println(err)
+			logger.Error.Println(err)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		err = s.studyDBservice.DeleteParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
 		if err != nil {
-			logger.Debug.Println(err)
+			logger.Error.Println(err)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	} else {
