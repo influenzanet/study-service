@@ -51,7 +51,7 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 				continue
 			}
 
-			if pState.StudyStatus != "active" {
+			if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 				continue
 			}
 

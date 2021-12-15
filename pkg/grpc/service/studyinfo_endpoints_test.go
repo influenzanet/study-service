@@ -70,25 +70,25 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s2"},
 		},
 	}
 	pState3 := types.ParticipantState{
 		ParticipantID: pid3,
-		StudyStatus:   "exited",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 	}
 	pState4 := types.ParticipantState{
 		ParticipantID: pid4,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s2"},
 		},
@@ -259,7 +259,7 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		LastSubmissions: map[string]int64{
 			"s3": time.Now().Unix() - 20,
 		},
@@ -270,7 +270,7 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "exited",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 	}
 
 	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
@@ -321,7 +321,7 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 			Condition: &api.ExpressionArg{Dtype: "exp", Data: &api.ExpressionArg_Exp{Exp: &api.Expression{
 				Name: "hasStudyStatus",
 				Data: []*api.ExpressionArg{
-					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: "active"}},
+					{Dtype: "str", Data: &api.ExpressionArg_Str{Str: types.PARTICIPANT_STUDY_STATUS_ACTIVE}},
 				},
 			}}},
 		})

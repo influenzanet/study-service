@@ -23,11 +23,11 @@ func TestCheckIfParticipantExists(t *testing.T) {
 	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		},
 		{
 			ParticipantID: "2",
-			StudyStatus:   "terminated",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 		},
 	}
 
@@ -41,19 +41,19 @@ func TestCheckIfParticipantExists(t *testing.T) {
 
 	// Tests
 	t.Run("with existing participant", func(t *testing.T) {
-		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1", "active") {
+		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be true if participant exists")
 		}
 	})
 
 	t.Run("with not active participant", func(t *testing.T) {
-		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2", "active") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be false if participant is not active")
 		}
 	})
 
 	t.Run("with not existing participant", func(t *testing.T) {
-		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "3", "active") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "3", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be false if participant does not exist")
 		}
 	})
@@ -358,14 +358,14 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
@@ -640,7 +640,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
@@ -753,14 +753,14 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "exited",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 	}
 
 	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
@@ -841,7 +841,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if pState.StudyStatus != "exited" {
+		if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_EXITED {
 			t.Errorf("unexpected study status: %s", pState.StudyStatus)
 		}
 	})
