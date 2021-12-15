@@ -4,10 +4,17 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/coneno/logger"
+	"github.com/influenzanet/go-utils/pkg/api_types"
+	"github.com/influenzanet/go-utils/pkg/constants"
+	loggingAPI "github.com/influenzanet/logging-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
@@ -155,4 +162,110 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 		}
 	}
 	return prefills, nil
+}
+
+func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+	// empty irrelevant fields for this purpose
+	surveyDef.ContextRules = nil
+	surveyDef.PrefillRules = []types.Expression{}
+	surveyDef.History = []types.SurveyVersion{}
+
+	resp := &api.SurveyAndContext{
+		Survey: surveyDef.ToAPI(),
+	}
+	return resp, nil
+}
+
+func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+	// Prepare context
+	surveyContext, err := s.resolveContextRules(instanceID, studyKey, participantID, surveyDef.ContextRules)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	// Prepare prefill
+	prefill, err := s.resolvePrefillRules(instanceID, studyKey, participantID, surveyDef.PrefillRules)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// empty irrelevant fields for this purpose
+	surveyDef.ContextRules = nil
+	surveyDef.PrefillRules = []types.Expression{}
+	surveyDef.History = []types.SurveyVersion{}
+
+	resp := &api.SurveyAndContext{
+		Survey:  surveyDef.ToAPI(),
+		Context: surveyContext.ToAPI(),
+	}
+	if len(prefill.Responses) > 0 {
+		resp.Prefill = prefill.ToAPI()
+	}
+	return resp, nil
+}
+
+func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey string, surveyKey string, tempParticipantID string) (*api.SurveyAndContext, error) {
+	// Get survey definition:
+	surveyDef, err := s.studyDBservice.FindSurveyDef(instanceID, studyKey, surveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if surveyDef.AvailableFor == types.SURVEY_AVAILABLE_FOR_ACTIVE_PARTICIPANTS ||
+		surveyDef.AvailableFor == "" {
+		// ONLY FOR ACTIVE PARTICIPANTS: token must be present
+		logger.Error.Printf("Trying to access survey that requires login. %s > %s > %s", instanceID, studyKey, surveyKey)
+		return nil, status.Error(codes.InvalidArgument, "must login first")
+	}
+
+	if tempParticipantID == "" {
+		// Without temporary participant
+		if surveyDef.AvailableFor == types.SURVEY_AVAILABLE_FOR_TEMPORARY_PARTICIPANTS {
+			// FOR ACTIVE OR TEMPORARY PARTICIPANTS: temporary participant id must be present
+			logger.Error.Printf("Trying to access survey that requires at least temporary participant. %s > %s > %s", instanceID, studyKey, surveyKey)
+			return nil, status.Error(codes.InvalidArgument, "must send a temporary participant id or login first")
+		}
+
+		resp, err := s.prepareSurveyWithoutParticipant(instanceID, studyKey, surveyDef)
+		if err != nil {
+			logger.Debug.Println(err)
+		}
+		return resp, err
+	} else {
+		// For temporary participant
+		if !s.checkIfParticipantExists(instanceID, studyKey, tempParticipantID, types.PARTICIPANT_STUDY_STATUS_TEMPORARY) {
+			logger.Error.Printf("Trying to access not existing temporary participant. %s > %s > %s : %s", instanceID, studyKey, surveyKey, tempParticipantID)
+			return nil, status.Error(codes.PermissionDenied, "wrong participant id")
+		}
+
+		resp, err := s.prepareSurveyForParticipant(instanceID, studyKey, tempParticipantID, surveyDef)
+		if err != nil {
+			logger.Debug.Println(err)
+		}
+		return resp, err
+	}
+}
+
+func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenInfos, studyKey string, surveyKey string, profileID string) (*api.SurveyAndContext, error) {
+	// Get survey definition:
+	surveyDef, err := s.studyDBservice.FindSurveyDef(token.InstanceId, studyKey, surveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if err := utils.CheckIfProfileIDinToken(token, profileID); err != nil {
+		s.SaveLogEvent(token.InstanceId, token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "get assigned survey:"+profileID)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
+	participantID, err := s.profileIDToParticipantID(token.InstanceId, studyKey, profileID)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp, err := s.prepareSurveyForParticipant(token.InstanceId, studyKey, participantID, surveyDef)
+	if err != nil {
+		logger.Debug.Println(err)
+	}
+	return resp, err
 }

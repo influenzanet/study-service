@@ -282,50 +282,43 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 	return &resp, nil
 }
 
-func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.SurveyReferenceRequest) (*api.SurveyAndContext, error) {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+func (s *studyServiceServer) GetAssignedSurveysForTemporaryParticipant(ctx context.Context, req *api.GetAssignedSurveysForTemporaryParticipantReq) (*api.AssignedSurveys, error) {
+	if req == nil || req.StudyKey == "" || req.InstanceId == "" || req.TemporaryParticipantId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "get assigned survey:"+req.ProfileId)
-		return nil, status.Error(codes.Internal, "permission denied")
+	pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
+		logger.Warning.Printf("Attempt to access participant with wrong temporary ID (%s) - Err: %v", req.TemporaryParticipantId, err)
+		time.Sleep(5 * time.Second)
+		return nil, status.Error(codes.Internal, "wrong argument")
 	}
 
-	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	// Prepare response
+	resp := api.AssignedSurveys{
+		Surveys: []*api.AssignedSurvey{},
 	}
-
-	// Get survey definition
-	surveyDef, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	surveyContext, err := s.resolveContextRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.ContextRules)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	prefill, err := s.resolvePrefillRules(req.Token.InstanceId, req.StudyKey, participantID, surveyDef.PrefillRules)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	// empty irrelevant fields for this purpose
-	surveyDef.ContextRules = nil
-	surveyDef.PrefillRules = []types.Expression{}
-	surveyDef.History = []types.SurveyVersion{}
-
-	resp := api.SurveyAndContext{
-		Survey:  surveyDef.ToAPI(),
-		Context: surveyContext.ToAPI(),
-	}
-	if len(prefill.Responses) > 0 {
-		resp.Prefill = prefill.ToAPI()
+	for _, as := range pState.AssignedSurveys {
+		cs := as.ToAPI()
+		cs.StudyKey = req.StudyKey
+		resp.Surveys = append(resp.Surveys, cs)
 	}
 	return &resp, nil
+}
+
+func (s *studyServiceServer) GetAssignedSurvey(ctx context.Context, req *api.SurveyReferenceRequest) (*api.SurveyAndContext, error) {
+	if req == nil || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if req.Token == nil {
+		if req.InstanceId == "" {
+			return nil, status.Error(codes.InvalidArgument, "missing argument")
+		}
+		return s._getSurveyWithoutLogin(req.InstanceId, req.StudyKey, req.SurveyKey, req.TemporaryParticipantId)
+	} else {
+		return s._getSurveyWithLoggedInUser(req.Token, req.StudyKey, req.SurveyKey, req.ProfileId)
+	}
 }
 
 func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.SubmitResponseReq) (*api.AssignedSurveys, error) {
