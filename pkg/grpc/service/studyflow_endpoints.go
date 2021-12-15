@@ -23,6 +23,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD = 60 * 60 // seconds
+
 func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudyRequest) (*api.AssignedSurveys, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -130,20 +132,26 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 	// Prepare response
 	resp := api.RegisterTempParticipantResponse{
 		TemporaryParticipantId: participantID,
+		Timestamp:              pState.EnteredAt,
 	}
 	return &resp, nil
 }
 
 func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, req *api.ConvertTempParticipantReq) (*api.ServiceStatus, error) {
-	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.TemporaryParticipantId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
 	// Find temporary participant:
 	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
-	if err != nil || pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
-		logger.Debug.Println(err)
+	if err != nil ||
+		pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_TEMPORARY ||
+		pState.EnteredAt != req.Timestamp ||
+		pState.EnteredAt+TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD < time.Now().Unix() {
+		// problem with temporary participant
+		logger.Error.Printf("user (%s:%s) attempted to convert wrong temporary participant (ID: %s)", req.Token.InstanceId, req.Token.Id, req.TemporaryParticipantId)
 		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_PARTICIPANT_ACTION, fmt.Sprintf("user attempted to convert wrong temporary participant (ID: %s)", req.TemporaryParticipantId))
+		time.Sleep(5 * time.Second)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
