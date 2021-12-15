@@ -24,6 +24,7 @@ type ResponseExporter struct {
 	questionOptionKeySep string
 }
 
+// Also update getFixedColumns when updating this
 var fixedColumnKeys = []string{
 	"ID",
 	"participantID",
