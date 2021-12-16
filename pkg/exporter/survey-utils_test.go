@@ -3,14 +3,14 @@ package exporter
 import (
 	"testing"
 
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestIsItemGroup(t *testing.T) {
 	testLang := "en"
 
-	testItem1 := &studyAPI.SurveyItem{Key: "weeky.G1", Items: []*studyAPI.SurveyItem{
-		mockQuestion("weekly.G1.Q1", testLang, "Title of Group 1's Q1", mockLikertGroup(testLang, []MockOpionDef{
+	testItem1 := &types.SurveyItem{Key: "weeky.G1", Items: []types.SurveyItem{
+		*mockQuestion("weekly.G1.Q1", testLang, "Title of Group 1's Q1", mockLikertGroup(testLang, []MockOpionDef{
 			{Key: "cat1", Label: "Category 1"},
 			{Key: "cat2", Label: "Category 2"},
 		}, []string{
@@ -67,7 +67,7 @@ func TestGetResponseGroupComponent(t *testing.T) {
 func TestGetTranslation(t *testing.T) {
 
 	t.Run("with empty translation list", func(t *testing.T) {
-		_, err := getTranslation([]*studyAPI.LocalisedObject{}, "en")
+		_, err := getTranslation(&[]types.LocalisedObject{}, "en")
 		if err == nil {
 			t.Error("should return an error")
 			return
@@ -79,9 +79,9 @@ func TestGetTranslation(t *testing.T) {
 	})
 
 	t.Run("with missing translation", func(t *testing.T) {
-		_, err := getTranslation([]*studyAPI.LocalisedObject{
-			{Code: "de", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test DE"}}}},
-			{Code: "nl", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test NL"}}}},
+		_, err := getTranslation(&[]types.LocalisedObject{
+			{Code: "de", Parts: []types.ExpressionArg{{DType: "str", Str: "Test DE"}}},
+			{Code: "nl", Parts: []types.ExpressionArg{{DType: "str", Str: "Test NL"}}},
 		}, "en")
 		if err == nil {
 			t.Error("should return an error")
@@ -94,10 +94,10 @@ func TestGetTranslation(t *testing.T) {
 	})
 
 	t.Run("with single part", func(t *testing.T) {
-		tr, err := getTranslation([]*studyAPI.LocalisedObject{
-			{Code: "de", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test DE"}}}},
-			{Code: "en", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test EN"}}}},
-			{Code: "nl", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test NL"}}}},
+		tr, err := getTranslation(&[]types.LocalisedObject{
+			{Code: "de", Parts: []types.ExpressionArg{{DType: "str", Str: "Test DE"}}},
+			{Code: "en", Parts: []types.ExpressionArg{{DType: "str", Str: "Test EN"}}},
+			{Code: "nl", Parts: []types.ExpressionArg{{DType: "str", Str: "Test NL"}}},
 		}, "en")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -110,14 +110,14 @@ func TestGetTranslation(t *testing.T) {
 	})
 
 	t.Run("with multiple parts", func(t *testing.T) {
-		tr, err := getTranslation([]*studyAPI.LocalisedObject{
-			{Code: "de", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test DE"}}}},
-			{Code: "en", Parts: []*studyAPI.ExpressionArg{
-				{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test "}},
-				{Dtype: "exp", Data: &studyAPI.ExpressionArg_Exp{Exp: &studyAPI.Expression{}}},
-				{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "EN"}},
+		tr, err := getTranslation(&[]types.LocalisedObject{
+			{Code: "de", Parts: []types.ExpressionArg{{DType: "str", Str: "Test DE"}}},
+			{Code: "en", Parts: []types.ExpressionArg{
+				{DType: "str", Str: "Test "},
+				{DType: "exp", Exp: &types.Expression{}},
+				{DType: "str", Str: "EN"},
 			}},
-			{Code: "nl", Parts: []*studyAPI.ExpressionArg{{Dtype: "str", Data: &studyAPI.ExpressionArg_Str{Str: "Test NL"}}}},
+			{Code: "nl", Parts: []types.ExpressionArg{{DType: "str", Str: "Test NL"}}},
 		}, "en")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -143,12 +143,12 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("missing items", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:   "rg",
 			Role:  "responseGroup",
-			Items: []*studyAPI.ItemComponent{},
+			Items: []types.ItemComponent{},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) > 0 {
 			t.Error("should be empty")
 		}
@@ -158,16 +158,16 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("multiple items (not known roles)", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "text"},
 				{Key: "2", Role: "something"},
 				{Key: "3", Role: "more"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) > 0 {
 			t.Error("should be empty")
 		}
@@ -177,11 +177,11 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("single choice group", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
-				{Key: "scg", Role: "singleChoiceGroup", Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
+				{Key: "scg", Role: "singleChoiceGroup", Items: []types.ItemComponent{
 					{Key: "1", Role: "option"},
 					{Key: "2", Role: "text"},
 					{Key: "3", Role: "input"},
@@ -189,7 +189,7 @@ func TestExtractResponses(t *testing.T) {
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -199,11 +199,11 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("multiple choice group", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
-				{Key: "mcg", Role: "multipleChoiceGroup", Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
+				{Key: "mcg", Role: "multipleChoiceGroup", Items: []types.ItemComponent{
 					{Key: "1", Role: "option"},
 					{Key: "2", Role: "text"},
 					{Key: "3", Role: "input"},
@@ -211,7 +211,7 @@ func TestExtractResponses(t *testing.T) {
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -221,19 +221,19 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("likert group", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
-				{Key: "lg", Role: "likertGroup", Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
+				{Key: "lg", Role: "likertGroup", Items: []types.ItemComponent{
 					{Key: "1", Role: "text"},
-					{Key: "2", Role: "likert", Items: []*studyAPI.ItemComponent{
+					{Key: "2", Role: "likert", Items: []types.ItemComponent{
 						{Key: "1", Role: "option"},
 						{Key: "2", Role: "option"},
 						{Key: "3", Role: "option"},
 					}},
 					{Key: "3", Role: "text"},
-					{Key: "4", Role: "likert", Items: []*studyAPI.ItemComponent{
+					{Key: "4", Role: "likert", Items: []types.ItemComponent{
 						{Key: "1", Role: "option"},
 						{Key: "2", Role: "option"},
 						{Key: "3", Role: "option"},
@@ -241,7 +241,7 @@ func TestExtractResponses(t *testing.T) {
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 2 {
 			t.Error("shouldn't be empty")
 		}
@@ -257,7 +257,7 @@ func TestExtractResponses(t *testing.T) {
 		}, []string{
 			"o1", "o2", "o3",
 		})
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 2 {
 			t.Error("shouldn't be empty")
 		}
@@ -267,26 +267,26 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("likerts - but not likertGroup", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 
 				{Key: "1", Role: "text"},
-				{Key: "2", Role: "likert", Items: []*studyAPI.ItemComponent{
+				{Key: "2", Role: "likert", Items: []types.ItemComponent{
 					{Key: "1", Role: "option"},
 					{Key: "2", Role: "option"},
 					{Key: "3", Role: "option"},
 				}},
 				{Key: "3", Role: "text"},
-				{Key: "4", Role: "likert", Items: []*studyAPI.ItemComponent{
+				{Key: "4", Role: "likert", Items: []types.ItemComponent{
 					{Key: "1", Role: "option"},
 					{Key: "2", Role: "option"},
 					{Key: "3", Role: "option"},
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 2 {
 			t.Error("shouldn't be empty")
 		}
@@ -296,14 +296,14 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("date input", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "dateInput"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -313,14 +313,14 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("text input", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "input"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -330,14 +330,14 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("number input", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "numberInput"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -347,14 +347,14 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("eq5d slider", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "eq5d-health-indicator"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -364,14 +364,14 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("numeric slider", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
 				{Key: "1", Role: "sliderNumeric"},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -381,18 +381,18 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("dropdown group", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
-				{Key: "ddg", Role: "dropDownGroup", Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
+				{Key: "ddg", Role: "dropDownGroup", Items: []types.ItemComponent{
 					{Key: "1", Role: "option"},
 					{Key: "2", Role: "option"},
 					{Key: "3", Role: "option"},
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 1 {
 			t.Error("shouldn't be empty")
 		}
@@ -402,30 +402,30 @@ func TestExtractResponses(t *testing.T) {
 	})
 
 	t.Run("matrix", func(t *testing.T) {
-		rg := &studyAPI.ItemComponent{
+		rg := types.ItemComponent{
 			Key:  "rg",
 			Role: "responseGroup",
-			Items: []*studyAPI.ItemComponent{
-				{Key: "m", Role: "matrix", Items: []*studyAPI.ItemComponent{
-					{Key: "r1", Role: "responseRow", Items: []*studyAPI.ItemComponent{
+			Items: []types.ItemComponent{
+				{Key: "m", Role: "matrix", Items: []types.ItemComponent{
+					{Key: "r1", Role: "responseRow", Items: []types.ItemComponent{
 						{Key: "c1", Role: "label"},
-						{Key: "c2", Role: "dropDownGroup", Items: []*studyAPI.ItemComponent{
+						{Key: "c2", Role: "dropDownGroup", Items: []types.ItemComponent{
 							{Key: "1", Role: "option"},
 							{Key: "2", Role: "option"},
 							{Key: "3", Role: "option"},
 						}},
 						{Key: "c3", Role: "check"},
 					}},
-					{Key: "r2", Role: "responseRow", Items: []*studyAPI.ItemComponent{
+					{Key: "r2", Role: "responseRow", Items: []types.ItemComponent{
 						{Key: "c1", Role: "label"},
-						{Key: "c2", Role: "dropDownGroup", Items: []*studyAPI.ItemComponent{
+						{Key: "c2", Role: "dropDownGroup", Items: []types.ItemComponent{
 							{Key: "1", Role: "option"},
 							{Key: "2", Role: "option"},
 							{Key: "3", Role: "option"},
 						}},
 						{Key: "c3", Role: "input"},
 					}},
-					{Key: "r3", Role: "radioRow", Items: []*studyAPI.ItemComponent{
+					{Key: "r3", Role: "radioRow", Items: []types.ItemComponent{
 						{Key: "c1", Role: "label"},
 						{Key: "c2", Role: "option"},
 						{Key: "c3", Role: "option"},
@@ -433,7 +433,7 @@ func TestExtractResponses(t *testing.T) {
 				}},
 			},
 		}
-		ro, qType := extractResponses(rg, testLang)
+		ro, qType := extractResponses(&rg, testLang)
 		if len(ro) != 5 {
 			t.Error("shouldn't be empty")
 		}

@@ -5,23 +5,23 @@ import (
 	"strings"
 
 	"github.com/coneno/logger"
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func surveyDefToVersionPreview(original *studyAPI.SurveyVersion, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
+func surveyDefToVersionPreview(original *types.SurveyVersion, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
 	sp := SurveyVersionPreview{
-		VersionID:   original.VersionId,
+		VersionID:   original.VersionID,
 		Published:   original.Published,
-		Unpublished: original.Unpublished,
+		Unpublished: original.UnPublished,
 		Questions:   []SurveyQuestion{},
 	}
 
-	sp.Questions = extractQuestions(original.SurveyDefinition, prefLang, includeItemNames, excludeItemNames)
+	sp.Questions = extractQuestions(&original.SurveyDefinition, prefLang, includeItemNames, excludeItemNames)
 	return sp
 }
 
-func extractQuestions(root *studyAPI.SurveyItem, prefLang string, includeItemNames []string, excludeItemNames []string) []SurveyQuestion {
+func extractQuestions(root *types.SurveyItem, prefLang string, includeItemNames []string, excludeItemNames []string) []SurveyQuestion {
 	questions := []SurveyQuestion{}
 	if root == nil {
 		return questions
@@ -31,8 +31,8 @@ func extractQuestions(root *studyAPI.SurveyItem, prefLang string, includeItemNam
 			continue
 		}
 
-		if isItemGroup(item) {
-			questions = append(questions, extractQuestions(item, prefLang, includeItemNames, excludeItemNames)...)
+		if isItemGroup(&item) {
+			questions = append(questions, extractQuestions(&item, prefLang, includeItemNames, excludeItemNames)...)
 			continue
 		}
 
@@ -44,14 +44,14 @@ func extractQuestions(root *studyAPI.SurveyItem, prefLang string, includeItemNam
 			continue
 		}
 
-		rg := getResponseGroupComponent(item)
+		rg := getResponseGroupComponent(&item)
 		if rg == nil {
 			continue
 		}
 
 		responses, qType := extractResponses(rg, prefLang)
 
-		titleComp := getTitleComponent(item)
+		titleComp := getTitleComponent(&item)
 		title := ""
 		if titleComp != nil {
 			var err error
@@ -72,42 +72,42 @@ func extractQuestions(root *studyAPI.SurveyItem, prefLang string, includeItemNam
 	return questions
 }
 
-func isItemGroup(item *studyAPI.SurveyItem) bool {
+func isItemGroup(item *types.SurveyItem) bool {
 	return item != nil && len(item.Items) > 0
 }
 
-func getResponseGroupComponent(question *studyAPI.SurveyItem) *studyAPI.ItemComponent {
+func getResponseGroupComponent(question *types.SurveyItem) *types.ItemComponent {
 	if question.Components == nil {
 		return nil
 	}
 	for _, c := range question.Components.Items {
 		if c.Role == "responseGroup" {
-			return c
+			return &c
 		}
 	}
 	return nil
 }
 
-func getTitleComponent(question *studyAPI.SurveyItem) *studyAPI.ItemComponent {
+func getTitleComponent(question *types.SurveyItem) *types.ItemComponent {
 	if question.Components == nil {
 		return nil
 	}
 	for _, c := range question.Components.Items {
 		if c.Role == "title" {
-			return c
+			return &c
 		}
 	}
 	return nil
 }
 
-func getPreviewText(item *studyAPI.ItemComponent, lang string) (string, error) {
+func getPreviewText(item *types.ItemComponent, lang string) (string, error) {
 	if item == nil {
 		return "", errors.New("getPreviewText: item nil")
 	}
 	if len(item.Items) > 0 {
 		translation := ""
 		for _, item := range item.Items {
-			part, _ := getTranslation(item.Content, lang)
+			part, _ := getTranslation(&item.Content, lang)
 			translation += part
 		}
 		if translation == "" {
@@ -115,20 +115,20 @@ func getPreviewText(item *studyAPI.ItemComponent, lang string) (string, error) {
 		}
 		return translation, nil
 	} else {
-		return getTranslation(item.Content, lang)
+		return getTranslation(&item.Content, lang)
 	}
 }
 
-func getTranslation(content []*studyAPI.LocalisedObject, lang string) (string, error) {
-	if len(content) < 1 {
+func getTranslation(content *[]types.LocalisedObject, lang string) (string, error) {
+	if len(*content) < 1 {
 		return "", errors.New("translations missing")
 	}
 
-	for _, translation := range content {
+	for _, translation := range *content {
 		if translation.Code == lang {
 			mergedText := ""
 			for _, p := range translation.Parts {
-				mergedText += p.GetStr()
+				mergedText += p.ToAPI().GetStr()
 			}
 			return mergedText, nil
 		}
@@ -136,14 +136,14 @@ func getTranslation(content []*studyAPI.LocalisedObject, lang string) (string, e
 	return "", errors.New("translation missing")
 }
 
-func extractResponses(rg *studyAPI.ItemComponent, lang string) ([]ResponseDef, string) {
+func extractResponses(rg *types.ItemComponent, lang string) ([]ResponseDef, string) {
 	if rg == nil {
 		return []ResponseDef{}, QUESTION_TYPE_EMPTY
 	}
 
 	responses := []ResponseDef{}
 	for _, item := range rg.Items {
-		r := mapToResponseDef(item, rg.Key, lang)
+		r := mapToResponseDef(&item, rg.Key, lang)
 		responses = append(responses, r...)
 
 	}
@@ -153,7 +153,7 @@ func extractResponses(rg *studyAPI.ItemComponent, lang string) ([]ResponseDef, s
 
 }
 
-func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang string) []ResponseDef {
+func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string) []ResponseDef {
 	if rItem == nil {
 		logger.Info.Println("mapToResponseDef: unexpected nil input")
 		return []ResponseDef{}
@@ -167,7 +167,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 	switch rItem.Role {
 	case "singleChoiceGroup":
 		for _, o := range rItem.Items {
-			label, err := getPreviewText(o, lang)
+			label, err := getPreviewText(&o, lang)
 			if err != nil {
 				logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -191,7 +191,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "multipleChoiceGroup":
 		for _, o := range rItem.Items {
-			label, err := getPreviewText(o, lang)
+			label, err := getPreviewText(&o, lang)
 			if err != nil {
 				logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -215,7 +215,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "dropDownGroup":
 		for _, o := range rItem.Items {
-			label, err := getPreviewText(o, lang)
+			label, err := getPreviewText(&o, lang)
 			if err != nil {
 				logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -274,7 +274,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 		return []ResponseDef{responseDef}
 	case "likert":
 		for _, o := range rItem.Items {
-			label, err := getPreviewText(o, lang)
+			label, err := getPreviewText(&o, lang)
 			if err != nil {
 				logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 			}
@@ -311,10 +311,10 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 	case "responsiveSingleChoiceArray":
 		responses := []ResponseDef{}
 
-		var options *studyAPI.ItemComponent
+		var options *types.ItemComponent
 		for _, item := range rItem.Items {
 			if item.Role == "options" {
-				options = item
+				options = &item
 				break
 			}
 			continue
@@ -330,7 +330,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 			}
 			subKey := slot.Key
 
-			label, err := getPreviewText(slot, lang)
+			label, err := getPreviewText(&slot, lang)
 			if err != nil {
 				logger.Debug.Printf("mapToResponseDef: label not found for: %v", slot)
 			}
@@ -341,7 +341,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 				Label:        label,
 			}
 			for _, o := range options.Items {
-				label, err := getPreviewText(o, lang)
+				label, err := getPreviewText(&o, lang)
 				if err != nil {
 					logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 				}
@@ -359,10 +359,10 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 	case "responsiveBipolarLikertScaleArray":
 		responses := []ResponseDef{}
 
-		var options *studyAPI.ItemComponent
+		var options *types.ItemComponent
 		for _, item := range rItem.Items {
 			if item.Role == "options" {
-				options = item
+				options = &item
 				break
 			}
 			continue
@@ -378,17 +378,17 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 			}
 			subKey := slot.Key
 
-			var start *studyAPI.ItemComponent
-			var end *studyAPI.ItemComponent
+			var start *types.ItemComponent
+			var end *types.ItemComponent
 			for _, item := range slot.Items {
 				if start != nil && end != nil {
 					break
 				}
 				if item.Role == "start" {
-					start = item
+					start = &item
 					continue
 				} else if item.Role == "end" {
-					end = item
+					end = &item
 					continue
 				}
 			}
@@ -430,7 +430,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 					}
 					if col.Role == "dropDownGroup" {
 						for _, o := range col.Items {
-							dL, err := getPreviewText(o, lang)
+							dL, err := getPreviewText(&o, lang)
 							if err != nil {
 								logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 							}
@@ -443,7 +443,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 						}
 						currentResponseDef.ResponseType = QUESTION_TYPE_MATRIX_DROPDOWN
 					} else if col.Role == "input" {
-						label, err := getPreviewText(col, lang)
+						label, err := getPreviewText(&col, lang)
 						if err != nil {
 							logger.Debug.Printf("mapToResponseDef: label not found for: %v", col)
 						}
@@ -452,7 +452,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 					} else if col.Role == "check" {
 						currentResponseDef.ResponseType = QUESTION_TYPE_MATRIX_CHECKBOX
 					} else if col.Role == "numberInput" {
-						label, err := getPreviewText(col, lang)
+						label, err := getPreviewText(&col, lang)
 						if err != nil {
 							logger.Debug.Printf("mapToResponseDef: label not found for: %v", col)
 						}
@@ -471,7 +471,7 @@ func mapToResponseDef(rItem *studyAPI.ItemComponent, parentKey string, lang stri
 				}
 				for _, o := range row.Items {
 					if o.Role == "label" {
-						label, err := getPreviewText(o, lang)
+						label, err := getPreviewText(&o, lang)
 						if err != nil {
 							logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
 						}

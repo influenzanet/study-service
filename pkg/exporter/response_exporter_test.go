@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 /*
@@ -23,21 +23,21 @@ import (
 func TestResponseExporter(t *testing.T) {
 	testLang := "en"
 	questionOptionSep := "-"
-	testSurveyDef := &studyAPI.SurveyItem{
+	testSurveyDef := &types.SurveyItem{
 		Key: "weekly",
-		Items: []*studyAPI.SurveyItem{
-			mockQuestion("weekly.Q1", testLang, "Title of Q1", mockSingleChoiceGroup(testLang, []MockOpionDef{
+		Items: []types.SurveyItem{
+			*mockQuestion("weekly.Q1", testLang, "Title of Q1", mockSingleChoiceGroup(testLang, []MockOpionDef{
 				{Key: "1", Role: "option", Label: "Yes"},
 				{Key: "2", Role: "option", Label: "No"},
 				{Key: "3", Role: "input", Label: "Other"},
 			})),
-			mockQuestion("weekly.Q2", testLang, "Title of Q2", mockMultipleChoiceGroup(testLang, []MockOpionDef{
+			*mockQuestion("weekly.Q2", testLang, "Title of Q2", mockMultipleChoiceGroup(testLang, []MockOpionDef{
 				{Key: "1", Role: "option", Label: "Option 1"},
 				{Key: "2", Role: "option", Label: "Option 2"},
 				{Key: "3", Role: "input", Label: "Other"},
 			})),
-			{Key: "weekly.G1", Items: []*studyAPI.SurveyItem{
-				mockQuestion("weekly.G1.Q1", testLang, "Title of Group 1's Q1", mockLikertGroup(testLang, []MockOpionDef{
+			{Key: "weekly.G1", Items: []types.SurveyItem{
+				*mockQuestion("weekly.G1.Q1", testLang, "Title of Group 1's Q1", mockLikertGroup(testLang, []MockOpionDef{
 					{Key: "cat1", Label: "Category 1"},
 					{Key: "cat2", Label: "Category 2"},
 				}, []string{
@@ -59,31 +59,42 @@ func TestResponseExporter(t *testing.T) {
 		}
 	})
 
-	t.Run("with with missing current", func(t *testing.T) {
-		testSurvey := studyAPI.Survey{
-			Id:      "test-id",
-			Current: nil,
-			History: []*studyAPI.SurveyVersion{},
-		}
+	// Can't miss anymore
+	// t.Run("with with missing current", func(t *testing.T) {
+	// 	_id, idErr := primitive.ObjectIDFromHex("5ed7497024c0797b0a41b1ca")
+	// 	if idErr != nil {
+	// 		t.Errorf("unexpected error message: %v", idErr)
+	// 		return
+	// 	}
+	// 	testSurvey := types.Survey{
+	// 		ID:      _id,
+	// 		Current: types.SurveyVersion{},
+	// 		History: []types.SurveyVersion{},
+	// 	}
 
-		_, err := NewResponseExporter(&testSurvey, "en", true, questionOptionSep)
-		if err == nil {
-			t.Error("error expected")
-			return
-		}
-		if err.Error() != "current survey definition not found" {
-			t.Errorf("unexpected error message: %v", err)
-			return
-		}
-	})
+	// 	_, err := NewResponseExporter(&testSurvey, "en", true, questionOptionSep)
+	// 	if err == nil {
+	// 		t.Error("error expected")
+	// 		return
+	// 	}
+	// 	if err.Error() != "current survey definition not found" {
+	// 		t.Errorf("unexpected error message: %v", err)
+	// 		return
+	// 	}
+	// })
 
 	t.Run("with with one version", func(t *testing.T) {
-		testSurvey := studyAPI.Survey{
-			Id: "test-id",
-			Current: &studyAPI.SurveyVersion{
+		_id, idErr := primitive.ObjectIDFromHex("5ed7497024c0797b0a41b1ca")
+		if idErr != nil {
+			t.Errorf("unexpected error message: %v", idErr)
+			return
+		}
+		testSurvey := types.Survey{
+			ID: _id,
+			Current: types.SurveyVersion{
 				Published:        10,
-				VersionId:        "1",
-				SurveyDefinition: testSurveyDef,
+				VersionID:        "1",
+				SurveyDefinition: *testSurveyDef,
 			},
 		}
 
@@ -104,25 +115,30 @@ func TestResponseExporter(t *testing.T) {
 	})
 
 	t.Run("with with multiple versions", func(t *testing.T) {
-		testSurvey := studyAPI.Survey{
-			Id: "test-id",
-			Current: &studyAPI.SurveyVersion{
+		_id, idErr := primitive.ObjectIDFromHex("5ed7497024c0797b0a41b1ca")
+		if idErr != nil {
+			t.Errorf("unexpected error message: %v", idErr)
+			return
+		}
+		testSurvey := types.Survey{
+			ID: _id,
+			Current: types.SurveyVersion{
 				Published:        10,
-				VersionId:        "3",
-				SurveyDefinition: testSurveyDef,
+				VersionID:        "3",
+				SurveyDefinition: *testSurveyDef,
 			},
-			History: []*studyAPI.SurveyVersion{
+			History: []types.SurveyVersion{
 				{
 					Published:        2,
-					Unpublished:      5,
-					VersionId:        "1",
-					SurveyDefinition: testSurveyDef,
+					UnPublished:      5,
+					VersionID:        "1",
+					SurveyDefinition: *testSurveyDef,
 				},
 				{
 					Published:        5,
-					Unpublished:      10,
-					VersionId:        "2",
-					SurveyDefinition: testSurveyDef,
+					UnPublished:      10,
+					VersionID:        "2",
+					SurveyDefinition: *testSurveyDef,
 				},
 			},
 		}
@@ -151,7 +167,7 @@ func TestExportFormats(t *testing.T) {
 	var testSurvey types.Survey
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
 
-	parser, err := NewResponseExporter(testSurvey.ToAPI(), "nl", true, "-")
+	parser, err := NewResponseExporter(&testSurvey, "nl", true, "-")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -169,7 +185,7 @@ func TestExportFormats(t *testing.T) {
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
 
 	for _, response := range testResponses {
-		err = parser.AddResponse(response.ToAPI())
+		err = parser.AddResponse(&response)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err.Error())
 			return
@@ -217,7 +233,7 @@ func TestExportFormatsExcludeFilter(t *testing.T) {
 	var testSurvey types.Survey
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
 
-	parser, err := NewResponseExporterWithExcludeFilter(testSurvey.ToAPI(), "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	parser, err := NewResponseExporterWithExcludeFilter(&testSurvey, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -235,7 +251,7 @@ func TestExportFormatsExcludeFilter(t *testing.T) {
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
 
 	for _, response := range testResponses {
-		err = parser.AddResponse(response.ToAPI())
+		err = parser.AddResponse(&response)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err.Error())
 			return
@@ -286,7 +302,7 @@ func TestExportFormatsIncludeFilter(t *testing.T) {
 	var testSurvey types.Survey
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
 
-	parser, err := NewResponseExporterWithIncludeFilter(testSurvey.ToAPI(), "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	parser, err := NewResponseExporterWithIncludeFilter(&testSurvey, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -304,7 +320,7 @@ func TestExportFormatsIncludeFilter(t *testing.T) {
 	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
 
 	for _, response := range testResponses {
-		err = parser.AddResponse(response.ToAPI())
+		err = parser.AddResponse(&response)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err.Error())
 			return

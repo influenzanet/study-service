@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/coneno/logger"
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func findSurveyVersion(versionID string, submittedAt int64, versions []SurveyVersionPreview) (sv SurveyVersionPreview, err error) {
@@ -58,16 +58,16 @@ func timestampsToStr(ts []int64, sep string) string {
 	return strings.Join(b, sep)
 }
 
-func findResponse(responses []*studyAPI.SurveyItemResponse, key string) *studyAPI.SurveyItemResponse {
+func findResponse(responses []types.SurveyItemResponse, key string) *types.SurveyItemResponse {
 	for _, r := range responses {
 		if r.Key == key {
-			return r
+			return &r
 		}
 	}
 	return nil
 }
 
-func getResponseColumns(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func getResponseColumns(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	switch question.QuestionType {
 	case QUESTION_TYPE_SINGLE_CHOICE:
 		return processResponseForSingleChoice(question, response, questionOptionSep)
@@ -102,7 +102,7 @@ func getResponseColumns(question SurveyQuestion, response *studyAPI.SurveyItemRe
 	}
 }
 
-func processResponseForSingleChoice(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func processResponseForSingleChoice(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	var responseCols map[string]string
 
 	if len(question.Responses) == 1 {
@@ -115,7 +115,7 @@ func processResponseForSingleChoice(question SurveyQuestion, response *studyAPI.
 	return responseCols
 }
 
-func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	// Prepare columns:
@@ -146,7 +146,7 @@ func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseD
 	return responseCols
 }
 
-func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	// Prepare columns:
@@ -181,7 +181,7 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 	return responseCols
 }
 
-func processResponseForMultipleChoice(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func processResponseForMultipleChoice(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	var responseCols map[string]string
 
 	if len(question.Responses) == 1 {
@@ -194,7 +194,7 @@ func processResponseForMultipleChoice(question SurveyQuestion, response *studyAP
 	return responseCols
 }
 
-func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	// Find responses
@@ -229,7 +229,7 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 	return responseCols
 }
 
-func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	// Prepare columns:
@@ -269,7 +269,7 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 	return responseCols
 }
 
-func processResponseForInputs(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func processResponseForInputs(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	var responseCols map[string]string
 
 	if len(question.Responses) == 1 {
@@ -283,7 +283,7 @@ func processResponseForInputs(question SurveyQuestion, response *studyAPI.Survey
 	return responseCols
 }
 
-func handleSimpleInput(questionKey string, responseSlotDef ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleSimpleInput(questionKey string, responseSlotDef ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 	responseCols[questionKey] = ""
 
@@ -295,7 +295,7 @@ func handleSimpleInput(questionKey string, responseSlotDef ResponseDef, response
 	return responseCols
 }
 
-func handleInputList(questionKey string, responseSlotDefs []ResponseDef, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func handleInputList(questionKey string, responseSlotDefs []ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	for _, rSlot := range responseSlotDefs {
@@ -313,7 +313,7 @@ func handleInputList(questionKey string, responseSlotDefs []ResponseDef, respons
 	return responseCols
 }
 
-func processResponseForMatrix(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func processResponseForMatrix(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	for _, rSlot := range question.Responses {
@@ -351,7 +351,7 @@ func processResponseForMatrix(question SurveyQuestion, response *studyAPI.Survey
 	return responseCols
 }
 
-func processResponseForUnknown(question SurveyQuestion, response *studyAPI.SurveyItemResponse, questionOptionSep string) map[string]string {
+func processResponseForUnknown(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]string {
 	responseCols := map[string]string{}
 
 	for _, rSlot := range question.Responses {
@@ -392,13 +392,13 @@ func processResponseForUnknown(question SurveyQuestion, response *studyAPI.Surve
 	return responseCols
 }
 
-func retrieveResponseItem(response *studyAPI.SurveyItemResponse, fullKey string) *studyAPI.ResponseItem {
+func retrieveResponseItem(response *types.SurveyItemResponse, fullKey string) *types.ResponseItem {
 	if response == nil || response.Response == nil {
 		return nil
 	}
 	keyParts := strings.Split(fullKey, ".")
 
-	var result *studyAPI.ResponseItem
+	var result *types.ResponseItem
 	for _, key := range keyParts {
 		if result == nil {
 			if key != response.Response.Key {
@@ -410,7 +410,7 @@ func retrieveResponseItem(response *studyAPI.SurveyItemResponse, fullKey string)
 		found := false
 		for _, item := range result.Items {
 			if item.Key == key {
-				result = item
+				result = &item
 				found = true
 				break
 			}
@@ -422,12 +422,12 @@ func retrieveResponseItem(response *studyAPI.SurveyItemResponse, fullKey string)
 	return result
 }
 
-func retrieveResponseItemByShortKey(response *studyAPI.SurveyItemResponse, shortKey string) *studyAPI.ResponseItem {
+func retrieveResponseItemByShortKey(response *types.SurveyItemResponse, shortKey string) *types.ResponseItem {
 	if response == nil || response.Response == nil {
 		return nil
 	}
 
-	var result *studyAPI.ResponseItem
+	var result *types.ResponseItem
 	if response.Response.Key == shortKey {
 		return response.Response
 	}
@@ -436,13 +436,13 @@ func retrieveResponseItemByShortKey(response *studyAPI.SurveyItemResponse, short
 
 	for _, item := range result.Items {
 		if item.Key == shortKey {
-			return item
+			return &item
 		}
 	}
 
 	for _, item := range result.Items {
-		res := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
-			Response: item,
+		res := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
+			Response: &item,
 		}, shortKey)
 		if res != nil {
 			return res

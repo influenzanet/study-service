@@ -3,7 +3,7 @@ package exporter
 import (
 	"testing"
 
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 func TestFindSurveyVersion(t *testing.T) {
@@ -76,7 +76,7 @@ func TestGetResponseColumns(t *testing.T) {
 			ID:           "test",
 			QuestionType: QUESTION_TYPE_EMPTY,
 			Responses:    []ResponseDef{},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
 		}, questionOptionSep)
 		if len(cols) > 0 {
@@ -94,13 +94,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "2", OptionType: OPTION_TYPE_RADIO},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "scg",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1", Value: "hello"},
 						},
 					},
@@ -151,13 +151,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "4", OptionType: OPTION_TYPE_DATE_INPUT},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "scg1",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "4", Value: "hello"},
 						},
 					},
@@ -181,13 +181,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "4", OptionType: OPTION_TYPE_DATE_INPUT},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "mcg",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1"},
 							{Key: "4", Value: "hello"},
 						},
@@ -239,13 +239,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "4", OptionType: OPTION_TYPE_DATE_INPUT},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "mcg1",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "4", Value: "hello"},
 						},
 					},
@@ -263,11 +263,11 @@ func TestGetResponseColumns(t *testing.T) {
 			QuestionType: QUESTION_TYPE_TEXT_INPUT,
 			Responses: []ResponseDef{
 				{ID: "inp", ResponseType: QUESTION_TYPE_TEXT_INPUT}},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp", Value: "hello"},
 				},
 			},
@@ -304,11 +304,11 @@ func TestGetResponseColumns(t *testing.T) {
 				{ID: "inp1", ResponseType: QUESTION_TYPE_TEXT_INPUT},
 				{ID: "inp2", ResponseType: QUESTION_TYPE_TEXT_INPUT},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp1", Value: "hello"},
 				},
 			},
@@ -328,11 +328,11 @@ func TestGetResponseColumns(t *testing.T) {
 			QuestionType: QUESTION_TYPE_NUMBER_INPUT,
 			Responses: []ResponseDef{
 				{ID: "inp", ResponseType: QUESTION_TYPE_NUMBER_INPUT}},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp", Value: "1327", Dtype: "number"},
 				},
 			},
@@ -367,11 +367,11 @@ func TestGetResponseColumns(t *testing.T) {
 			QuestionType: QUESTION_TYPE_DATE_INPUT,
 			Responses: []ResponseDef{
 				{ID: "inp", ResponseType: QUESTION_TYPE_DATE_INPUT}},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp", Value: "1327", Dtype: "date"},
 				},
 			},
@@ -410,13 +410,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "2", OptionType: OPTION_TYPE_DROPDOWN_OPTION},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "ddg",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -461,13 +461,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "2", OptionType: OPTION_TYPE_DROPDOWN_OPTION},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "ddg1",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -490,13 +490,13 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "3", OptionType: OPTION_TYPE_RADIO},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "likert",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -527,18 +527,18 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "3", OptionType: OPTION_TYPE_RADIO},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "likert1",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "1"},
 						},
 					},
 					{Key: "likert2",
-						Items: []*studyAPI.ResponseItem{
+						Items: []types.ResponseItem{
 							{Key: "3"},
 						},
 					},
@@ -581,11 +581,11 @@ func TestGetResponseColumns(t *testing.T) {
 			QuestionType: QUESTION_TYPE_EQ5D_SLIDER,
 			Responses: []ResponseDef{
 				{ID: "inp", ResponseType: QUESTION_TYPE_EQ5D_SLIDER}},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp", Value: "1327"},
 				},
 			},
@@ -620,11 +620,11 @@ func TestGetResponseColumns(t *testing.T) {
 			QuestionType: QUESTION_TYPE_NUMERIC_SLIDER,
 			Responses: []ResponseDef{
 				{ID: "inp", ResponseType: QUESTION_TYPE_NUMERIC_SLIDER}},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "inp", Value: "1327"},
 				},
 			},
@@ -668,17 +668,17 @@ func TestGetResponseColumns(t *testing.T) {
 					{ID: "2", OptionType: OPTION_TYPE_DROPDOWN_OPTION},
 				}},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "mat", Items: []*studyAPI.ResponseItem{
-						{Key: "row1", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "mat", Items: []types.ResponseItem{
+						{Key: "row1", Items: []types.ResponseItem{
 							{Key: "1"},
 						}},
-						{Key: "row2", Items: []*studyAPI.ResponseItem{
-							{Key: "col2", Items: []*studyAPI.ResponseItem{
+						{Key: "row2", Items: []types.ResponseItem{
+							{Key: "col2", Items: []types.ResponseItem{
 								{Key: "1"},
 							}},
 						}},
@@ -706,12 +706,12 @@ func TestGetResponseColumns(t *testing.T) {
 				}},
 				{ID: "unk2", ResponseType: QUESTION_TYPE_UNKNOWN},
 			},
-		}, &studyAPI.SurveyItemResponse{
+		}, &types.SurveyItemResponse{
 			Key: "test",
-			Response: &studyAPI.ResponseItem{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "unk1", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "unk1", Items: []types.ResponseItem{
 						{Key: "1", Value: "hello"},
 					}},
 				},
@@ -736,10 +736,10 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("retrieve root", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "input"},
 				},
 			},
@@ -750,11 +750,11 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("retrieve group", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -771,11 +771,11 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("retrieve item", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -792,11 +792,11 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("wrong first key", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -809,11 +809,11 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("wrong middle key", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -826,11 +826,11 @@ func TestRetrieveResponseItem(t *testing.T) {
 	})
 
 	t.Run("wrong last key", func(t *testing.T) {
-		r := retrieveResponseItem(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItem(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -852,10 +852,10 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 	})
 
 	t.Run("retrieve root", func(t *testing.T) {
-		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
 					{Key: "input"},
 				},
 			},
@@ -866,11 +866,11 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 	})
 
 	t.Run("retrieve group", func(t *testing.T) {
-		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -887,11 +887,11 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 	})
 
 	t.Run("retrieve item", func(t *testing.T) {
-		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -908,11 +908,11 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 	})
 
 	t.Run("wrong key", func(t *testing.T) {
-		r := retrieveResponseItemByShortKey(&studyAPI.SurveyItemResponse{
-			Response: &studyAPI.ResponseItem{
+		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
+			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []*studyAPI.ResponseItem{
-					{Key: "scg", Items: []*studyAPI.ResponseItem{
+				Items: []types.ResponseItem{
+					{Key: "scg", Items: []types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},

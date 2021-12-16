@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/types"
 )
 
 type ResponseExporter struct {
@@ -69,7 +69,7 @@ func (rp ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []str
 }
 
 func NewResponseExporter(
-	surveyDef *studyAPI.Survey,
+	surveyDef *types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
@@ -78,7 +78,7 @@ func NewResponseExporter(
 }
 
 func NewResponseExporterWithIncludeFilter(
-	surveyDef *studyAPI.Survey,
+	surveyDef *types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
@@ -88,7 +88,7 @@ func NewResponseExporterWithIncludeFilter(
 }
 
 func NewResponseExporterWithExcludeFilter(
-	surveyDef *studyAPI.Survey,
+	surveyDef *types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
@@ -98,14 +98,14 @@ func NewResponseExporterWithExcludeFilter(
 }
 
 func newResponseExporterBase(
-	surveyDef *studyAPI.Survey,
+	surveyDef *types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	includeItemNames []string,
 	excludeItemNames []string,
 ) (*ResponseExporter, error) {
-	if surveyDef == nil || surveyDef.Current == nil || surveyDef.Current.SurveyDefinition == nil {
+	if surveyDef == nil {
 		return nil, errors.New("current survey definition not found")
 	}
 
@@ -117,9 +117,9 @@ func newResponseExporterBase(
 		questionOptionKeySep: questionOptionSep,
 	}
 
-	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(surveyDef.Current, previewLang, includeItemNames, excludeItemNames))
+	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&surveyDef.Current, previewLang, includeItemNames, excludeItemNames))
 	for _, v := range surveyDef.History {
-		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang, includeItemNames, excludeItemNames))
+		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&v, previewLang, includeItemNames, excludeItemNames))
 	}
 
 	if shortQuestionKeys {
@@ -133,11 +133,11 @@ func newResponseExporterBase(
 	return &rp, nil
 }
 
-func (rp *ResponseExporter) AddResponse(rawResp *studyAPI.SurveyResponse) error {
+func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 	parsedResponse := ParsedResponse{
-		ID:            rawResp.Id,
-		ParticipantID: rawResp.ParticipantId,
-		Version:       rawResp.VersionId,
+		ID:            rawResp.ID.Hex(),
+		ParticipantID: rawResp.ParticipantID,
+		Version:       rawResp.VersionID,
 		OpenedAt:      rawResp.OpenedAt,
 		SubmittedAt:   rawResp.SubmittedAt,
 		Context:       rawResp.Context,
@@ -151,7 +151,7 @@ func (rp *ResponseExporter) AddResponse(rawResp *studyAPI.SurveyResponse) error 
 		},
 	}
 
-	currentVersion, err := findSurveyVersion(rawResp.VersionId, rawResp.SubmittedAt, rp.surveyVersions)
+	currentVersion, err := findSurveyVersion(rawResp.VersionID, rawResp.SubmittedAt, rp.surveyVersions)
 	if err != nil {
 		return err
 	}
@@ -192,7 +192,7 @@ func (rp *ResponseExporter) AddResponse(rawResp *studyAPI.SurveyResponse) error 
 		parsedResponse.Meta.ItemVersion[positionColName] = ""
 
 		arraySep := ";"
-		if resp != nil && resp.Meta != nil {
+		if resp != nil {
 			parsedResponse.Meta.Initialised[initColName] = timestampsToStr(resp.Meta.Rendered, arraySep)
 			parsedResponse.Meta.Displayed[dispColName] = timestampsToStr(resp.Meta.Displayed, arraySep)
 			parsedResponse.Meta.Responded[respColName] = timestampsToStr(resp.Meta.Responded, arraySep)

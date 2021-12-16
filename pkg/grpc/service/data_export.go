@@ -250,7 +250,7 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 			if !ok {
 				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
 			}
-			return rExp.AddResponse(response.ToAPI())
+			return rExp.AddResponse(&response)
 		},
 		responseExporter,
 	)
@@ -323,7 +323,7 @@ func (s *studyServiceServer) getResponseExporter(
 	}
 
 	responseExporter, err := exporter.NewResponseExporter(
-		surveyDef.ToAPI(),
+		&surveyDef,
 		previewLanguage,
 		shortQuestionKeys,
 		separator,
