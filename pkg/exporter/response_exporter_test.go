@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"testing"
 
 	studyAPI "github.com/influenzanet/study-service/pkg/api"
@@ -210,4 +211,152 @@ func TestExportFormats(t *testing.T) {
 			t.Errorf("Unexpected output: %v", buf.String())
 		}
 	})
+}
+
+func TestExportFormatsExcludeFilter(t *testing.T) {
+	var testSurvey types.Survey
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+
+	parser, err := NewResponseExporterWithExcludeFilter(testSurvey.ToAPI(), "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err.Error())
+		return
+	}
+
+	t.Run("with no responses added yet", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesCSV(buf, nil)
+		if err == nil {
+			t.Error("should produce error")
+		}
+	})
+
+	var testResponses []types.SurveyResponse
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
+
+	for _, response := range testResponses {
+		err = parser.AddResponse(response.ToAPI())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err.Error())
+			return
+		}
+	}
+
+	wideCSV := string(readTestFileToBytes(t, "./test_files/excludeFilter/export_wide.csv"))
+	t.Run("Wide CSV", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesCSV(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != wideCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
+		}
+	})
+
+	longCSV := string(readTestFileToBytes(t, "./test_files/excludeFilter/export_long.csv"))
+	t.Run("Long CSV", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesLongFormatCSV(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != longCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
+		}
+	})
+
+	json := string(readTestFileToBytes(t, "./test_files/excludeFilter/export.json"))
+	t.Run("JSON", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesJSON(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != json {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
+		}
+	})
+}
+
+func TestExportFormatsIncludeFilter(t *testing.T) {
+	var testSurvey types.Survey
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+
+	parser, err := NewResponseExporterWithIncludeFilter(testSurvey.ToAPI(), "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err.Error())
+		return
+	}
+
+	t.Run("with no responses added yet", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesCSV(buf, nil)
+		if err == nil {
+			t.Error("should produce error")
+		}
+	})
+
+	var testResponses []types.SurveyResponse
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testResponses.json"), &testResponses)
+
+	for _, response := range testResponses {
+		err = parser.AddResponse(response.ToAPI())
+		if err != nil {
+			t.Errorf("unexpected error: %v", err.Error())
+			return
+		}
+	}
+
+	wideCSV := string(readTestFileToBytes(t, "./test_files/includeFilter/export_wide.csv"))
+	t.Run("Wide CSV", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesCSV(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != wideCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
+		}
+	})
+
+	longCSV := string(readTestFileToBytes(t, "./test_files/includeFilter/export_long.csv"))
+	t.Run("Long CSV", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesLongFormatCSV(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != longCSV {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
+		}
+	})
+
+	json := string(readTestFileToBytes(t, "./test_files/includeFilter/export.json"))
+	t.Run("JSON", func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		err := parser.GetResponsesJSON(buf, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+		if buf.String() != json {
+			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
+		}
+	})
+}
+
+func writeBytesToFile(bytes []byte, fileName string) {
+	f, err := os.Create(fileName)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	f.Write(bytes)
 }

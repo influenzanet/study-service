@@ -20,6 +20,8 @@ type ResponseExporter struct {
 	contextColNames      []string
 	responseColNames     []string
 	metaColNames         []string
+	includeItemNames     []string
+	excludeItemNames     []string
 	shortQuestionKeys    bool
 	questionOptionKeySep string
 }
@@ -74,6 +76,37 @@ func NewResponseExporter(
 	shortQuestionKeys bool,
 	questionOptionSep string,
 ) (*ResponseExporter, error) {
+	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, []string{})
+}
+
+func NewResponseExporterWithIncludeFilter(
+	surveyDef *studyAPI.Survey,
+	previewLang string,
+	shortQuestionKeys bool,
+	questionOptionSep string,
+	includeItemNames []string,
+) (*ResponseExporter, error) {
+	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, includeItemNames, []string{})
+}
+
+func NewResponseExporterWithExcludeFilter(
+	surveyDef *studyAPI.Survey,
+	previewLang string,
+	shortQuestionKeys bool,
+	questionOptionSep string,
+	excludeItemNames []string,
+) (*ResponseExporter, error) {
+	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, excludeItemNames)
+}
+
+func newResponseExporterBase(
+	surveyDef *studyAPI.Survey,
+	previewLang string,
+	shortQuestionKeys bool,
+	questionOptionSep string,
+	includeItemNames []string,
+	excludeItemNames []string,
+) (*ResponseExporter, error) {
 	if surveyDef == nil || surveyDef.Current == nil || surveyDef.Current.SurveyDefinition == nil {
 		return nil, errors.New("current survey definition not found")
 	}
@@ -86,9 +119,9 @@ func NewResponseExporter(
 		questionOptionKeySep: questionOptionSep,
 	}
 
-	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(surveyDef.Current, previewLang))
+	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(surveyDef.Current, previewLang, includeItemNames, excludeItemNames))
 	for _, v := range surveyDef.History {
-		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang))
+		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang, includeItemNames, excludeItemNames))
 	}
 
 	if shortQuestionKeys {

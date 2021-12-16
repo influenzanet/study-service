@@ -6,9 +6,10 @@ import (
 
 	"github.com/coneno/logger"
 	studyAPI "github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func surveyDefToVersionPreview(original *studyAPI.SurveyVersion, prefLang string) SurveyVersionPreview {
+func surveyDefToVersionPreview(original *studyAPI.SurveyVersion, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
 	sp := SurveyVersionPreview{
 		VersionID:   original.VersionId,
 		Published:   original.Published,
@@ -16,11 +17,11 @@ func surveyDefToVersionPreview(original *studyAPI.SurveyVersion, prefLang string
 		Questions:   []SurveyQuestion{},
 	}
 
-	sp.Questions = extractQuestions(original.SurveyDefinition, prefLang)
+	sp.Questions = extractQuestions(original.SurveyDefinition, prefLang, includeItemNames, excludeItemNames)
 	return sp
 }
 
-func extractQuestions(root *studyAPI.SurveyItem, prefLang string) []SurveyQuestion {
+func extractQuestions(root *studyAPI.SurveyItem, prefLang string, includeItemNames []string, excludeItemNames []string) []SurveyQuestion {
 	questions := []SurveyQuestion{}
 	if root == nil {
 		return questions
@@ -31,7 +32,15 @@ func extractQuestions(root *studyAPI.SurveyItem, prefLang string) []SurveyQuesti
 		}
 
 		if isItemGroup(item) {
-			questions = append(questions, extractQuestions(item, prefLang)...)
+			questions = append(questions, extractQuestions(item, prefLang, includeItemNames, excludeItemNames)...)
+			continue
+		}
+
+		if len(includeItemNames) > 0 {
+			if !utils.ContainsString(includeItemNames, item.Key) {
+				continue
+			}
+		} else if utils.ContainsString(excludeItemNames, item.Key) {
 			continue
 		}
 
