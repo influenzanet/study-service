@@ -20,8 +20,6 @@ type ResponseExporter struct {
 	contextColNames      []string
 	responseColNames     []string
 	metaColNames         []string
-	includeItemNames     []string
-	excludeItemNames     []string
 	shortQuestionKeys    bool
 	questionOptionKeySep string
 }
