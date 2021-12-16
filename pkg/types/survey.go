@@ -12,14 +12,15 @@ const (
 )
 
 type Survey struct {
-	ID              primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Props           SurveyProps        `bson:"props,omitempty"`
-	Current         SurveyVersion      `bson:"current"`
-	History         []SurveyVersion    `bson:"history,omitempty"`
-	PrefillRules    []Expression       `bson:"prefillRules,omitempty"`
-	ContextRules    *SurveyContextDef  `bson:"contextRules,omitempty"`
-	MaxItemsPerPage *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
-	AvailableFor    string             `bson:"availableFor,omitempty"`
+	ID                           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Props                        SurveyProps        `bson:"props,omitempty"`
+	Current                      SurveyVersion      `bson:"current"`
+	History                      []SurveyVersion    `bson:"history,omitempty"`
+	PrefillRules                 []Expression       `bson:"prefillRules,omitempty"`
+	ContextRules                 *SurveyContextDef  `bson:"contextRules,omitempty"`
+	MaxItemsPerPage              *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
+	AvailableFor                 string             `bson:"availableFor,omitempty"`
+	RequireLoginBeforeSubmission bool               `bson:"requireLoginBeforeSubmission"`
 }
 
 type SurveyProps struct {
@@ -63,6 +64,7 @@ func (s Survey) ToAPI() *api.Survey {
 		as.MaxItemsPerPage = s.MaxItemsPerPage.ToAPI()
 	}
 	as.AvailableFor = s.AvailableFor
+	as.RequireLoginBeforeSubmission = s.RequireLoginBeforeSubmission
 	return as
 }
 
@@ -81,14 +83,15 @@ func SurveyFromAPI(s *api.Survey) Survey {
 		prefills[i] = *ExpressionFromAPI(r)
 	}
 	return Survey{
-		ID:              _id,
-		Props:           Survey_PropsFromAPI(s.Props),
-		Current:         SurveyVersionFromAPI(s.Current),
-		History:         history,
-		PrefillRules:    prefills,
-		ContextRules:    SurveyContextDefFromAPI(s.ContextRules),
-		MaxItemsPerPage: MaxItemsPerPageFromAPI(s.MaxItemsPerPage),
-		AvailableFor:    s.AvailableFor,
+		ID:                           _id,
+		Props:                        Survey_PropsFromAPI(s.Props),
+		Current:                      SurveyVersionFromAPI(s.Current),
+		History:                      history,
+		PrefillRules:                 prefills,
+		ContextRules:                 SurveyContextDefFromAPI(s.ContextRules),
+		MaxItemsPerPage:              MaxItemsPerPageFromAPI(s.MaxItemsPerPage),
+		AvailableFor:                 s.AvailableFor,
+		RequireLoginBeforeSubmission: s.RequireLoginBeforeSubmission,
 	}
 }
 
