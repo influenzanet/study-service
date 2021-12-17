@@ -290,14 +290,14 @@ func (s *studyServiceServer) getResponseExporterSurveyInfo(req *api.SurveyInfoEx
 	if req == nil {
 		return nil, s.missingArgumentError()
 	}
-	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, req.PreviewLanguage, req.ShortQuestionKeys, "ignored")
+	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, req.PreviewLanguage, req.ShortQuestionKeys, "ignored", nil)
 }
 
 func (s *studyServiceServer) getResponseExporterResponseExport(req *api.ResponseExportQuery) (*exporter.ResponseExporter, error) {
 	if req == nil {
 		return nil, s.missingArgumentError()
 	}
-	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, "ignored", req.ShortQuestionKeys, req.Separator)
+	return s.getResponseExporter(req.Token, req.StudyKey, req.SurveyKey, "ignored", req.ShortQuestionKeys, req.Separator, req.ItemFilter)
 }
 
 func (s *studyServiceServer) getResponseExporter(
@@ -306,7 +306,9 @@ func (s *studyServiceServer) getResponseExporter(
 	surveyKey string,
 	previewLanguage string,
 	shortQuestionKeys bool,
-	separator string) (*exporter.ResponseExporter, error) {
+	separator string,
+	itemFilter *api.ResponseExportQuery_ItemFilter,
+) (*exporter.ResponseExporter, error) {
 	if token_checks.IsTokenEmpty(token) || studyKey == "" {
 		return nil, s.missingArgumentError()
 	}
@@ -322,12 +324,34 @@ func (s *studyServiceServer) getResponseExporter(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	responseExporter, err := exporter.NewResponseExporter(
-		&surveyDef,
-		previewLanguage,
-		shortQuestionKeys,
-		separator,
-	)
+	// Init exporter:
+	var responseExporter *exporter.ResponseExporter
+	if itemFilter != nil {
+		if itemFilter.Mode == api.ResponseExportQuery_ItemFilter_INCLUDE {
+			responseExporter, err = exporter.NewResponseExporterWithIncludeFilter(
+				&surveyDef,
+				previewLanguage,
+				shortQuestionKeys,
+				separator,
+				itemFilter.Keys,
+			)
+		} else {
+			responseExporter, err = exporter.NewResponseExporterWithExcludeFilter(
+				&surveyDef,
+				previewLanguage,
+				shortQuestionKeys,
+				separator,
+				itemFilter.Keys,
+			)
+		}
+	} else {
+		responseExporter, err = exporter.NewResponseExporter(
+			&surveyDef,
+			previewLanguage,
+			shortQuestionKeys,
+			separator,
+		)
+	}
 	if err != nil {
 		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
