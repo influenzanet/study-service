@@ -18,7 +18,7 @@ func mockQuestion(
 			Role: "root",
 			Items: []types.ItemComponent{
 				{Role: "title", Content: []types.LocalisedObject{
-					{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: title}}},
+					{Code: lang, Parts: []types.ExpressionArg{{Str: title}}},
 				}},
 				*responseOptions,
 			},
@@ -42,7 +42,7 @@ func mockSingleChoiceGroup(lang string, options []MockOpionDef) *types.ItemCompo
 	for _, o := range options {
 		rg.Items[0].Items = append(rg.Items[0].Items,
 			types.ItemComponent{Key: o.Key, Role: o.Role, Content: []types.LocalisedObject{
-				{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: o.Label}}},
+				{Code: lang, Parts: []types.ExpressionArg{{Str: o.Label}}},
 			}},
 		)
 	}
@@ -58,7 +58,7 @@ func mockMultipleChoiceGroup(lang string, options []MockOpionDef) *types.ItemCom
 	for _, o := range options {
 		rg.Items[0].Items = append(rg.Items[0].Items,
 			types.ItemComponent{Key: o.Key, Role: o.Role, Content: []types.LocalisedObject{
-				{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: o.Label}}},
+				{Code: lang, Parts: []types.ExpressionArg{{Str: o.Label}}},
 			}},
 		)
 	}
@@ -75,7 +75,7 @@ func mockLikertGroup(lang string, categoryLabels []MockOpionDef, optionLabels []
 	for i, o := range categoryLabels {
 		rg.Items[0].Items = append(rg.Items[0].Items,
 			types.ItemComponent{Key: strconv.Itoa(i), Role: "text", Content: []types.LocalisedObject{
-				{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: o.Label}}},
+				{Code: lang, Parts: []types.ExpressionArg{{Str: o.Label}}},
 			}},
 		)
 		rg.Items[0].Items = append(rg.Items[0].Items,
@@ -85,7 +85,7 @@ func mockLikertGroup(lang string, categoryLabels []MockOpionDef, optionLabels []
 		index := len(rg.Items[0].Items) - 1
 		for j, label := range optionLabels {
 			rg.Items[0].Items[index].Items = append(rg.Items[0].Items[index].Items, types.ItemComponent{Key: strconv.Itoa(j + 1), Role: "option", Content: []types.LocalisedObject{
-				{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: label}}},
+				{Code: lang, Parts: []types.ExpressionArg{{Str: label}}},
 			}})
 		}
 	}
@@ -105,14 +105,14 @@ func mockResponsiveSingleChoiceArray(lang string, categoryLabels []MockOpionDef,
 	})
 	for j, label := range optionLabels {
 		rg.Items[0].Items[0].Items = append(rg.Items[0].Items[0].Items, types.ItemComponent{Key: strconv.Itoa(j + 1), Role: "option", Content: []types.LocalisedObject{
-			{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: label}}},
+			{Code: lang, Parts: []types.ExpressionArg{{Str: label}}},
 		}})
 	}
 
 	for _, o := range categoryLabels {
 		rg.Items[0].Items = append(rg.Items[0].Items,
 			types.ItemComponent{Key: o.Key, Role: "row", Content: []types.LocalisedObject{
-				{Code: lang, Parts: []types.ExpressionArg{types.ExpressionArg{Str: o.Label}}},
+				{Code: lang, Parts: []types.ExpressionArg{{Str: o.Label}}},
 			}},
 		)
 	}
