@@ -537,7 +537,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 						value = v
 					}
 				} else if strings.Contains(colName, "metaDisplayed") {
-					if !metaInfos.InitTimes {
+					if !metaInfos.DisplayedTimes {
 						continue
 					}
 					v, ok := resp.Meta.Displayed[colName]
@@ -545,7 +545,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 						value = v
 					}
 				} else if strings.Contains(colName, "metaResponse") {
-					if !metaInfos.InitTimes {
+					if !metaInfos.ResponsedTimes {
 						continue
 					}
 					v, ok := resp.Meta.Responded[colName]
@@ -553,7 +553,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 						value = v
 					}
 				} else if strings.Contains(colName, "metaItemVersion") {
-					if !metaInfos.InitTimes {
+					if !metaInfos.ItemVersion {
 						continue
 					}
 					v, ok := resp.Meta.ItemVersion[colName]
