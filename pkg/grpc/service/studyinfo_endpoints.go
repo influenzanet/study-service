@@ -51,7 +51,7 @@ func (s *studyServiceServer) GetStudiesForUser(ctx context.Context, req *api.Get
 				continue
 			}
 
-			if pState.StudyStatus != "active" {
+			if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 				continue
 			}
 
@@ -71,7 +71,7 @@ func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api_type
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", false)
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, types.STUDY_STATUS_ACTIVE, false)
 	if err != nil {
 		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())

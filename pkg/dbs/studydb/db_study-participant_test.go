@@ -13,7 +13,7 @@ func TestDbParticipantStateTest(t *testing.T) {
 
 	testPState := types.ParticipantState{
 		ParticipantID: "testPID0990",
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		Flags: map[string]string{
 			"testKey": "testValue",
 		},
@@ -79,19 +79,19 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		},
 		{
 			ParticipantID: "2",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		},
 		{
 			ParticipantID: "3",
-			StudyStatus:   "inactive",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 		},
 		{
 			ParticipantID: "4",
-			StudyStatus:   "inactive",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 		},
 	}
 
@@ -104,7 +104,7 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	}
 
 	t.Run("Finding active status", func(t *testing.T) {
-		participants, err := testDBService.FindParticipantsByStudyStatus(testInstanceID, testStudyKey, "active", false)
+		participants, err := testDBService.FindParticipantsByStudyStatus(testInstanceID, testStudyKey, types.PARTICIPANT_STUDY_STATUS_ACTIVE, false)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -114,8 +114,8 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 		}
 	})
 
-	t.Run("Finding inactive status ", func(t *testing.T) {
-		participants, err := testDBService.FindParticipantsByStudyStatus(testInstanceID, testStudyKey, "inactive", true)
+	t.Run("Finding exited status ", func(t *testing.T) {
+		participants, err := testDBService.FindParticipantsByStudyStatus(testInstanceID, testStudyKey, types.PARTICIPANT_STUDY_STATUS_EXITED, true)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -137,7 +137,7 @@ func TestDbFindParticipantsByStatusTest(t *testing.T) {
 	})
 
 	t.Run("Finding not existing status", func(t *testing.T) {
-		count, err := testDBService.GetParticipantCountByStatus(testInstanceID, testStudyKey, "active")
+		count, err := testDBService.GetParticipantCountByStatus(testInstanceID, testStudyKey, types.PARTICIPANT_STUDY_STATUS_ACTIVE)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
@@ -155,14 +155,14 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 			Flags: map[string]string{
 				"test1": "1",
 			},
 		},
 		{
 			ParticipantID: "2",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		},
 	}
 

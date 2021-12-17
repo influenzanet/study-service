@@ -23,11 +23,11 @@ func TestCheckIfParticipantExists(t *testing.T) {
 	pStates := []types.ParticipantState{
 		{
 			ParticipantID: "1",
-			StudyStatus:   "active",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		},
 		{
 			ParticipantID: "2",
-			StudyStatus:   "terminated",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 		},
 	}
 
@@ -41,19 +41,19 @@ func TestCheckIfParticipantExists(t *testing.T) {
 
 	// Tests
 	t.Run("with existing participant", func(t *testing.T) {
-		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1", "active") {
+		if !s.checkIfParticipantExists(testInstanceID, testStudyKey, "1", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be true if participant exists")
 		}
 	})
 
 	t.Run("with not active participant", func(t *testing.T) {
-		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2", "active") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "2", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be false if participant is not active")
 		}
 	})
 
 	t.Run("with not existing participant", func(t *testing.T) {
-		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "3", "active") {
+		if s.checkIfParticipantExists(testInstanceID, testStudyKey, "3", types.PARTICIPANT_STUDY_STATUS_ACTIVE) {
 			t.Error("should be false if participant does not exist")
 		}
 	})
@@ -311,183 +311,6 @@ func TestEnterStudyEndpoint(t *testing.T) {
 	})
 }
 
-func TestPostponeSurveyEndpoint(t *testing.T) {
-	s := studyServiceServer{
-		globalDBService:   testGlobalDBService,
-		studyDBservice:    testStudyDBService,
-		StudyGlobalSecret: "globsecretfortest1234",
-	}
-
-	testUserID1 := "234234laaabbb3423"
-	testUserID2 := "234234laaabbb3424"
-
-	testStudy := types.Study{
-		Key:       "studyforpostponesurvey",
-		SecretKey: "testsecret",
-		Rules: []types.Expression{
-			{
-				Name: "IFTHEN",
-				Data: []types.ExpressionArg{
-					{
-						DType: "exp",
-						Exp: &types.Expression{
-							Name: "checkEventType",
-							Data: []types.ExpressionArg{
-								{Str: "SUBMIT"},
-							},
-						},
-					},
-					{
-						DType: "exp",
-						Exp: &types.Expression{
-							Name: "UPDATE_FLAG",
-							Data: []types.ExpressionArg{
-								{Str: "testKey"},
-								{Str: "testValue2"},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	testStudy, err := s.studyDBservice.CreateStudy(testInstanceID, testStudy)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudy.Key, testUserID1)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudy.Key, testUserID2)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	pState1 := types.ParticipantState{
-		ParticipantID: pid1,
-		StudyStatus:   "active",
-		AssignedSurveys: []types.AssignedSurvey{
-			{SurveyKey: "s1"},
-		},
-	}
-	pState2 := types.ParticipantState{
-		ParticipantID: pid2,
-		StudyStatus:   "active",
-		AssignedSurveys: []types.AssignedSurvey{
-			{SurveyKey: "s1", ValidUntil: time.Now().Unix() + 3600},
-		},
-	}
-
-	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudy.Key, pState1)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudy.Key, pState2)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-
-	t.Run("with missing request", func(t *testing.T) {
-		_, err := s.PostponeSurvey(context.Background(), nil)
-		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
-		if !ok {
-			t.Error(msg)
-		}
-	})
-
-	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.PostponeSurvey(context.Background(), &api.PostponeSurveyRequest{})
-		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
-		if !ok {
-			t.Error(msg)
-		}
-	})
-
-	t.Run("wrong study key", func(t *testing.T) {
-		req := &api.PostponeSurveyRequest{
-			Token: &api_types.TokenInfos{
-				Id:         testUserID1,
-				InstanceId: testInstanceID,
-				ProfilId:   testUserID1,
-			},
-			ProfileId: testUserID1,
-			StudyKey:  "wrong",
-		}
-		_, err := s.PostponeSurvey(context.Background(), req)
-		if err == nil {
-			t.Error("should return an error")
-			return
-		}
-	})
-
-	t.Run("without validUntil", func(t *testing.T) {
-		req := &api.PostponeSurveyRequest{
-			Token: &api_types.TokenInfos{
-				Id:         testUserID1,
-				InstanceId: testInstanceID,
-				ProfilId:   testUserID1,
-			},
-			ProfileId: testUserID1,
-			StudyKey:  testStudy.Key,
-			SurveyKey: "s1",
-			Delay:     3600,
-		}
-		resp, err := s.PostponeSurvey(context.Background(), req)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-		if len(resp.Surveys) != 1 {
-			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
-			return
-		}
-		if resp.Surveys[0].ValidFrom < time.Now().Unix()+3599 {
-			t.Errorf("unexpected survey assigned: %s", resp.Surveys[0])
-			return
-		}
-
-	})
-
-	t.Run("with validUntil expired", func(t *testing.T) {
-		req := &api.PostponeSurveyRequest{
-			Token: &api_types.TokenInfos{
-				Id:         testUserID2,
-				InstanceId: testInstanceID,
-				ProfilId:   testUserID2,
-			},
-			ProfileId: testUserID2,
-			StudyKey:  testStudy.Key,
-			SurveyKey: "s1",
-			Delay:     3600,
-		}
-		resp, err := s.PostponeSurvey(context.Background(), req)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-		if len(resp.Surveys) != 1 {
-			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
-			return
-		}
-		pState, err := s.studyDBservice.FindParticipantState(testInstanceID, testStudy.Key, pid2)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-		f, ok := pState.Flags["testKey"]
-		if !ok || f != "testValue2" {
-			t.Errorf("unexpected pState: %s", pState.Flags)
-		}
-	})
-}
-
 func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
@@ -497,17 +320,17 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey1",
 			SecretKey: "testsecret",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey2",
 			SecretKey: "testsecret2",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyforassignedsurvey3",
 			SecretKey: "testsecret3",
 		},
@@ -535,14 +358,14 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
@@ -606,7 +429,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	testUserID := "234234laaabbb3423"
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       testStudyKey,
 			SecretKey: "testsecret",
 		},
@@ -770,123 +593,6 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	})
 }
 
-func TestSubmitStatusReportEndpoint(t *testing.T) {
-	s := studyServiceServer{
-		globalDBService:   testGlobalDBService,
-		studyDBservice:    testStudyDBService,
-		StudyGlobalSecret: "globsecretfortest1234",
-	}
-
-	studies := []types.Study{
-		{
-			Status:    "active",
-			Key:       "studyfor_submitstatus1",
-			SecretKey: "testsecret",
-		},
-		{
-			Status:    "active",
-			Key:       "studyfor_submitstatus2",
-			SecretKey: "testsecret2",
-		},
-		{
-			Status:    "active",
-			Key:       "studyfor_submitstatus3",
-			SecretKey: "testsecret3",
-		},
-	}
-
-	for _, study := range studies {
-		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-	}
-
-	testUserID := "234234laaabbb3423aa"
-
-	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitstatus1", testUserID)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitstatus2", testUserID)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	pState1 := types.ParticipantState{
-		ParticipantID: pid1,
-		StudyStatus:   "active",
-		AssignedSurveys: []types.AssignedSurvey{
-			{SurveyKey: "s1"},
-		},
-	}
-	pState2 := types.ParticipantState{
-		ParticipantID: pid2,
-		StudyStatus:   "paused",
-		AssignedSurveys: []types.AssignedSurvey{
-			{SurveyKey: "s2"},
-		},
-	}
-
-	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitstatus1", pState1)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-	_, err = testStudyDBService.SaveParticipantState(testInstanceID, "studyfor_submitstatus2", pState2)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-		return
-	}
-
-	t.Run("with missing request", func(t *testing.T) {
-		_, err := s.SubmitStatusReport(context.Background(), nil)
-		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
-		if !ok {
-			t.Error(msg)
-		}
-	})
-
-	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.SubmitStatusReport(context.Background(), &api.StatusReportRequest{})
-		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
-		if !ok {
-			t.Error(msg)
-		}
-	})
-
-	t.Run("correct values", func(t *testing.T) {
-		resp, err := s.SubmitStatusReport(context.Background(), &api.StatusReportRequest{
-			Token: &api_types.TokenInfos{
-				Id:         testUserID,
-				InstanceId: testInstanceID,
-				ProfilId:   testUserID,
-			},
-			ProfileId: testUserID,
-			StatusSurvey: &api.SurveyResponse{
-				Key:           "t1",
-				ParticipantId: pid1,
-				Responses: []*api.SurveyItemResponse{
-					{Key: "1"},
-				},
-			},
-		})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-		if len(resp.Surveys) != 1 {
-			t.Errorf("unexpected number of surveys: %d", len(resp.Surveys))
-			return
-		}
-		if resp.Surveys[0].SurveyKey != "s1" {
-			t.Errorf("unexpected survey key: %s", resp.Surveys[0].SurveyKey)
-		}
-	})
-}
-
 func TestSubmitResponseEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
@@ -896,17 +602,17 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	studies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey1",
 			SecretKey: "testsecret",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey2",
 			SecretKey: "testsecret2",
 		},
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_submitsurvey3",
 			SecretKey: "testsecret3",
 		},
@@ -934,7 +640,7 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
@@ -1018,7 +724,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 
 	testStudies := []types.Study{
 		{
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 			Key:       "studyfor_leave_study",
 			SecretKey: "testsecret",
 		},
@@ -1047,14 +753,14 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 	}
 	pState1 := types.ParticipantState{
 		ParticipantID: pid1,
-		StudyStatus:   "active",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 		AssignedSurveys: []types.AssignedSurvey{
 			{SurveyKey: "s1"},
 		},
 	}
 	pState2 := types.ParticipantState{
 		ParticipantID: pid2,
-		StudyStatus:   "exited",
+		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_EXITED,
 	}
 
 	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
@@ -1135,7 +841,7 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if pState.StudyStatus != "exited" {
+		if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_EXITED {
 			t.Errorf("unexpected study status: %s", pState.StudyStatus)
 		}
 	})
@@ -1281,7 +987,7 @@ func TestDeleteParticipantDataEndpoint(t *testing.T) {
 		{
 			Key:       "test_for_delete_p_data_1",
 			SecretKey: "test1",
-			Status:    "active",
+			Status:    types.STUDY_STATUS_ACTIVE,
 		},
 		{
 			Key:       "test_for_delete_p_data_2",

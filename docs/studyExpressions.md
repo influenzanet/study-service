@@ -283,7 +283,7 @@ checks if the participant has the specified status.
 >   `expression.Data[0]` : should contain the status value of type `string` that is compared to the current status of the participant. 
 
 
-**Note:** Possible values for the status of the paticipant are `"active"`, `"inactive"`, `"paused"`, `"finished"`. The length of `expression.Data` must be `1`.
+**Note:** Possible values for the status of the paticipant are ``"active"`, `"temporary"`, `"exited"`. Other values are possible and are handled like `"exited"` on the server. The length of `expression.Data` must be `1`.
 
 **Return:**  `(val bool, err error)`
 
