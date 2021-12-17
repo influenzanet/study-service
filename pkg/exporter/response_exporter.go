@@ -143,9 +143,9 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		Context:       rawResp.Context,
 		Responses:     map[string]string{},
 		Meta: ResponseMeta{
-			Initialised: map[string]string{},
-			Displayed:   map[string]string{},
-			Responded:   map[string]string{},
+			Initialised: map[string][]int64{},
+			Displayed:   map[string][]int64{},
+			Responded:   map[string][]int64{},
 			ItemVersion: map[string]string{},
 			Position:    map[string]int32{},
 		},
@@ -173,15 +173,15 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		// Set meta infos
 		initColName := question.ID + rp.questionOptionKeySep + "metaInit"
 		rp.AddMetaColName(initColName)
-		parsedResponse.Meta.Initialised[initColName] = ""
+		parsedResponse.Meta.Initialised[initColName] = []int64{}
 
 		dispColName := question.ID + rp.questionOptionKeySep + "metaDisplayed"
 		rp.AddMetaColName(dispColName)
-		parsedResponse.Meta.Displayed[dispColName] = ""
+		parsedResponse.Meta.Displayed[dispColName] = []int64{}
 
 		respColName := question.ID + rp.questionOptionKeySep + "metaResponse"
 		rp.AddMetaColName(respColName)
-		parsedResponse.Meta.Responded[respColName] = ""
+		parsedResponse.Meta.Responded[respColName] = []int64{}
 
 		itemVColName := question.ID + rp.questionOptionKeySep + "metaItemVersion"
 		rp.AddMetaColName(itemVColName)
@@ -191,11 +191,16 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		rp.AddMetaColName(positionColName)
 		parsedResponse.Meta.ItemVersion[positionColName] = ""
 
-		arraySep := ";"
 		if resp != nil {
-			parsedResponse.Meta.Initialised[initColName] = timestampsToStr(resp.Meta.Rendered, arraySep)
-			parsedResponse.Meta.Displayed[dispColName] = timestampsToStr(resp.Meta.Displayed, arraySep)
-			parsedResponse.Meta.Responded[respColName] = timestampsToStr(resp.Meta.Responded, arraySep)
+			if resp.Meta.Rendered != nil {
+				parsedResponse.Meta.Initialised[initColName] = resp.Meta.Rendered
+			}
+			if resp.Meta.Displayed != nil {
+				parsedResponse.Meta.Displayed[dispColName] = resp.Meta.Displayed
+			}
+			if resp.Meta.Responded != nil {
+				parsedResponse.Meta.Responded[respColName] = resp.Meta.Responded
+			}
 			parsedResponse.Meta.ItemVersion[itemVColName] = strconv.Itoa(int(resp.Meta.Version))
 			parsedResponse.Meta.Position[positionColName] = resp.Meta.Position
 		}
@@ -413,7 +418,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 						line = append(line, "")
 						continue
 					}
-					line = append(line, v)
+					line = append(line, timestampsToStr(v))
 				} else if strings.Contains(colName, "metaDisplayed") {
 					if !includeMeta.DisplayedTimes {
 						continue
@@ -423,7 +428,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 						line = append(line, "")
 						continue
 					}
-					line = append(line, v)
+					line = append(line, timestampsToStr(v))
 				} else if strings.Contains(colName, "metaResponse") {
 					if !includeMeta.ResponsedTimes {
 						continue
@@ -433,7 +438,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 						line = append(line, "")
 						continue
 					}
-					line = append(line, v)
+					line = append(line, timestampsToStr(v))
 				} else if strings.Contains(colName, "metaItemVersion") {
 					if !includeMeta.ItemVersion {
 						continue
@@ -534,7 +539,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 					}
 					v, ok := resp.Meta.Initialised[colName]
 					if ok {
-						value = v
+						value = timestampsToStr(v)
 					}
 				} else if strings.Contains(colName, "metaDisplayed") {
 					if !metaInfos.DisplayedTimes {
@@ -542,7 +547,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 					}
 					v, ok := resp.Meta.Displayed[colName]
 					if ok {
-						value = v
+						value = timestampsToStr(v)
 					}
 				} else if strings.Contains(colName, "metaResponse") {
 					if !metaInfos.ResponsedTimes {
@@ -550,7 +555,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 					}
 					v, ok := resp.Meta.Responded[colName]
 					if ok {
-						value = v
+						value = timestampsToStr(v)
 					}
 				} else if strings.Contains(colName, "metaItemVersion") {
 					if !metaInfos.ItemVersion {

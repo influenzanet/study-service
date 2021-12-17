@@ -1,9 +1,9 @@
 package exporter
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/coneno/logger"
@@ -46,16 +46,13 @@ func findVersionBasedOnVersionID(versionID string, versions []SurveyVersionPrevi
 	return sv, errors.New("no survey version found")
 }
 
-func timestampsToStr(ts []int64, sep string) string {
-	if len(ts) == 0 {
-		return ""
+func timestampsToStr(ts []int64) string {
+	bytes, err := json.Marshal(ts)
+	if err != nil {
+		return err.Error()
 	}
 
-	b := make([]string, len(ts))
-	for i, v := range ts {
-		b[i] = strconv.Itoa(int(v))
-	}
-	return strings.Join(b, sep)
+	return string(bytes)
 }
 
 func findResponse(responses []types.SurveyItemResponse, key string) *types.SurveyItemResponse {

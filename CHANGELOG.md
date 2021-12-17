@@ -14,6 +14,11 @@
 - Participant File Upload endpoint: method to upload files for study participants
 - Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey)
 
+### Changed
+
+- The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps
+
+
 ## [v0.16.2] - 2021-06-16
 
 ### Changed

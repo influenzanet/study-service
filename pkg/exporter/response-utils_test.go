@@ -925,3 +925,32 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 	})
 
 }
+
+func TestTimestampsToString(t *testing.T) {
+	t.Run("no timestmaps", func(t *testing.T) {
+		expectedJson := `[]`
+
+		json := timestampsToStr([]int64{})
+		if json != expectedJson {
+			t.Errorf("unexpected output: %s", json)
+		}
+	})
+
+	t.Run("one timestmap", func(t *testing.T) {
+		expectedJson := `[1591733595]`
+
+		json := timestampsToStr([]int64{1591733595})
+		if json != expectedJson {
+			t.Errorf("unexpected output: %s", json)
+		}
+	})
+
+	t.Run("multiple timestmaps", func(t *testing.T) {
+		expectedJson := `[1591733595,1591733595]`
+
+		json := timestampsToStr([]int64{1591733595, 1591733595})
+		if json != expectedJson {
+			t.Errorf("unexpected output: %s", json)
+		}
+	})
+}

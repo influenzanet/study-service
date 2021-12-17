@@ -130,9 +130,9 @@ type ParsedResponse struct {
 }
 
 type ResponseMeta struct {
-	Initialised map[string]string
-	Displayed   map[string]string
-	Responded   map[string]string
+	Initialised map[string][]int64
+	Displayed   map[string][]int64
+	Responded   map[string][]int64
 	ItemVersion map[string]string
 	Position    map[string]int32
 }
