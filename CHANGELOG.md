@@ -12,11 +12,16 @@
 - Data exporter can parse composite question titles or option labels (when text contains multiple parts).
 - Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"
 - Participant File Upload endpoint: method to upload files for study participants
-- Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey)
+- Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
 
 ### Changed
 
-- The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps
+- The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps.
+
+
+### Fixed
+
+- The "long" CSV export format now correctly displays the `metaDisplayed`, `metaResponse` and `metaVersion` columns based on their respective options, rather than based on the `metaInit` option.
 
 
 ## [v0.16.2] - 2021-06-16
