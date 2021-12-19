@@ -76,7 +76,7 @@ func (s Study) ToAPI() *api.Study {
 		Rules:     rules,
 		Props:     s.Props.ToAPI(),
 		Stats:     s.Stats.ToAPI(),
-		Congfigs:  s.Configs.ToAPI(),
+		Configs:   s.Configs.ToAPI(),
 	}
 }
 
@@ -119,7 +119,7 @@ func StudyFromAPI(s *api.Study) Study {
 		Rules:     rules,
 		Props:     StudyPropsFromAPI(s.Props),
 		Stats:     StudyStatsFromAPI(s.Stats),
-		Configs:   StudyConfigsFromAPI(s.Congfigs),
+		Configs:   StudyConfigsFromAPI(s.Configs),
 	}
 }
 
