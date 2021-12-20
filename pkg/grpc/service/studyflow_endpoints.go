@@ -334,6 +334,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	var participantID string
+	var instanceID string
 	if req.Token != nil {
 		if token_checks.IsTokenEmpty(req.Token) {
 			return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -349,15 +350,17 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		if err != nil {
 			return nil, status.Error(codes.Internal, "could not compute participant id")
 		}
+		instanceID = req.Token.InstanceId
 	} else {
 		if req.InstanceId == "" || req.TemporaryParticipantId == "" {
 			return nil, status.Error(codes.InvalidArgument, "missing argument")
 		}
 		participantID = req.TemporaryParticipantId
+		instanceID = req.InstanceId
 	}
 
 	// Participant state:
-	pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
+	pState, err := s.studyDBservice.FindParticipantState(instanceID, req.StudyKey, participantID)
 	if err != nil {
 		req.Response = nil
 		logger.Error.Printf("Participant not found for request; %v", req)
@@ -373,7 +376,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		if pState.EnteredAt != req.TemporaryParticipantTimestamp ||
 			pState.EnteredAt+TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD < time.Now().Unix() {
 			// problem with temporary participant
-			logger.Error.Printf("user (%s:%s) attempted to submit for wrong temporary participant (ID: %s)", req.Token.InstanceId, req.Token.Id, req.TemporaryParticipantId)
+			logger.Error.Printf("attempted to submit for wrong temporary participant (instance: %s, ID: %s)", instanceID, req.TemporaryParticipantId)
 			time.Sleep(5 * time.Second)
 			return nil, status.Error(codes.InvalidArgument, "wrong temporary participant")
 		}
@@ -388,7 +391,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// Save responses
 	response := types.SurveyResponseFromAPI(req.Response)
 	response.ParticipantID = participantID
-	err = s.studyDBservice.AddSurveyResponse(req.Token.InstanceId, req.StudyKey, response)
+	err = s.studyDBservice.AddSurveyResponse(instanceID, req.StudyKey, response)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -397,16 +400,16 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	currentEvent := types.StudyEvent{
 		Type:       "SUBMIT",
 		Response:   response,
-		InstanceID: req.Token.InstanceId,
+		InstanceID: instanceID,
 		StudyKey:   req.StudyKey,
 	}
-	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	pState, err = s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+	pState, err = s.studyDBservice.SaveParticipantState(instanceID, req.StudyKey, pState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
