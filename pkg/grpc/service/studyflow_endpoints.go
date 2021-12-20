@@ -370,6 +370,13 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 			logger.Error.Printf("Exptected temporary participant, but got: %v for request; %v", pState, req)
 			return nil, status.Error(codes.Internal, "expected temporary participant")
 		}
+		if pState.EnteredAt != req.TemporaryParticipantTimestamp ||
+			pState.EnteredAt+TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD < time.Now().Unix() {
+			// problem with temporary participant
+			logger.Error.Printf("user (%s:%s) attempted to submit for wrong temporary participant (ID: %s)", req.Token.InstanceId, req.Token.Id, req.TemporaryParticipantId)
+			time.Sleep(5 * time.Second)
+			return nil, status.Error(codes.InvalidArgument, "wrong temporary participant")
+		}
 	} else {
 		if pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
 			req.Response = nil
