@@ -13,11 +13,13 @@
 - Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"
 - Participant File Upload endpoint: method to upload files for study participants
 - Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
+- Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
 
 ### Changed
 
 - The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps.
 - `GET_LAST_SURVEY_ITEM` survey prefill rule accepts now an optional third argument to filter for responses that were submitted not sooner than the provided value in seconds.
+- 'Unknown' question types are now exported as JSON
 
 
 ### Fixed

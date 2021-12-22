@@ -1,0 +1,1748 @@
+[
+	{
+		"id": "61c232a69898ced18120d6c5",
+		"Key": "EXAMPLE",
+		"ParticipantID": "0d76cde3678c2915fef7b6df5d302f2109e70fe5aa177cbc94bb846f2c4282b9",
+		"VersionID": "21-12-1",
+		"OpenedAt": 1640116834,
+		"SubmittedAt": 1640116902,
+		"ArrivedAt": 1640116902,
+		"Responses": [
+			{
+				"Key": "EXAMPLE.SCG1",
+				"Meta": {
+					"Position": 0,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116835807
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "1",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGO1",
+				"Meta": {
+					"Position": 1,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116837478,
+						1640116838550,
+						1640116838884
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "text",
+									"Value": "hi",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGCloze1",
+				"Meta": {
+					"Position": 2,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116841815,
+						1640116844010,
+						1640116845936
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "cloze3",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "date1",
+											"Value": "1639609200",
+											"Dtype": "date",
+											"Items": null
+										},
+										{
+											"Key": "date2",
+											"Value": "1640300400",
+											"Dtype": "date",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MCG1",
+				"Meta": {
+					"Position": 3,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116848311
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "mcg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "1",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MCGO1",
+				"Meta": {
+					"Position": 4,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116849965
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "mcg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "o",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MCGCloze1",
+				"Meta": {
+					"Position": 5,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116853204,
+						1640116855224
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "mcg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "cloze2",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "number",
+											"Value": "4",
+											"Dtype": "number",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.TextInput",
+				"Meta": {
+					"Position": 6,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116858415
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "ic",
+							"Value": "123",
+							"Dtype": "",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MTextInput",
+				"Meta": {
+					"Position": 7,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116861021,
+						1640116861251,
+						1640116861484,
+						1640116862017,
+						1640116862729,
+						1640116863003
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "ic",
+							"Value": "line1\nline2",
+							"Dtype": "",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.DateInput",
+				"Meta": {
+					"Position": 8,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116865730
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "date",
+							"Value": "1640214000",
+							"Dtype": "date",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.NInput",
+				"Meta": {
+					"Position": 9,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116868737,
+						1640116869396
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "num",
+							"Value": "0",
+							"Dtype": "number",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.LIKERT",
+				"Meta": {
+					"Position": 10,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116870924,
+						1640116871780
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "lg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "row1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o3",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "row2",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.CLZ",
+				"Meta": {
+					"Position": 11,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116876563,
+						1640116878707,
+						1640116878914,
+						1640116879195,
+						1640116880291,
+						1640116881795
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "cloze",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "date",
+									"Value": "1640300400",
+									"Dtype": "date",
+									"Items": null
+								},
+								{
+									"Key": "text",
+									"Value": "5432dfsdf",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.DATE",
+				"Meta": {
+					"Position": 12,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116884970
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "date",
+							"Value": "4652028000",
+							"Dtype": "date",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SLIDER",
+				"Meta": {
+					"Position": 13,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116887867
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "slider",
+							"Value": "41",
+							"Dtype": "number",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.RSCA",
+				"Meta": {
+					"Position": 14,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116889256,
+						1640116890265,
+						1640116891372
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "rsca",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "r1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "r2",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o1",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "r3",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o3",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.RBLA",
+				"Meta": {
+					"Position": 15,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116893127,
+						1640116893952,
+						1640116894684
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "rsbla",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "r1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o1",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "r2",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "r3",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o3",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MAP",
+				"Meta": {
+					"Position": 16,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116895693,
+						1640116896467,
+						1640116896984
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "map",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "126",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "lat",
+											"Value": "34.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "lng",
+											"Value": "4.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "zoom",
+											"Value": "12",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "441",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "lat",
+											"Value": "34.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "lng",
+											"Value": "4.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "zoom",
+											"Value": "12",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "871",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "lat",
+											"Value": "34.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "lng",
+											"Value": "4.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "zoom",
+											"Value": "12",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.CUSTOM",
+				"Meta": {
+					"Position": 17,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116833703
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116898569,
+						1640116899893
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "1",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "1",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						},
+						{
+							"Key": "2",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "2",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"Context": {
+			"engineVersion": "^1.0.2",
+			"language": "nl"
+		}
+	},
+	{
+		"id": "61c233089898ced18120d6c7",
+		"Key": "EXAMPLE",
+		"ParticipantID": "aa3dde8f48dcfbd5b4d82b979122b31609d459b87380e2ebcdc0f98e499a27a5",
+		"VersionID": "21-12-1",
+		"OpenedAt": 1640116944,
+		"SubmittedAt": 1640117001,
+		"ArrivedAt": 1640117000,
+		"Responses": [
+			{
+				"Key": "EXAMPLE.SCG1",
+				"Meta": {
+					"Position": 0,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943793
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116945233
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "0",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGO1",
+				"Meta": {
+					"Position": 1,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943793
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116947569,
+						1640116948808,
+						1640116952445,
+						1640116952668
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "number",
+									"Value": "232",
+									"Dtype": "number",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGCloze1",
+				"Meta": {
+					"Position": 2,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943793
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCG1",
+				"Meta": {
+					"Position": 3,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943793
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCGO1",
+				"Meta": {
+					"Position": 4,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943793
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCGCloze1",
+				"Meta": {
+					"Position": 5,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.TextInput",
+				"Meta": {
+					"Position": 6,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MTextInput",
+				"Meta": {
+					"Position": 7,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116959748,
+						1640116960624,
+						1640116961749,
+						1640116961995,
+						1640116962327,
+						1640116962717,
+						1640116963111,
+						1640116963535,
+						1640116963792,
+						1640116965203,
+						1640116965787,
+						1640116966550,
+						1640116969298,
+						1640116970131,
+						1640116971946,
+						1640116974310,
+						1640116974621,
+						1640116975570,
+						1640116975858,
+						1640116977200,
+						1640116977731,
+						1640116980429
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "ic",
+							"Value": ",;:_D_F\nsdfsdF:.¡¶¡“¶∂ƒå å «∫3\n@,\\n\\~\\n\ndwfsdf",
+							"Dtype": "",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.DateInput",
+				"Meta": {
+					"Position": 8,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.NInput",
+				"Meta": {
+					"Position": 9,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.LIKERT",
+				"Meta": {
+					"Position": 10,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.CLZ",
+				"Meta": {
+					"Position": 11,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.DATE",
+				"Meta": {
+					"Position": 12,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.SLIDER",
+				"Meta": {
+					"Position": 13,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.RSCA",
+				"Meta": {
+					"Position": 14,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116991350,
+						1640116992227
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "rsca",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "r1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								},
+								{
+									"Key": "r3",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.RBLA",
+				"Meta": {
+					"Position": 15,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116994749
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "rsbla",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "r2",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o3",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MAP",
+				"Meta": {
+					"Position": 16,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116997596
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "map",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "150",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "lat",
+											"Value": "34.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "lng",
+											"Value": "4.3434",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "zoom",
+											"Value": "12",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.CUSTOM",
+				"Meta": {
+					"Position": 17,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640116943794
+					],
+					"Displayed": null,
+					"Responded": [
+						1640116996262
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "2",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "3",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"Context": {
+			"engineVersion": "^1.0.2",
+			"language": "nl"
+		}
+	},
+	{
+		"id": "61c233339898ced18120d6c9",
+		"Key": "EXAMPLE",
+		"ParticipantID": "1ccea795402f9ef16de03b4272f90de469e6f9246441c67a5540c02a0ddc1865",
+		"VersionID": "21-12-1",
+		"OpenedAt": 1640117011,
+		"SubmittedAt": 1640117044,
+		"ArrivedAt": 1640117043,
+		"Responses": [
+			{
+				"Key": "EXAMPLE.SCG1",
+				"Meta": {
+					"Position": 0,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011008
+					],
+					"Displayed": null,
+					"Responded": [
+						1640117014240
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "scg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "0",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGO1",
+				"Meta": {
+					"Position": 1,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011008
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.SCGCloze1",
+				"Meta": {
+					"Position": 2,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCG1",
+				"Meta": {
+					"Position": 3,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": [
+						1640117016629
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "mcg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "1",
+									"Value": "",
+									"Dtype": "",
+									"Items": null
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MCGO1",
+				"Meta": {
+					"Position": 4,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCGCloze1",
+				"Meta": {
+					"Position": 5,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": [
+						1640117031104,
+						1640117033036,
+						1640117033978,
+						1640117034219,
+						1640117034744,
+						1640117034983,
+						1640117035389,
+						1640117037642,
+						1640117038224
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "mcg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "cloze1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "textinput2",
+											"Value": "dsffsdf",
+											"Dtype": "",
+											"Items": null
+										},
+										{
+											"Key": "textinput1",
+											"Value": "turbot g wergwerg fgdfg ",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.TextInput",
+				"Meta": {
+					"Position": 6,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MTextInput",
+				"Meta": {
+					"Position": 7,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.DateInput",
+				"Meta": {
+					"Position": 8,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": [
+						1640117019949
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "date",
+							"Value": "1639609200",
+							"Dtype": "date",
+							"Items": null
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.NInput",
+				"Meta": {
+					"Position": 9,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.LIKERT",
+				"Meta": {
+					"Position": 10,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": [
+						1640117028854
+					]
+				},
+				"Items": null,
+				"Response": {
+					"Key": "rg",
+					"Value": "",
+					"Dtype": "",
+					"Items": [
+						{
+							"Key": "lg",
+							"Value": "",
+							"Dtype": "",
+							"Items": [
+								{
+									"Key": "row1",
+									"Value": "",
+									"Dtype": "",
+									"Items": [
+										{
+											"Key": "o2",
+											"Value": "",
+											"Dtype": "",
+											"Items": null
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.CLZ",
+				"Meta": {
+					"Position": 11,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.DATE",
+				"Meta": {
+					"Position": 12,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.SLIDER",
+				"Meta": {
+					"Position": 13,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.RSCA",
+				"Meta": {
+					"Position": 14,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.RBLA",
+				"Meta": {
+					"Position": 15,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MAP",
+				"Meta": {
+					"Position": 16,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.CUSTOM",
+				"Meta": {
+					"Position": 17,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640117011009
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			}
+		],
+		"Context": {
+			"engineVersion": "^1.0.2",
+			"language": "nl"
+		}
+	}
+]

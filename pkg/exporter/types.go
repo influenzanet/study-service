@@ -125,7 +125,7 @@ type ParsedResponse struct {
 	SubmittedAt   int64
 	Version       string
 	Context       map[string]string // e.g. Language, or engine version
-	Responses     map[string]string
+	Responses     map[string]interface{}
 	Meta          ResponseMeta
 }
 

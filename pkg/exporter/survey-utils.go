@@ -164,7 +164,19 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 		ID: key,
 	}
 
-	switch rItem.Role {
+	var itemRole string
+	roleSeparatorIndex := strings.Index(rItem.Role, ":")
+
+	if roleSeparatorIndex == -1 {
+		itemRole = rItem.Role
+	} else if roleSeparatorIndex == 0 {
+		responseDef.ResponseType = QUESTION_TYPE_UNKNOWN
+		return []ResponseDef{responseDef}
+	} else {
+		itemRole = rItem.Role[0:roleSeparatorIndex]
+	}
+
+	switch itemRole {
 	case "singleChoiceGroup":
 		for _, o := range rItem.Items {
 			label, err := getPreviewText(&o, lang)
@@ -489,6 +501,10 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 		}
 		return responses
 	default:
+		if roleSeparatorIndex > 0 {
+			responseDef.ResponseType = QUESTION_TYPE_UNKNOWN
+			return []ResponseDef{responseDef}
+		}
 		logger.Debug.Printf("mapToResponseDef: component with role is ignored: %s [%s]", rItem.Role, key)
 		return []ResponseDef{}
 	}

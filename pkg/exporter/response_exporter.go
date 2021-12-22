@@ -141,7 +141,7 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		OpenedAt:      rawResp.OpenedAt,
 		SubmittedAt:   rawResp.SubmittedAt,
 		Context:       rawResp.Context,
-		Responses:     map[string]string{},
+		Responses:     map[string]interface{}{},
 		Meta: ResponseMeta{
 			Initialised: map[string][]int64{},
 			Displayed:   map[string][]int64{},
@@ -404,7 +404,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 				line = append(line, "")
 				continue
 			}
-			line = append(line, v)
+			line = append(line, responseColToString(v))
 		}
 
 		if includeMeta != nil {
@@ -521,7 +521,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 			if !ok {
 				currentRespLine = append(currentRespLine, "")
 			} else {
-				currentRespLine = append(currentRespLine, v)
+				currentRespLine = append(currentRespLine, responseColToString(v))
 			}
 
 			err := w.Write(currentRespLine)

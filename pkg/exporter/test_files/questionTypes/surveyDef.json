@@ -1,0 +1,4117 @@
+{
+	"id": "61c2325c260d89e750ccc441",
+	"Props": {
+		"Name": [
+			{
+				"Code": "nl",
+				"Parts": [
+					{
+						"DType": "",
+						"Exp": null,
+						"Str": "Example survey",
+						"Num": 0
+					}
+				]
+			}
+		],
+		"Description": [
+			{
+				"Code": "nl",
+				"Parts": [
+					{
+						"DType": "",
+						"Exp": null,
+						"Str": "This survey contains different question types, to showcase how these can be used.",
+						"Num": 0
+					}
+				]
+			}
+		],
+		"TypicalDuration": [
+			{
+				"Code": "nl",
+				"Parts": [
+					{
+						"DType": "",
+						"Exp": null,
+						"Str": "3 min.",
+						"Num": 0
+					}
+				]
+			}
+		]
+	},
+	"Current": {
+		"Published": 1640116827,
+		"UnPublished": 0,
+		"SurveyDefinition": {
+			"id": "000000000000000000000000",
+			"Key": "EXAMPLE",
+			"Follows": null,
+			"Condition": null,
+			"Priority": 0,
+			"Version": 1,
+			"VersionTags": null,
+			"Items": [
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.SCG1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Simple single choice question",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "singleChoiceGroup",
+										"Key": "scg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "1",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Ja",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "option",
+												"Key": "0",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Nee",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.SCGO1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Single choice question with different input options",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "singleChoiceGroup",
+										"Key": "scg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "o",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Simple Option without special input",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "input",
+												"Key": "text",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option with text input:",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "numberInput",
+												"Key": "number",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option with number input:",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "number",
+												"Properties": {
+													"Min": null,
+													"Max": null,
+													"StepSize": null,
+													"DateInputMode": null
+												},
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.SCGCloze1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Single choice question with different cloze input options",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "singleChoiceGroup",
+										"Key": "scg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "O",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Simple Option without special input",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with multiple text input, 1st input:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "input",
+														"Key": "textinput1",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "lineBreak",
+														"Key": "SQYBD",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2nd input",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "input",
+														"Key": "textinput2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": [
+															{
+																"Key": "inputMaxWidth",
+																"Value": "120px"
+															}
+														],
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with number input and dropdown:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "numberInput",
+														"Key": "number",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "number",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "number",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": null
+														},
+														"Style": [
+															{
+																"Key": "labelPlacement",
+																"Value": "after"
+															}
+														],
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "and dropdown:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dropDownGroup",
+														"Key": "dropdown",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": [
+															{
+																"Role": "option",
+																"Key": "1",
+																"Content": [
+																	{
+																		"Code": "nl",
+																		"Parts": [
+																			{
+																				"DType": "",
+																				"Exp": null,
+																				"Str": "Dropdown option1",
+																				"Num": 0
+																			}
+																		]
+																	}
+																],
+																"DisplayCondition": null,
+																"Disabled": null,
+																"Items": null,
+																"Order": null,
+																"Dtype": "",
+																"Properties": null,
+																"Style": null,
+																"Description": []
+															},
+															{
+																"Role": "option",
+																"Key": "2",
+																"Content": [
+																	{
+																		"Code": "nl",
+																		"Parts": [
+																			{
+																				"DType": "",
+																				"Exp": null,
+																				"Str": "Dropdown option2",
+																				"Num": 0
+																			}
+																		]
+																	}
+																],
+																"DisplayCondition": null,
+																"Disabled": null,
+																"Items": null,
+																"Order": null,
+																"Dtype": "",
+																"Properties": null,
+																"Style": null,
+																"Description": []
+															}
+														],
+														"Order": {
+															"Name": "sequential",
+															"ReturnType": "",
+															"Data": null
+														},
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze3",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with 2 date inputs, 1st date:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dateInput",
+														"Key": "date1",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": {
+																"DType": "",
+																"Exp": null,
+																"Str": "YMD",
+																"Num": 0
+															}
+														},
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "lineBreak",
+														"Key": "mYRX2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2nd date",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dateInput",
+														"Key": "date2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": {
+																"DType": "",
+																"Exp": null,
+																"Str": "YMD",
+																"Num": 0
+															}
+														},
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MCG1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Simple Multiple Choice Question",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "multipleChoiceGroup",
+										"Key": "mcg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "0",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Yes",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "option",
+												"Key": "1",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "No",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "option",
+												"Key": "2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Maybe",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MCGO1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Multiple choice question with different input options",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "multipleChoiceGroup",
+										"Key": "mcg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "o",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Simple Option without special input",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "input",
+												"Key": "text",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option with text input:",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "numberInput",
+												"Key": "number",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option with number input:",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "number",
+												"Properties": {
+													"Min": null,
+													"Max": null,
+													"StepSize": null,
+													"DateInputMode": null
+												},
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MCGCloze1",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Multiple choice question with different cloze input options",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "multipleChoiceGroup",
+										"Key": "mcg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "O",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Simple Option without special input",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with multiple text input, 1st input:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "input",
+														"Key": "textinput1",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "lineBreak",
+														"Key": "UI7ia",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2nd input",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "input",
+														"Key": "textinput2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": [
+															{
+																"Key": "inputMaxWidth",
+																"Value": "120px"
+															}
+														],
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with number input and dropdown:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "numberInput",
+														"Key": "number",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "number",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "number",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": null
+														},
+														"Style": [
+															{
+																"Key": "labelPlacement",
+																"Value": "after"
+															}
+														],
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "and dropdown:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dropDownGroup",
+														"Key": "dropdown",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": [
+															{
+																"Role": "option",
+																"Key": "1",
+																"Content": [
+																	{
+																		"Code": "nl",
+																		"Parts": [
+																			{
+																				"DType": "",
+																				"Exp": null,
+																				"Str": "Dropdown option1",
+																				"Num": 0
+																			}
+																		]
+																	}
+																],
+																"DisplayCondition": null,
+																"Disabled": null,
+																"Items": null,
+																"Order": null,
+																"Dtype": "",
+																"Properties": null,
+																"Style": null,
+																"Description": []
+															},
+															{
+																"Role": "option",
+																"Key": "2",
+																"Content": [
+																	{
+																		"Code": "nl",
+																		"Parts": [
+																			{
+																				"DType": "",
+																				"Exp": null,
+																				"Str": "Dropdown option2",
+																				"Num": 0
+																			}
+																		]
+																	}
+																],
+																"DisplayCondition": null,
+																"Disabled": null,
+																"Items": null,
+																"Order": null,
+																"Dtype": "",
+																"Properties": null,
+																"Style": null,
+																"Description": []
+															}
+														],
+														"Order": {
+															"Name": "sequential",
+															"ReturnType": "",
+															"Data": null
+														},
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "cloze",
+												"Key": "cloze3",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "text",
+														"Key": "text1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "cloze option with 2 date inputs, 1st date:",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dateInput",
+														"Key": "date1",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": {
+																"DType": "",
+																"Exp": null,
+																"Str": "YMD",
+																"Num": 0
+															}
+														},
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "lineBreak",
+														"Key": "gOZlm",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "text",
+														"Key": "text2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2nd date",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "dateInput",
+														"Key": "date2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": {
+															"Min": null,
+															"Max": null,
+															"StepSize": null,
+															"DateInputMode": {
+																"DType": "",
+																"Exp": null,
+																"Str": "YMD",
+																"Num": 0
+															}
+														},
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": {
+											"Name": "sequential",
+											"ReturnType": "",
+											"Data": null
+										},
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.TextInput",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with simple text input:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "input",
+										"Key": "ic",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MTextInput",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with multiline text input:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "multilineTextInput",
+										"Key": "ic",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.DateInput",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with date input:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "dateInput",
+										"Key": "date",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": {
+											"Min": null,
+											"Max": null,
+											"StepSize": null,
+											"DateInputMode": {
+												"DType": "",
+												"Exp": null,
+												"Str": "YMD",
+												"Num": 0
+											}
+										},
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.NInput",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with number input:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "numberInput",
+										"Key": "num",
+										"Content": [
+											{
+												"Code": "nl",
+												"Parts": [
+													{
+														"DType": "",
+														"Exp": null,
+														"Str": "days",
+														"Num": 0
+													}
+												]
+											}
+										],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": {
+											"Min": {
+												"DType": "num",
+												"Exp": null,
+												"Str": "",
+												"Num": 0
+											},
+											"Max": {
+												"DType": "num",
+												"Exp": null,
+												"Str": "",
+												"Num": 120
+											},
+											"StepSize": null,
+											"DateInputMode": null
+										},
+										"Style": [
+											{
+												"Key": "inputMaxWidth",
+												"Value": "80px"
+											},
+											{
+												"Key": "labelPlacement",
+												"Value": "after"
+											}
+										],
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.LIKERT",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with single likert:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "likertGroup",
+										"Key": "lg",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "text",
+												"Key": "TmS2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Row 1 label",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "className",
+														"Value": "fw-bold mb-1"
+													},
+													{
+														"Key": "variant",
+														"Value": "h6"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "likert",
+												"Key": "row1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "1",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o3",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "3",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o4",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "4",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o5",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "5",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "4EQu",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Row 2 label",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "className",
+														"Value": "fw-bold pt-1 mt-2 border-top border-1 border-grey-2 mb-1"
+													},
+													{
+														"Key": "variant",
+														"Value": "h6"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "likert",
+												"Key": "row2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "1",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "2",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o3",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "3",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o4",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "4",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o5",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "5",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.CLZ",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with cloze:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "cloze",
+										"Key": "cloze",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "text",
+												"Key": "Ly0T6P",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "dateinput: ",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "dateInput",
+												"Key": "date",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": {
+													"Min": null,
+													"Max": null,
+													"StepSize": null,
+													"DateInputMode": {
+														"DType": "",
+														"Exp": null,
+														"Str": "YMD",
+														"Num": 0
+													}
+												},
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "lffhZu",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "dropdown: ",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "dropDownGroup",
+												"Key": "dropdown",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Option 1",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Option 2",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "3",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Option 3",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "lineBreak",
+												"Key": "iivG3",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "zdoR5v",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "text: ",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "input",
+												"Key": "text",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "guBGt2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "numberInput",
+												"Key": "number",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "number",
+												"Properties": {
+													"Min": null,
+													"Max": null,
+													"StepSize": null,
+													"DateInputMode": null
+												},
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.DATE",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with date:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "dateInput",
+										"Key": "date",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": {
+											"Min": null,
+											"Max": null,
+											"StepSize": null,
+											"DateInputMode": {
+												"DType": "",
+												"Exp": null,
+												"Str": "YM",
+												"Num": 0
+											}
+										},
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.SLIDER",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with numeric slider:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "sliderNumeric",
+										"Key": "slider",
+										"Content": [
+											{
+												"Code": "nl",
+												"Parts": [
+													{
+														"DType": "",
+														"Exp": null,
+														"Str": "Label",
+														"Num": 0
+													}
+												]
+											}
+										],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": {
+											"Min": {
+												"DType": "num",
+												"Exp": null,
+												"Str": "",
+												"Num": 15
+											},
+											"Max": {
+												"DType": "num",
+												"Exp": null,
+												"Str": "",
+												"Num": 50
+											},
+											"StepSize": null,
+											"DateInputMode": null
+										},
+										"Style": null,
+										"Description": [
+											{
+												"Code": "nl",
+												"Parts": [
+													{
+														"DType": "",
+														"Exp": null,
+														"Str": "Select",
+														"Num": 0
+													}
+												]
+											}
+										]
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.RSCA",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with responsive single choice array:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "responsiveSingleChoiceArray",
+										"Key": "rsca",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "options",
+												"Key": "header",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "low",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o2",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "medium",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o3",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "high",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "tableModeClassName",
+														"Value": "border-bottom border-grey-2"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r1",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Row 1",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "tableModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "horizontalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "verticalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Row 2",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "tableModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "horizontalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "verticalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r3",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Row 3",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": [
+											{
+												"Key": "defaultMode",
+												"Value": "vertical"
+											},
+											{
+												"Key": "smMode",
+												"Value": "table"
+											}
+										],
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.RBLA",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with responsive single choice array:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "responsiveBipolarLikertScaleArray",
+										"Key": "rsbla",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "options",
+												"Key": "options",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o2",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "option",
+														"Key": "o3",
+														"Content": [],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "start",
+														"Key": "start",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 1 start",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "end",
+														"Key": "end",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 1 end",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "tableModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "withLabelRowModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "verticalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "start",
+														"Key": "start",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 2 start",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "end",
+														"Key": "end",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 2 end",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": [
+													{
+														"Key": "tableModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "withLabelRowModeClassName",
+														"Value": "border-bottom border-grey-2"
+													},
+													{
+														"Key": "verticalModeClassName",
+														"Value": "border-bottom border-grey-2"
+													}
+												],
+												"Description": []
+											},
+											{
+												"Role": "row",
+												"Key": "r3",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "start",
+														"Key": "start",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 3 start",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													},
+													{
+														"Role": "end",
+														"Key": "end",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Row 3 end",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": [
+											{
+												"Key": "defaultMode",
+												"Value": "vertical"
+											},
+											{
+												"Key": "smMode",
+												"Value": "table"
+											},
+											{
+												"Key": "labelRowPosition",
+												"Value": "top"
+											}
+										],
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MAP",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with custom map:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": ":map",
+										"Key": "map",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": null,
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.CUSTOM",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with custom question with mapping:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "singleChoiceGroup:customScg",
+										"Key": "1",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "1",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option 1",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "option",
+												"Key": "2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option 2",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									},
+									{
+										"Role": "singleChoiceGroup:customScg",
+										"Key": "2",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "option",
+												"Key": "1",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option 1",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "option",
+												"Key": "2",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Option 2",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.surveyEnd",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "surveyEnd",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "End of the survey.",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				}
+			],
+			"SelectionMethod": {
+				"Name": "sequential",
+				"ReturnType": "",
+				"Data": null
+			},
+			"Type": "",
+			"Components": null,
+			"Validations": null
+		},
+		"VersionID": "21-12-1"
+	},
+	"History": null,
+	"PrefillRules": null,
+	"ContextRules": null,
+	"MaxItemsPerPage": null,
+	"AvailableFor": "public",
+	"RequireLoginBeforeSubmission": false
+}

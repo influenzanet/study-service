@@ -696,6 +696,10 @@ func TestGetResponseColumns(t *testing.T) {
 	})
 
 	t.Run("QUESTION_TYPE_UNKNOWN with response", func(t *testing.T) {
+		response := types.ResponseItem{Key: "unk1", Items: []types.ResponseItem{
+			{Key: "1", Value: "hello"},
+		}}
+
 		cols := getResponseColumns(SurveyQuestion{
 			ID:           "test",
 			QuestionType: QUESTION_TYPE_UNKNOWN,
@@ -711,18 +715,21 @@ func TestGetResponseColumns(t *testing.T) {
 			Response: &types.ResponseItem{
 				Key: "rg",
 				Items: []types.ResponseItem{
-					{Key: "unk1", Items: []types.ResponseItem{
-						{Key: "1", Value: "hello"},
-					}},
+					response,
 				},
 			},
 		}, questionOptionSep)
-		if len(cols) != 3 {
+		if len(cols) != 2 {
 			t.Errorf("unexpected results: %v", cols)
 			return
 		}
-		if cols["test-unk1.1"] != "hello" {
-			t.Errorf("unexpected results: %v", cols)
+		switch colValue := cols["test-unk1"].(type) {
+		case *types.ResponseItem:
+			if colValue.Items[0].Value != "hello" {
+				t.Errorf("unexpected results: %v", cols)
+			}
+		default:
+			t.Errorf("wrong type: %T", cols["test-unk1"])
 		}
 	})
 }

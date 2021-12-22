@@ -45,11 +45,11 @@ func SurveyItemResponseFromAPI(sir *api.SurveyItemResponse) SurveyItemResponse {
 
 // ResponseItem
 type ResponseItem struct {
-	Key   string `bson:"key,omitempty"`
-	Value string `bson:"value,omitempty"`
-	Dtype string `bson:"dtype,omitempty"`
+	Key   string `bson:"key,omitempty" json:"key,omitempty"`
+	Value string `bson:"value,omitempty" json:"value,omitempty"`
+	Dtype string `bson:"dtype,omitempty" json:"dtype,omitempty"`
 	// For response option groups:
-	Items []ResponseItem `bson:"items,omitempty"`
+	Items []ResponseItem `bson:"items,omitempty" json:"items,omitempty"`
 }
 
 func (rv ResponseItem) ToAPI() *api.ResponseItem {
