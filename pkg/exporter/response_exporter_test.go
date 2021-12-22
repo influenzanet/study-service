@@ -201,6 +201,7 @@ func TestExportFormats(t *testing.T) {
 		}
 		if buf.String() != wideCSV {
 			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
 		}
 	})
 
@@ -213,6 +214,7 @@ func TestExportFormats(t *testing.T) {
 		}
 		if buf.String() != longCSV {
 			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
 		}
 	})
 
@@ -225,6 +227,7 @@ func TestExportFormats(t *testing.T) {
 		}
 		if buf.String() != json {
 			t.Errorf("Unexpected output: %v", buf.String())
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
 		}
 	})
 }
