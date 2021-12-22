@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
@@ -130,11 +131,16 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 	for _, rule := range rules {
 		switch rule.Name {
 		case "GET_LAST_SURVEY_ITEM":
-			if len(rule.Data) != 2 {
-				return prefills, errors.New("GET_LAST_SURVEY_ITEM must have two arguments")
+			if len(rule.Data) < 2 {
+				return prefills, errors.New("GET_LAST_SURVEY_ITEM must have at least two arguments")
 			}
 			surveyKey := rule.Data[0].Str
 			itemKey := rule.Data[1].Str
+			since := int64(0)
+			if len(rule.Data) == 3 {
+				// look up responses that are not older than:
+				since = time.Now().Unix() - int64(rule.Data[2].Num)
+			}
 
 			previousResp, ok := lastSurveyCache[surveyKey]
 			if !ok {
@@ -142,6 +148,7 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 					ParticipantID: participantID,
 					SurveyKey:     surveyKey,
 					Limit:         1,
+					Since:         since,
 				})
 
 				if err != nil || len(resps) < 1 {

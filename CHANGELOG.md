@@ -17,6 +17,7 @@
 ### Changed
 
 - The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps.
+- `GET_LAST_SURVEY_ITEM` survey prefill rule accepts now an optional third argument to filter for responses that were submitted not sooner than the provided value in seconds.
 
 
 ### Fixed
