@@ -24,20 +24,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "1",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "1"
 								}
 							]
 						}
@@ -62,20 +55,14 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "text",
-									"Value": "hi",
-									"Dtype": "",
-									"Items": null
+									"key": "text",
+									"value": "hi"
 								}
 							]
 						}
@@ -100,31 +87,23 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "cloze3",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "cloze3",
+									"items": [
 										{
-											"Key": "date1",
-											"Value": "1639609200",
-											"Dtype": "date",
-											"Items": null
+											"key": "date1",
+											"value": "1639609200",
+											"dtype": "date"
 										},
 										{
-											"Key": "date2",
-											"Value": "1640300400",
-											"Dtype": "date",
-											"Items": null
+											"key": "date2",
+											"value": "1640300400",
+											"dtype": "date"
 										}
 									]
 								}
@@ -149,20 +128,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "mcg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "mcg",
+							"items": [
 								{
-									"Key": "1",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "1"
 								}
 							]
 						}
@@ -185,20 +157,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "mcg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "mcg",
+							"items": [
 								{
-									"Key": "o",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "o"
 								}
 							]
 						}
@@ -222,25 +187,18 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "mcg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "mcg",
+							"items": [
 								{
-									"Key": "cloze2",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "cloze2",
+									"items": [
 										{
-											"Key": "number",
-											"Value": "4",
-											"Dtype": "number",
-											"Items": null
+											"key": "number",
+											"value": "4",
+											"dtype": "number"
 										}
 									]
 								}
@@ -265,15 +223,11 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "ic",
-							"Value": "123",
-							"Dtype": "",
-							"Items": null
+							"key": "ic",
+							"value": "123"
 						}
 					]
 				}
@@ -299,15 +253,11 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "ic",
-							"Value": "line1\nline2",
-							"Dtype": "",
-							"Items": null
+							"key": "ic",
+							"value": "line1\nline2"
 						}
 					]
 				}
@@ -328,15 +278,12 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "date",
-							"Value": "1640214000",
-							"Dtype": "date",
-							"Items": null
+							"key": "date",
+							"value": "1640214000",
+							"dtype": "date"
 						}
 					]
 				}
@@ -358,15 +305,12 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "num",
-							"Value": "0",
-							"Dtype": "number",
-							"Items": null
+							"key": "num",
+							"value": "0",
+							"dtype": "number"
 						}
 					]
 				}
@@ -388,38 +332,24 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "lg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "lg",
+							"items": [
 								{
-									"Key": "row1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "row1",
+									"items": [
 										{
-											"Key": "o3",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o3"
 										}
 									]
 								},
 								{
-									"Key": "row2",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "row2",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								}
@@ -449,26 +379,19 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "cloze",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "cloze",
+							"items": [
 								{
-									"Key": "date",
-									"Value": "1640300400",
-									"Dtype": "date",
-									"Items": null
+									"key": "date",
+									"value": "1640300400",
+									"dtype": "date"
 								},
 								{
-									"Key": "text",
-									"Value": "5432dfsdf",
-									"Dtype": "",
-									"Items": null
+									"key": "text",
+									"value": "5432dfsdf"
 								}
 							]
 						}
@@ -491,15 +414,12 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "date",
-							"Value": "4652028000",
-							"Dtype": "date",
-							"Items": null
+							"key": "date",
+							"value": "4652028000",
+							"dtype": "date"
 						}
 					]
 				}
@@ -520,15 +440,12 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "slider",
-							"Value": "41",
-							"Dtype": "number",
-							"Items": null
+							"key": "slider",
+							"value": "41",
+							"dtype": "number"
 						}
 					]
 				}
@@ -551,51 +468,32 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "rsca",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "rsca",
+							"items": [
 								{
-									"Key": "r1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r1",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								},
 								{
-									"Key": "r2",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r2",
+									"items": [
 										{
-											"Key": "o1",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o1"
 										}
 									]
 								},
 								{
-									"Key": "r3",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r3",
+									"items": [
 										{
-											"Key": "o3",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o3"
 										}
 									]
 								}
@@ -622,51 +520,32 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "rsbla",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "rsbla",
+							"items": [
 								{
-									"Key": "r1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r1",
+									"items": [
 										{
-											"Key": "o1",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o1"
 										}
 									]
 								},
 								{
-									"Key": "r2",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r2",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								},
 								{
-									"Key": "r3",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r3",
+									"items": [
 										{
-											"Key": "o3",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o3"
 										}
 									]
 								}
@@ -693,87 +572,59 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "map",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "map",
+							"items": [
 								{
-									"Key": "126",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "126",
+									"items": [
 										{
-											"Key": "lat",
-											"Value": "34.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lat",
+											"value": "34.3434"
 										},
 										{
-											"Key": "lng",
-											"Value": "4.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lng",
+											"value": "4.3434"
 										},
 										{
-											"Key": "zoom",
-											"Value": "12",
-											"Dtype": "",
-											"Items": null
+											"key": "zoom",
+											"value": "12"
 										}
 									]
 								},
 								{
-									"Key": "441",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "441",
+									"items": [
 										{
-											"Key": "lat",
-											"Value": "34.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lat",
+											"value": "34.3434"
 										},
 										{
-											"Key": "lng",
-											"Value": "4.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lng",
+											"value": "4.3434"
 										},
 										{
-											"Key": "zoom",
-											"Value": "12",
-											"Dtype": "",
-											"Items": null
+											"key": "zoom",
+											"value": "12"
 										}
 									]
 								},
 								{
-									"Key": "871",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "871",
+									"items": [
 										{
-											"Key": "lat",
-											"Value": "34.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lat",
+											"value": "34.3434"
 										},
 										{
-											"Key": "lng",
-											"Value": "4.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lng",
+											"value": "4.3434"
 										},
 										{
-											"Key": "zoom",
-											"Value": "12",
-											"Dtype": "",
-											"Items": null
+											"key": "zoom",
+											"value": "12"
 										}
 									]
 								}
@@ -799,33 +650,21 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "1",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "1",
+							"items": [
 								{
-									"Key": "1",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "1"
 								}
 							]
 						},
 						{
-							"Key": "2",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "2",
+							"items": [
 								{
-									"Key": "2",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "2"
 								}
 							]
 						}
@@ -863,20 +702,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "0",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "0"
 								}
 							]
 						}
@@ -902,20 +734,15 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "number",
-									"Value": "232",
-									"Dtype": "number",
-									"Items": null
+									"key": "number",
+									"value": "232",
+									"dtype": "number"
 								}
 							]
 						}
@@ -1034,15 +861,11 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "ic",
-							"Value": ",;:_D_F\nsdfsdF:.¡¶¡“¶∂ƒå å «∫3\n@,\\n\\~\\n\ndwfsdf",
-							"Dtype": "",
-							"Items": null
+							"key": "ic",
+							"value": ",;:_D_F\nsdfsdF:.¡¶¡“¶∂ƒå å «∫3\n@,\\n\\~\\n\ndwfsdf"
 						}
 					]
 				}
@@ -1154,38 +977,24 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "rsca",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "rsca",
+							"items": [
 								{
-									"Key": "r1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r1",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								},
 								{
-									"Key": "r3",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r3",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								}
@@ -1210,25 +1019,16 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "rsbla",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "rsbla",
+							"items": [
 								{
-									"Key": "r2",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "r2",
+									"items": [
 										{
-											"Key": "o3",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o3"
 										}
 									]
 								}
@@ -1253,37 +1053,25 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "map",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "map",
+							"items": [
 								{
-									"Key": "150",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "150",
+									"items": [
 										{
-											"Key": "lat",
-											"Value": "34.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lat",
+											"value": "34.3434"
 										},
 										{
-											"Key": "lng",
-											"Value": "4.3434",
-											"Dtype": "",
-											"Items": null
+											"key": "lng",
+											"value": "4.3434"
 										},
 										{
-											"Key": "zoom",
-											"Value": "12",
-											"Dtype": "",
-											"Items": null
+											"key": "zoom",
+											"value": "12"
 										}
 									]
 								}
@@ -1308,20 +1096,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "2",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "2",
+							"items": [
 								{
-									"Key": "3",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "3"
 								}
 							]
 						}
@@ -1359,20 +1140,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "scg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "scg",
+							"items": [
 								{
-									"Key": "0",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "0"
 								}
 							]
 						}
@@ -1425,20 +1199,13 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "mcg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "mcg",
+							"items": [
 								{
-									"Key": "1",
-									"Value": "",
-									"Dtype": "",
-									"Items": null
+									"key": "1"
 								}
 							]
 						}
@@ -1484,31 +1251,21 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "mcg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "mcg",
+							"items": [
 								{
-									"Key": "cloze1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "cloze1",
+									"items": [
 										{
-											"Key": "textinput2",
-											"Value": "dsffsdf",
-											"Dtype": "",
-											"Items": null
+											"key": "textinput2",
+											"value": "dsffsdf"
 										},
 										{
-											"Key": "textinput1",
-											"Value": "turbot g wergwerg fgdfg ",
-											"Dtype": "",
-											"Items": null
+											"key": "textinput1",
+											"value": "turbot g wergwerg fgdfg "
 										}
 									]
 								}
@@ -1563,15 +1320,12 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "date",
-							"Value": "1639609200",
-							"Dtype": "date",
-							"Items": null
+							"key": "date",
+							"value": "1639609200",
+							"dtype": "date"
 						}
 					]
 				}
@@ -1607,25 +1361,16 @@
 				},
 				"Items": null,
 				"Response": {
-					"Key": "rg",
-					"Value": "",
-					"Dtype": "",
-					"Items": [
+					"key": "rg",
+					"items": [
 						{
-							"Key": "lg",
-							"Value": "",
-							"Dtype": "",
-							"Items": [
+							"key": "lg",
+							"items": [
 								{
-									"Key": "row1",
-									"Value": "",
-									"Dtype": "",
-									"Items": [
+									"key": "row1",
+									"items": [
 										{
-											"Key": "o2",
-											"Value": "",
-											"Dtype": "",
-											"Items": null
+											"key": "o2"
 										}
 									]
 								}
@@ -1738,6 +1483,615 @@
 				},
 				"Items": null,
 				"Response": null
+			}
+		],
+		"Context": {
+			"engineVersion": "^1.0.2",
+			"language": "nl"
+		}
+	},
+	{
+		"id": "61c4dcf59898ced18120d6ce",
+		"Key": "EXAMPLE",
+		"ParticipantID": "c8102b09f204aff66b1fdc7525b8e484d6ee9352bdc60f045b857cf5b2c2a4f4",
+		"VersionID": "21-12-1",
+		"OpenedAt": 1640291520,
+		"SubmittedAt": 1640291573,
+		"ArrivedAt": 1640291573,
+		"Responses": [
+			{
+				"Key": "EXAMPLE.SCG1",
+				"Meta": {
+					"Position": 0,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291559687
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "scg",
+							"items": [
+								{
+									"key": "0"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.SCGO1",
+				"Meta": {
+					"Position": 1,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.SCGCloze1",
+				"Meta": {
+					"Position": 2,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCG1",
+				"Meta": {
+					"Position": 3,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCGO1",
+				"Meta": {
+					"Position": 4,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MCGCloze1",
+				"Meta": {
+					"Position": 5,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291540941,
+						1640291543063
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "mcg",
+							"items": [
+								{
+									"key": "cloze2",
+									"items": [
+										{
+											"key": "dropdown",
+											"items": [
+												{
+													"key": "2"
+												}
+											]
+										}
+									]
+								},
+								{
+									"key": "cloze3",
+									"items": [
+										{
+											"key": "date2",
+											"value": "1639609200",
+											"dtype": "date"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.TextInput",
+				"Meta": {
+					"Position": 6,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MTextInput",
+				"Meta": {
+					"Position": 7,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.DateInput",
+				"Meta": {
+					"Position": 8,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.NInput",
+				"Meta": {
+					"Position": 9,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.LIKERT",
+				"Meta": {
+					"Position": 10,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.CLZ",
+				"Meta": {
+					"Position": 11,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291527107,
+						1640291528683,
+						1640291529853,
+						1640291530142,
+						1640291530985
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "cloze",
+							"items": [
+								{
+									"key": "dropdown",
+									"items": [
+										{
+											"key": "2"
+										}
+									]
+								},
+								{
+									"key": "date",
+									"value": "1639522800",
+									"dtype": "date"
+								},
+								{
+									"key": "text",
+									"value": "wewewe"
+								},
+								{
+									"key": "number",
+									"value": "2",
+									"dtype": "number"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.MulitCloze",
+				"Meta": {
+					"Position": 12,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291533024,
+						1640291533673,
+						1640291534053,
+						1640291534634,
+						1640291534948,
+						1640291535309
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "cloze1",
+							"items": [
+								{
+									"key": "1",
+									"items": [
+										{
+											"key": "o1"
+										}
+									]
+								},
+								{
+									"key": "2",
+									"value": "dsdfsdf"
+								}
+							]
+						},
+						{
+							"key": "cloze2",
+							"items": [
+								{
+									"key": "2",
+									"value": "wewer"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.DATE",
+				"Meta": {
+					"Position": 13,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.SLIDER",
+				"Meta": {
+					"Position": 14,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.RSCA",
+				"Meta": {
+					"Position": 15,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291547811,
+						1640291548655,
+						1640291549675
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "rsca",
+							"items": [
+								{
+									"key": "r1",
+									"items": [
+										{
+											"key": "o1"
+										}
+									]
+								},
+								{
+									"key": "r2",
+									"items": [
+										{
+											"key": "o2"
+										}
+									]
+								},
+								{
+									"key": "r3",
+									"items": [
+										{
+											"key": "o3"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.RBLA",
+				"Meta": {
+					"Position": 16,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": null
+				},
+				"Items": null,
+				"Response": null
+			},
+			{
+				"Key": "EXAMPLE.MAP",
+				"Meta": {
+					"Position": 17,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291552527,
+						1640291552796,
+						1640291553186,
+						1640291553388,
+						1640291553634,
+						1640291553875
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "map",
+							"items": [
+								{
+									"key": "807",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "720",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "366",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "236",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "524",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "400",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								},
+								{
+									"key": "634",
+									"items": [
+										{
+											"key": "lat",
+											"value": "34.3434"
+										},
+										{
+											"key": "lng",
+											"value": "4.3434"
+										},
+										{
+											"key": "zoom",
+											"value": "12"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"Key": "EXAMPLE.CUSTOM",
+				"Meta": {
+					"Position": 18,
+					"LocaleCode": "",
+					"Version": 1,
+					"Rendered": [
+						1640291519846
+					],
+					"Displayed": null,
+					"Responded": [
+						1640291551292
+					]
+				},
+				"Items": null,
+				"Response": {
+					"key": "rg",
+					"items": [
+						{
+							"key": "2",
+							"items": [
+								{
+									"key": "2"
+								}
+							]
+						}
+					]
+				}
 			}
 		],
 		"Context": {

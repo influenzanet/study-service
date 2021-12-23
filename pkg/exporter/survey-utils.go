@@ -196,6 +196,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_DATE_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			case "cloze":
+				option.OptionType = OPTION_TYPE_CLOZE
 			}
 			responseDef.Options = append(responseDef.Options, option)
 		}
@@ -220,6 +222,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_DATE_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			case "cloze":
+				option.OptionType = OPTION_TYPE_CLOZE
 			}
 			responseDef.Options = append(responseDef.Options, option)
 		}
@@ -500,6 +504,28 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 			}
 		}
 		return responses
+	case "cloze":
+		for _, o := range rItem.Items {
+			label, err := getPreviewText(&o, lang)
+			if err != nil {
+				logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
+			}
+			option := ResponseOption{
+				ID:    o.Key,
+				Label: label,
+			}
+			switch o.Role {
+			case "input":
+				option.OptionType = OPTION_TYPE_TEXT_INPUT
+			case "dateInput":
+				option.OptionType = OPTION_TYPE_DATE_INPUT
+			case "numberInput":
+				option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			}
+			responseDef.Options = append(responseDef.Options, option)
+		}
+		responseDef.ResponseType = QUESTION_TYPE_CLOZE
+		return []ResponseDef{responseDef}
 	default:
 		if roleSeparatorIndex > 0 {
 			responseDef.ResponseType = QUESTION_TYPE_UNKNOWN
