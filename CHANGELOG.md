@@ -14,6 +14,7 @@
 - Participant File Upload endpoint: method to upload files for study participants
 - Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
 - Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
+- `cloze` questions and single/multi-choice options are now exported
 
 ### Changed
 
