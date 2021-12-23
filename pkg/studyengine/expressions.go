@@ -54,6 +54,10 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.hasParticipantFlag(expression)
 	case "lastSubmissionDateOlderThan":
 		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
+	case "hasMessageTypeAssigned":
+		val, err = evalCtx.hasMessageTypeAssigned(expression)
+	case "getMessageNextTime":
+		val, err = evalCtx.getMessageNextTime(expression)
 	// Logical and comparisions:
 	case "eq":
 		val, err = evalCtx.eq(expression)
@@ -804,6 +808,45 @@ func (ctx EvalContext) gte(exp types.Expression) (val bool, err error) {
 	default:
 		return val, fmt.Errorf("I don't know about type %T", arg1Val)
 	}
+}
+
+func (ctx EvalContext) hasMessageTypeAssigned(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("should have at exactly one argument")
+	}
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	for _, m := range ctx.ParticipantState.Messages {
+		if m.Type == arg1 {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (ctx EvalContext) getMessageNextTime(exp types.Expression) (val int64, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("should have at exactly one argument")
+	}
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	msgType := arg1.(string)
+	nextTime := int64(0)
+	for _, m := range ctx.ParticipantState.Messages {
+		if m.Type == msgType {
+			if nextTime == 0 || nextTime > m.ScheduledFor {
+				nextTime = m.ScheduledFor
+			}
+		}
+	}
+	if nextTime == 0 {
+		return 0, errors.New("no message for this type found")
+	}
+	return nextTime, nil
 }
 
 func (ctx EvalContext) and(exp types.Expression) (val bool, err error) {

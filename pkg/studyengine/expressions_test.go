@@ -2452,3 +2452,159 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 		}
 	})
 }
+
+func TestEvalHasMessageTypeAssigned(t *testing.T) {
+	t.Run("participant has no messages", func(t *testing.T) {
+		exp := types.Expression{Name: "hasMessageTypeAssigned", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := ret.(bool)
+		if resTS {
+			t.Errorf("unexpected value: %v", ret)
+		}
+	})
+
+	t.Run("participant has messages but none that are looked for", func(t *testing.T) {
+		exp := types.Expression{Name: "hasMessageTypeAssigned", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{
+					{Type: "testMessage2", ScheduledFor: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := ret.(bool)
+		if resTS {
+			t.Errorf("unexpected value: %v", ret)
+		}
+	})
+
+	t.Run("participant has messages and one is the one looked for", func(t *testing.T) {
+		exp := types.Expression{Name: "hasMessageTypeAssigned", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{
+					{Type: "testMessage2", ScheduledFor: 100},
+					{Type: "testMessage", ScheduledFor: 200},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := ret.(bool)
+		if !resTS {
+			t.Errorf("unexpected value: %v", ret)
+		}
+	})
+}
+
+func TestEvalGetMessageNextTime(t *testing.T) {
+	t.Run("participant has no messages", func(t *testing.T) {
+		exp := types.Expression{Name: "getMessageNextTime", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+		resTS := ret.(int64)
+		if resTS != 0 {
+			t.Errorf("unexpected value: %d", ret)
+		}
+	})
+
+	t.Run("participant has messages but none that are looked for", func(t *testing.T) {
+		exp := types.Expression{Name: "getMessageNextTime", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{
+					{Type: "testMessage2", ScheduledFor: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+		resTS := ret.(int64)
+		if resTS != 0 {
+			t.Errorf("unexpected value: %d", ret)
+		}
+	})
+
+	t.Run("participant has messages and one is the one looked for", func(t *testing.T) {
+		exp := types.Expression{Name: "getMessageNextTime", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{
+					{Type: "testMessage2", ScheduledFor: 50},
+					{Type: "testMessage", ScheduledFor: 100},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := ret.(int64)
+		if resTS != 100 {
+			t.Errorf("unexpected value: %d", ret)
+		}
+	})
+
+	t.Run("participant has messages and two from the specified type", func(t *testing.T) {
+		exp := types.Expression{Name: "getMessageNextTime", Data: []types.ExpressionArg{
+			{DType: "str", Str: "testMessage"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				Messages: []types.ParticipantMessage{
+					{Type: "testMessage1", ScheduledFor: 100},
+					{Type: "testMessage", ScheduledFor: 200},
+					{Type: "testMessage", ScheduledFor: 400},
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		resTS := ret.(int64)
+		if resTS != 200 {
+			t.Errorf("unexpected value: %d", ret)
+		}
+	})
+}
