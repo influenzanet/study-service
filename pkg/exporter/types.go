@@ -34,6 +34,7 @@ const (
 	OPTION_TYPE_DATE_INPUT      = "date"
 	OPTION_TYPE_NUMBER_INPUT    = "number"
 	OPTION_TYPE_CLOZE           = "cloze"
+	OPTION_TYPE_DROPDOWN        = "dropdown"
 )
 
 const (
