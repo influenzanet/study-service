@@ -593,9 +593,9 @@ func TestActions(t *testing.T) {
 		}
 	})
 
-	t.Run("REMOVE_MESSAGES_BY_KEY", func(t *testing.T) {
+	t.Run("REMOVE_MESSAGES_BY_TYPE", func(t *testing.T) {
 		action := types.Expression{
-			Name: "REMOVE_MESSAGES_BY_KEY",
+			Name: "REMOVE_MESSAGES_BY_TYPE",
 			Data: []types.ExpressionArg{
 				{DType: "str", Str: "testMessage1"},
 			},

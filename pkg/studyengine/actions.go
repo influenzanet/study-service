@@ -46,8 +46,8 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 		newState, err = addMessage(action, oldState, event)
 	case "REMOVE_ALL_MESSAGES":
 		newState, err = removeAllMessages(action, oldState, event)
-	case "REMOVE_MESSAGES_BY_KEY":
-		newState, err = removeMessagesByKey(action, oldState, event)
+	case "REMOVE_MESSAGES_BY_TYPE":
+		newState, err = removeMessagesByType(action, oldState, event)
 	case "ADD_REPORT":
 		newState, err = addReport(action, oldState, event)
 	case "REMOVE_ALL_REPORTS":
@@ -439,10 +439,10 @@ func removeAllMessages(action types.Expression, oldState types.ParticipantState,
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeMessagesByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeMessagesByType(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
-		return newState, errors.New("removeMessagesByKey must have exactly one argument")
+		return newState, errors.New("removeMessagesByType must have exactly one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,

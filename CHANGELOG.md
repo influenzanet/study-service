@@ -17,7 +17,7 @@
 - New messaging concept:
     - Participant state can store list of messages scheduled for the participant.
     - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.
-    - New study-engine actions: `ADD_MESSAGE`, `REMOVE_MESSAGES_BY_KEY`, `REMOVE_ALL_MESSAGES`.
+    - New study-engine actions: `ADD_MESSAGE`, `REMOVE_MESSAGES_BY_TYPE`, `REMOVE_ALL_MESSAGES`.
 
 
 ### Changed
