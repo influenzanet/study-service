@@ -1,5 +1,5 @@
 {
-	"id": "61c2325c260d89e750ccc441",
+	"id": "61c4dcb82dedcb20e057c57f",
 	"Props": {
 		"Name": [
 			{
@@ -42,7 +42,7 @@
 		]
 	},
 	"Current": {
-		"Published": 1640116827,
+		"Published": 1640291512,
 		"UnPublished": 0,
 		"SurveyDefinition": {
 			"id": "000000000000000000000000",
@@ -488,7 +488,7 @@
 													},
 													{
 														"Role": "lineBreak",
-														"Key": "SQYBD",
+														"Key": "VqLdU",
 														"Content": [],
 														"DisplayCondition": null,
 														"Disabled": null,
@@ -781,7 +781,7 @@
 													},
 													{
 														"Role": "lineBreak",
-														"Key": "mYRX2",
+														"Key": "k0qaO",
 														"Content": [],
 														"DisplayCondition": null,
 														"Disabled": null,
@@ -1342,7 +1342,7 @@
 													},
 													{
 														"Role": "lineBreak",
-														"Key": "UI7ia",
+														"Key": "Ctam4",
 														"Content": [],
 														"DisplayCondition": null,
 														"Disabled": null,
@@ -1635,7 +1635,7 @@
 													},
 													{
 														"Role": "lineBreak",
-														"Key": "gOZlm",
+														"Key": "Eyurw",
 														"Content": [],
 														"DisplayCondition": null,
 														"Disabled": null,
@@ -2173,7 +2173,7 @@
 										"Items": [
 											{
 												"Role": "text",
-												"Key": "TmS2",
+												"Key": "ihJ0",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2346,7 +2346,7 @@
 											},
 											{
 												"Role": "text",
-												"Key": "4EQu",
+												"Key": "g8xV",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2603,7 +2603,7 @@
 										"Items": [
 											{
 												"Role": "text",
-												"Key": "Ly0T6P",
+												"Key": "SSuPnr",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2651,7 +2651,7 @@
 											},
 											{
 												"Role": "text",
-												"Key": "lffhZu",
+												"Key": "5qMDEf",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2769,7 +2769,7 @@
 											},
 											{
 												"Role": "lineBreak",
-												"Key": "iivG3",
+												"Key": "Rb0vz",
 												"Content": [],
 												"DisplayCondition": null,
 												"Disabled": null,
@@ -2782,7 +2782,7 @@
 											},
 											{
 												"Role": "text",
-												"Key": "zdoR5v",
+												"Key": "ee4O0X",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2820,7 +2820,7 @@
 											},
 											{
 												"Role": "text",
-												"Key": "guBGt2",
+												"Key": "ImuyaU",
 												"Content": [
 													{
 														"Code": "nl",
@@ -2858,6 +2858,266 @@
 													"StepSize": null,
 													"DateInputMode": null
 												},
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									}
+								],
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							}
+						],
+						"Order": {
+							"Name": "sequential",
+							"ReturnType": "",
+							"Data": null
+						},
+						"Dtype": "",
+						"Properties": null,
+						"Style": null,
+						"Description": []
+					},
+					"Validations": null
+				},
+				{
+					"id": "000000000000000000000000",
+					"Key": "EXAMPLE.MulitCloze",
+					"Follows": null,
+					"Condition": null,
+					"Priority": 0,
+					"Version": 1,
+					"VersionTags": null,
+					"Items": null,
+					"SelectionMethod": null,
+					"Type": "",
+					"Components": {
+						"Role": "root",
+						"Key": "",
+						"Content": [],
+						"DisplayCondition": null,
+						"Disabled": null,
+						"Items": [
+							{
+								"Role": "title",
+								"Key": "",
+								"Content": [
+									{
+										"Code": "nl",
+										"Parts": [
+											{
+												"DType": "",
+												"Exp": null,
+												"Str": "Question with custom question with mapping:",
+												"Num": 0
+											}
+										]
+									}
+								],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": null,
+								"Order": null,
+								"Dtype": "",
+								"Properties": null,
+								"Style": null,
+								"Description": []
+							},
+							{
+								"Role": "responseGroup",
+								"Key": "rg",
+								"Content": [],
+								"DisplayCondition": null,
+								"Disabled": null,
+								"Items": [
+									{
+										"Role": "cloze",
+										"Key": "cloze1",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "dropDownGroup",
+												"Key": "1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Option 1",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "HECLmT",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Text 1",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "input",
+												"Key": "2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											}
+										],
+										"Order": null,
+										"Dtype": "",
+										"Properties": null,
+										"Style": null,
+										"Description": []
+									},
+									{
+										"Role": "cloze",
+										"Key": "cloze2",
+										"Content": [],
+										"DisplayCondition": null,
+										"Disabled": null,
+										"Items": [
+											{
+												"Role": "dropDownGroup",
+												"Key": "1",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": [
+													{
+														"Role": "option",
+														"Key": "o1",
+														"Content": [
+															{
+																"Code": "nl",
+																"Parts": [
+																	{
+																		"DType": "",
+																		"Exp": null,
+																		"Str": "Option 1",
+																		"Num": 0
+																	}
+																]
+															}
+														],
+														"DisplayCondition": null,
+														"Disabled": null,
+														"Items": null,
+														"Order": null,
+														"Dtype": "",
+														"Properties": null,
+														"Style": null,
+														"Description": []
+													}
+												],
+												"Order": {
+													"Name": "sequential",
+													"ReturnType": "",
+													"Data": null
+												},
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "text",
+												"Key": "ZvRvGf",
+												"Content": [
+													{
+														"Code": "nl",
+														"Parts": [
+															{
+																"DType": "",
+																"Exp": null,
+																"Str": "Text 1",
+																"Num": 0
+															}
+														]
+													}
+												],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
+												"Style": null,
+												"Description": []
+											},
+											{
+												"Role": "input",
+												"Key": "2",
+												"Content": [],
+												"DisplayCondition": null,
+												"Disabled": null,
+												"Items": null,
+												"Order": null,
+												"Dtype": "",
+												"Properties": null,
 												"Style": null,
 												"Description": []
 											}

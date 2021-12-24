@@ -21,6 +21,7 @@ const (
 	QUESTION_TYPE_MATRIX_CHECKBOX                 = "matrix_checkbox"
 	QUESTION_TYPE_RESPONSIVE_SINGLE_CHOICE_ARRAY  = "responsive_single_choice_array"
 	QUESTION_TYPE_RESPONSIVE_BIPOLAR_LIKERT_ARRAY = "responsive_bipolar_likert_array"
+	QUESTION_TYPE_CLOZE                           = "cloze"
 	QUESTION_TYPE_UNKNOWN                         = "unknown"
 	QUESTION_TYPE_EMPTY                           = "empty"
 )
@@ -32,6 +33,7 @@ const (
 	OPTION_TYPE_TEXT_INPUT      = "text"
 	OPTION_TYPE_DATE_INPUT      = "date"
 	OPTION_TYPE_NUMBER_INPUT    = "number"
+	OPTION_TYPE_CLOZE           = "cloze"
 )
 
 const (

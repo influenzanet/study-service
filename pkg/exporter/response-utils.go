@@ -92,6 +92,8 @@ func getResponseColumns(question SurveyQuestion, response *types.SurveyItemRespo
 		return processResponseForInputs(question, response, questionOptionSep)
 	case QUESTION_TYPE_MATRIX:
 		return processResponseForMatrix(question, response, questionOptionSep)
+	case QUESTION_TYPE_CLOZE:
+		return processResponseForCloze(question, response, questionOptionSep)
 	case QUESTION_TYPE_UNKNOWN:
 		return processResponseForUnknown(question, response, questionOptionSep)
 	default:
@@ -120,7 +122,7 @@ func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseD
 
 	for _, option := range responseSlotDef.Options {
 		if option.OptionType != OPTION_TYPE_RADIO &&
-			option.OptionType != OPTION_TYPE_DROPDOWN_OPTION {
+			option.OptionType != OPTION_TYPE_DROPDOWN_OPTION && option.OptionType != OPTION_TYPE_CLOZE {
 			responseCols[questionKey+questionOptionSep+option.ID] = ""
 		}
 	}
@@ -133,10 +135,25 @@ func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseD
 		} else {
 			selection := rGroup.Items[0]
 			responseCols[questionKey] = selection.Key
-
 			valueKey := questionKey + questionOptionSep + selection.Key
-			if _, hasKey := responseCols[valueKey]; hasKey {
-				responseCols[valueKey] = selection.Value
+
+			// Check if selected option is a cloze option
+			cloze := false
+			for _, option := range responseSlotDef.Options {
+				if option.ID == selection.Key && option.OptionType == OPTION_TYPE_CLOZE {
+					cloze = true
+				}
+			}
+
+			// Handle cloze option specifically if we found it
+			if cloze {
+				for _, item := range selection.Items {
+					responseCols[valueKey+"."+item.Key] = item.Value
+				}
+			} else {
+				if _, hasKey := responseCols[valueKey]; hasKey {
+					responseCols[valueKey] = selection.Value
+				}
 			}
 		}
 	}
@@ -151,7 +168,7 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 		responseCols[questionKey+questionOptionSep+rSlot.ID] = ""
 		for _, option := range rSlot.Options {
 			if option.OptionType != OPTION_TYPE_RADIO &&
-				option.OptionType != OPTION_TYPE_DROPDOWN_OPTION {
+				option.OptionType != OPTION_TYPE_DROPDOWN_OPTION && option.OptionType != OPTION_TYPE_CLOZE {
 				responseCols[questionKey+questionOptionSep+rSlot.ID+"."+option.ID] = ""
 			}
 		}
@@ -169,10 +186,25 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 
 		selection := rGroup.Items[0]
 		responseCols[questionKey+questionOptionSep+rSlot.ID] = selection.Key
-
 		valueKey := questionKey + questionOptionSep + rSlot.ID + "." + selection.Key
-		if _, hasKey := responseCols[valueKey]; hasKey {
-			responseCols[valueKey] = selection.Value
+
+		// Check if selected option is a cloze option
+		cloze := false
+		for _, option := range rSlot.Options {
+			if option.ID == selection.Key && option.OptionType == OPTION_TYPE_CLOZE {
+				cloze = true
+			}
+		}
+
+		// Handle cloze option specifically if we found it
+		if cloze {
+			for _, item := range selection.Items {
+				responseCols[valueKey+"."+item.Key] = item.Value
+			}
+		} else {
+			if _, hasKey := responseCols[valueKey]; hasKey {
+				responseCols[valueKey] = selection.Value
+			}
 		}
 	}
 	return responseCols
@@ -200,24 +232,40 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 		if len(rGroup.Items) > 0 {
 			for _, option := range responseSlotDef.Options {
 				responseCols[questionKey+questionOptionSep+option.ID] = FALSE_VALUE
-				if option.OptionType != OPTION_TYPE_CHECKBOX {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
 					responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 				}
 			}
 
 			for _, item := range rGroup.Items {
 				responseCols[questionKey+questionOptionSep+item.Key] = TRUE_VALUE
+				valueKey := questionKey + questionOptionSep + item.Key
 
-				valueKey := questionKey + questionOptionSep + item.Key + questionOptionSep + OPEN_FIELD_COL_SUFFIX
-				if _, hasKey := responseCols[valueKey]; hasKey {
-					responseCols[valueKey] = item.Value
+				// Check if selected option is a cloze option
+				cloze := false
+				for _, option := range responseSlotDef.Options {
+					if option.ID == item.Key && option.OptionType == OPTION_TYPE_CLOZE {
+						cloze = true
+					}
+				}
+
+				// Handle cloze option specifically if we found it
+				if cloze {
+					for _, item := range item.Items {
+						responseCols[valueKey+"."+item.Key] = item.Value
+					}
+				} else {
+					valueKey += questionOptionSep + OPEN_FIELD_COL_SUFFIX
+					if _, hasKey := responseCols[valueKey]; hasKey {
+						responseCols[valueKey] = item.Value
+					}
 				}
 			}
 		}
 	} else {
 		for _, option := range responseSlotDef.Options {
 			responseCols[questionKey+questionOptionSep+option.ID] = ""
-			if option.OptionType != OPTION_TYPE_CHECKBOX {
+			if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
 				responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 			}
 		}
@@ -238,24 +286,40 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 			if len(rGroup.Items) > 0 {
 				for _, option := range rSlot.Options {
 					responseCols[slotKeyPrefix+option.ID] = FALSE_VALUE
-					if option.OptionType != OPTION_TYPE_CHECKBOX {
+					if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
 						responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 					}
 				}
 
 				for _, item := range rGroup.Items {
 					responseCols[slotKeyPrefix+item.Key] = TRUE_VALUE
+					valueKey := slotKeyPrefix + item.Key
 
-					valueKey := slotKeyPrefix + item.Key + questionOptionSep + OPEN_FIELD_COL_SUFFIX
-					if _, hasKey := responseCols[valueKey]; hasKey {
-						responseCols[valueKey] = item.Value
+					// Check if selected option is a cloze option
+					cloze := false
+					for _, option := range rSlot.Options {
+						if option.ID == item.Key && option.OptionType == OPTION_TYPE_CLOZE {
+							cloze = true
+						}
+					}
+
+					// Handle cloze option specifically if we found it
+					if cloze {
+						for _, item := range item.Items {
+							responseCols[valueKey+"."+item.Key] = item.Value
+						}
+					} else {
+						valueKey += questionOptionSep + OPEN_FIELD_COL_SUFFIX
+						if _, hasKey := responseCols[valueKey]; hasKey {
+							responseCols[valueKey] = item.Value
+						}
 					}
 				}
 			}
 		} else {
 			for _, option := range rSlot.Options {
 				responseCols[slotKeyPrefix+option.ID] = ""
-				if option.OptionType != OPTION_TYPE_CHECKBOX {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
 					responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 				}
 			}
@@ -342,6 +406,72 @@ func processResponseForMatrix(question SurveyQuestion, response *types.SurveyIte
 					}
 					responseCols[slotKey] = value
 				}
+			}
+		}
+	}
+	return responseCols
+}
+
+func processResponseForCloze(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	var responseCols map[string]interface{}
+
+	if len(question.Responses) == 1 {
+		rSlot := question.Responses[0]
+		responseCols = handleSimpleCloze(question.ID, rSlot, response, questionOptionSep)
+
+	} else {
+		responseCols = handleClozeList(question.ID, question.Responses, response, questionOptionSep)
+	}
+	return responseCols
+}
+
+func handleSimpleCloze(questionKey string, responseSlotDef ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+
+	// Prepare columns:
+	for _, option := range responseSlotDef.Options {
+		if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT {
+			responseCols[questionKey+questionOptionSep+option.ID] = ""
+		}
+	}
+
+	// Find responses
+	rGroup := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+responseSlotDef.ID)
+	if rGroup != nil {
+		for _, item := range rGroup.Items {
+			valueKey := questionKey + questionOptionSep + item.Key
+
+			if _, hasKey := responseCols[valueKey]; hasKey {
+				responseCols[valueKey] = item.Value
+			}
+		}
+	}
+	return responseCols
+}
+
+func handleClozeList(questionKey string, responseSlotDefs []ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+
+	// Prepare columns:
+	for _, rSlot := range responseSlotDefs {
+		for _, option := range rSlot.Options {
+			if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT {
+				responseCols[questionKey+questionOptionSep+rSlot.ID+"."+option.ID] = ""
+			}
+		}
+	}
+
+	// Find responses:
+	for _, rSlot := range responseSlotDefs {
+		rGroup := retrieveResponseItemByShortKey(response, rSlot.ID)
+		if rGroup == nil {
+			continue
+		}
+		for _, item := range rGroup.Items {
+			valueKey := questionKey + questionOptionSep + rSlot.ID + "." + item.Key
+
+			if _, hasKey := responseCols[valueKey]; hasKey {
+				responseCols[valueKey] = item.Value
 			}
 		}
 	}

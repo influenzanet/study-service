@@ -1,19 +1,19 @@
 # Changelog
 
-## [v0.17.0] - ???
-
-
+## [v1.0.0] - ???
 
 ### Added
 
 - Study data model now includes the attribute `idMappingMethod`, which allows to select the method used to convert profile ID into participant ID. This configuration is per study. Currently available methods are: 'aesctr' (default for backwards compatibility), 'sha224', 'sha256', 'same'.
 - Include improved logger, using configurable log levels. Use the environment variable `LOG_LEVEL` to select which level should be applied. Possible values are: `debug info warning error`.
 - New endpoint (`GetResponsesFlatJSON`) and data exporter code to export repsonses in a flat JSON list.
-- Data exporter can parse composite question titles or option labels (when text contains multiple parts).
-- Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"
 - Participant File Upload endpoint: method to upload files for study participants
-- Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
-- Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
+- Data exporter:
+    - Data exporter can parse composite question titles or option labels (when text contains multiple parts).
+    - Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"
+    - Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
+    - Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
+    - `cloze` questions and single/multi-choice options are now exported
 - New messaging concept:
     - Participant state can store list of messages scheduled for the participant.
     - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.
