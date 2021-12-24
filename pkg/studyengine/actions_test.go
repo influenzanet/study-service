@@ -544,15 +544,18 @@ func TestActions(t *testing.T) {
 			return
 		}
 		if newState.Messages[0].Type != "testMessage" {
-			t.Errorf("unexpected message: %s", newState.Reports[0].Key)
+			t.Errorf("unexpected message: %s", newState.Messages[0].Type)
 		}
 
 		action2 := types.Expression{
 			Name: "ADD_MESSAGE",
 			Data: []types.ExpressionArg{
-				{DType: "str", Str: "testMessage"},
+				{DType: "str", Str: "testMessage2"},
 				{DType: "exp", Exp: &types.Expression{
 					Name: "timestampWithOffset",
+					Data: []types.ExpressionArg{
+						{DType: "num", Num: 0},
+					},
 				}},
 			},
 		}
@@ -564,8 +567,8 @@ func TestActions(t *testing.T) {
 			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
 			return
 		}
-		if newState.Messages[1].Type != "testMessage" {
-			t.Errorf("unexpected message: %s", newState.Reports[0].Key)
+		if newState.Messages[1].Type != "testMessage2" {
+			t.Errorf("unexpected message: %s", newState.Messages[0].Type)
 		}
 		participantState = newState
 	})
@@ -585,6 +588,33 @@ func TestActions(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
 		if len(newState.Messages) != 0 {
+			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
+			return
+		}
+	})
+
+	t.Run("REMOVE_MESSAGES_BY_KEY", func(t *testing.T) {
+		action := types.Expression{
+			Name: "REMOVE_MESSAGES_BY_KEY",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "testMessage1"},
+			},
+		}
+		tP := types.ParticipantState{
+			Messages: []types.ParticipantMessage{
+				{Type: "testMessage1"},
+				{Type: "testMessage1"},
+				{Type: "testMessage2"},
+				{Type: "testMessage3"},
+				{Type: "testMessage4"},
+			},
+		}
+
+		newState, err := ActionEval(action, tP, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Messages) != 3 {
 			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
 			return
 		}

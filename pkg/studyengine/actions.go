@@ -6,6 +6,7 @@ import (
 
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type StudyDBService interface {
@@ -45,6 +46,8 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 		newState, err = addMessage(action, oldState, event)
 	case "REMOVE_ALL_MESSAGES":
 		newState, err = removeAllMessages(action, oldState, event)
+	case "REMOVE_MESSAGES_BY_KEY":
+		newState, err = removeMessagesByKey(action, oldState, event)
 	case "ADD_REPORT":
 		newState, err = addReport(action, oldState, event)
 	case "REMOVE_ALL_REPORTS":
@@ -391,13 +394,78 @@ func removeSurveysByKey(action types.Expression, oldState types.ParticipantState
 
 // addMessage
 func addMessage(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	err = errors.New("unimplemented: TODO")
+	newState = oldState
+	if len(action.Data) != 2 {
+		return newState, errors.New("addMessage must have exactly two arguments")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
+	}
+	arg1, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+	arg2, err := EvalContext.expressionArgResolver(action.Data[1])
+	if err != nil {
+		return newState, err
+	}
+
+	messageType, ok1 := arg1.(string)
+	timestamp, ok2 := arg2.(float64)
+
+	if !ok1 || !ok2 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	newMessage := types.ParticipantMessage{
+		ID:           primitive.NewObjectID().Hex(),
+		Type:         messageType,
+		ScheduledFor: int64(timestamp),
+	}
+	newState.Messages = make([]types.ParticipantMessage, len(oldState.Messages))
+	copy(newState.Messages, oldState.Messages)
+
+	newState.Messages = append(newState.Messages, newMessage)
 	return
 }
 
 // removeAllMessages
 func removeAllMessages(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	err = errors.New("unimplemented: TODO")
+	newState = oldState
+
+	newState.Messages = []types.ParticipantMessage{}
+	return
+}
+
+// removeSurveysByKey removes all the surveys with a specific key
+func removeMessagesByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("removeMessagesByKey must have exactly one argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	messageType, ok1 := k.(string)
+
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	messages := []types.ParticipantMessage{}
+	for _, msg := range newState.Messages {
+		if msg.Type != messageType {
+			messages = append(messages, msg)
+		}
+	}
+	newState.Messages = messages
 	return
 }
 
