@@ -526,4 +526,67 @@ func TestActions(t *testing.T) {
 			t.Errorf("unexpected first item key: %s", newState.Reports[0].Key)
 		}
 	})
+
+	t.Run("ADD_MESSAGE", func(t *testing.T) {
+		action := types.Expression{
+			Name: "ADD_MESSAGE",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "testMessage"},
+				{DType: "num", Num: float64(time.Now().Unix() - 10)},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Messages) != 1 {
+			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
+			return
+		}
+		if newState.Messages[0].Type != "testMessage" {
+			t.Errorf("unexpected message: %s", newState.Reports[0].Key)
+		}
+
+		action2 := types.Expression{
+			Name: "ADD_MESSAGE",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "testMessage"},
+				{DType: "exp", Exp: &types.Expression{
+					Name: "timestampWithOffset",
+				}},
+			},
+		}
+		newState, err = ActionEval(action2, newState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Messages) != 2 {
+			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
+			return
+		}
+		if newState.Messages[1].Type != "testMessage" {
+			t.Errorf("unexpected message: %s", newState.Reports[0].Key)
+		}
+		participantState = newState
+	})
+
+	t.Run("REMOVE_ALL_MESSAGES", func(t *testing.T) {
+		action := types.Expression{
+			Name: "REMOVE_ALL_MESSAGES",
+			Data: []types.ExpressionArg{},
+		}
+
+		if len(participantState.Messages) != 2 {
+			t.Errorf("unexpected number of messages: %d", len(participantState.Messages))
+		}
+
+		newState, err := ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(newState.Messages) != 0 {
+			t.Errorf("unexpected number of messages: %d", len(newState.Messages))
+			return
+		}
+	})
 }

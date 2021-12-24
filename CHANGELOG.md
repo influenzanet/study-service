@@ -16,8 +16,9 @@
 - Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
 - New messaging concept:
     - Participant state can store list of messages scheduled for the participant.
-    - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`
+    - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.
     - New study-engine actions: `ADD_MESSAGE`, `REMOVE_ALL_MESSAGES`.
+
 
 ### Changed
 

@@ -41,6 +41,10 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 		newState, err = removeSurveyByKey(action, oldState, event)
 	case "REMOVE_SURVEYS_BY_KEY":
 		newState, err = removeSurveysByKey(action, oldState, event)
+	case "ADD_MESSAGE":
+		newState, err = addMessage(action, oldState, event)
+	case "REMOVE_ALL_MESSAGES":
+		newState, err = removeAllMessages(action, oldState, event)
 	case "ADD_REPORT":
 		newState, err = addReport(action, oldState, event)
 	case "REMOVE_ALL_REPORTS":
@@ -382,6 +386,18 @@ func removeSurveysByKey(action types.Expression, oldState types.ParticipantState
 		}
 	}
 	newState.AssignedSurveys = as
+	return
+}
+
+// addMessage
+func addMessage(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+	err = errors.New("unimplemented: TODO")
+	return
+}
+
+// removeAllMessages
+func removeAllMessages(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+	err = errors.New("unimplemented: TODO")
 	return
 }
 
