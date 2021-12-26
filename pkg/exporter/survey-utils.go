@@ -521,6 +521,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_DATE_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			case "dropDownGroup":
+				option.OptionType = OPTION_TYPE_DROPDOWN
 			}
 			responseDef.Options = append(responseDef.Options, option)
 		}

@@ -142,13 +142,21 @@ func handleSimpleSingleChoiceGroup(questionKey string, responseSlotDef ResponseD
 			for _, option := range responseSlotDef.Options {
 				if option.ID == selection.Key && option.OptionType == OPTION_TYPE_CLOZE {
 					cloze = true
+					break
 				}
 			}
 
 			// Handle cloze option specifically if we found it
 			if cloze {
 				for _, item := range selection.Items {
-					responseCols[valueKey+"."+item.Key] = item.Value
+					key := valueKey + "." + item.Key
+
+					// Check if cloze or similar data structure
+					if item.Value == "" && len(item.Items) == 1 {
+						responseCols[key] = item.Items[0].Key
+					} else {
+						responseCols[key] = item.Value
+					}
 				}
 			} else {
 				if _, hasKey := responseCols[valueKey]; hasKey {
@@ -193,13 +201,21 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 		for _, option := range rSlot.Options {
 			if option.ID == selection.Key && option.OptionType == OPTION_TYPE_CLOZE {
 				cloze = true
+				break
 			}
 		}
 
 		// Handle cloze option specifically if we found it
 		if cloze {
 			for _, item := range selection.Items {
-				responseCols[valueKey+"."+item.Key] = item.Value
+				key := valueKey + "." + item.Key
+
+				// Check if cloze or similar data structure
+				if item.Value == "" && len(item.Items) == 1 {
+					responseCols[key] = item.Items[0].Key
+				} else {
+					responseCols[key] = item.Value
+				}
 			}
 		} else {
 			if _, hasKey := responseCols[valueKey]; hasKey {
@@ -252,7 +268,14 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 				// Handle cloze option specifically if we found it
 				if cloze {
 					for _, item := range item.Items {
-						responseCols[valueKey+"."+item.Key] = item.Value
+						key := valueKey + "." + item.Key
+
+						// Check if cloze or similar data structure
+						if item.Value == "" && len(item.Items) == 1 {
+							responseCols[key] = item.Items[0].Key
+						} else {
+							responseCols[key] = item.Value
+						}
 					}
 				} else {
 					valueKey += questionOptionSep + OPEN_FIELD_COL_SUFFIX
@@ -306,7 +329,14 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 					// Handle cloze option specifically if we found it
 					if cloze {
 						for _, item := range item.Items {
-							responseCols[valueKey+"."+item.Key] = item.Value
+							key := valueKey + "." + item.Key
+
+							// Check if cloze or similar data structure
+							if item.Value == "" && len(item.Items) == 1 {
+								responseCols[key] = item.Items[0].Key
+							} else {
+								responseCols[key] = item.Value
+							}
 						}
 					} else {
 						valueKey += questionOptionSep + OPEN_FIELD_COL_SUFFIX
@@ -430,7 +460,7 @@ func handleSimpleCloze(questionKey string, responseSlotDef ResponseDef, response
 
 	// Prepare columns:
 	for _, option := range responseSlotDef.Options {
-		if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT {
+		if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT || option.OptionType == OPTION_TYPE_DROPDOWN {
 			responseCols[questionKey+questionOptionSep+option.ID] = ""
 		}
 	}
@@ -442,7 +472,25 @@ func handleSimpleCloze(questionKey string, responseSlotDef ResponseDef, response
 			valueKey := questionKey + questionOptionSep + item.Key
 
 			if _, hasKey := responseCols[valueKey]; hasKey {
-				responseCols[valueKey] = item.Value
+				dropdown := false
+
+				// Check if dropdown
+				for _, option := range responseSlotDef.Options {
+					if option.ID == item.Key && option.OptionType == OPTION_TYPE_DROPDOWN {
+						dropdown = true
+						break
+					}
+				}
+
+				if dropdown {
+					if len(item.Items) != 1 {
+						logger.Debug.Printf("multiple responses for dropdown in cloze %s: %s", questionKey, item.Key)
+					} else {
+						responseCols[valueKey] = item.Items[0].Key
+					}
+				} else {
+					responseCols[valueKey] = item.Value
+				}
 			}
 		}
 	}
@@ -455,7 +503,7 @@ func handleClozeList(questionKey string, responseSlotDefs []ResponseDef, respons
 	// Prepare columns:
 	for _, rSlot := range responseSlotDefs {
 		for _, option := range rSlot.Options {
-			if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT {
+			if option.OptionType == OPTION_TYPE_DATE_INPUT || option.OptionType == OPTION_TYPE_NUMBER_INPUT || option.OptionType == OPTION_TYPE_TEXT_INPUT || option.OptionType == OPTION_TYPE_DROPDOWN {
 				responseCols[questionKey+questionOptionSep+rSlot.ID+"."+option.ID] = ""
 			}
 		}
@@ -471,7 +519,25 @@ func handleClozeList(questionKey string, responseSlotDefs []ResponseDef, respons
 			valueKey := questionKey + questionOptionSep + rSlot.ID + "." + item.Key
 
 			if _, hasKey := responseCols[valueKey]; hasKey {
-				responseCols[valueKey] = item.Value
+				dropdown := false
+
+				// Check if dropdown
+				for _, option := range rSlot.Options {
+					if option.ID == item.Key && option.OptionType == OPTION_TYPE_DROPDOWN {
+						dropdown = true
+						break
+					}
+				}
+
+				if dropdown {
+					if len(item.Items) != 1 {
+						logger.Debug.Printf("multiple responses for dropdown in cloze %s: %s: %s", questionKey, rSlot.ID, item.Key)
+					} else {
+						responseCols[valueKey] = item.Items[0].Key
+					}
+				} else {
+					responseCols[valueKey] = item.Value
+				}
 			}
 		}
 	}
