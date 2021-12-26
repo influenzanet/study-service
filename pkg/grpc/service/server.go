@@ -21,6 +21,7 @@ const (
 )
 
 type studyServiceServer struct {
+	api.UnimplementedStudyServiceApiServer
 	clients           *types.APIClients
 	studyDBservice    *studydb.StudyDBService
 	globalDBService   *globaldb.GlobalDBService
@@ -34,6 +35,7 @@ func NewStudyServiceServer(
 	globalDBservice *globaldb.GlobalDBService,
 	studyGlobalSectret string,
 ) api.StudyServiceApiServer {
+
 	return &studyServiceServer{
 		clients:           clients,
 		studyDBservice:    studyDBservice,

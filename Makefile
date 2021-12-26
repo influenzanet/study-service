@@ -1,6 +1,6 @@
 .PHONY: build test install-dev docker api study-service-app
 
-PROTO_BUILD_DIR = ../../..
+PROTO_BUILD_DIR = intermediate
 # TEST_ARGS = -v | grep -c RUN
 
 DOCKER_OPTS ?= --rm
@@ -21,14 +21,19 @@ help:
 	@echo "  TEST_ARGS : Arguments to pass to go test call"
 
 api:
-	if [ ! -d "./pkg/api" ]; then mkdir -p "./pkg/api"; else  find "./pkg/api" -type f -delete &&  mkdir -p "./pkg/api"; fi
-	find ./api/study_service/*.proto -maxdepth 1 -type f -exec protoc {} --proto_path=./api --go_out=plugins=grpc:$(PROTO_BUILD_DIR) \;
+	if [ ! -d $(PROTO_BUILD_DIR) ]; then mkdir -p $(PROTO_BUILD_DIR); else  find $(PROTO_BUILD_DIR) -type f -delete &&  mkdir -p $(PROTO_BUILD_DIR); fi
+	find ./api/study_service/*.proto -maxdepth 1 -type f -exec protoc {} --proto_path=./api --go_out=$(PROTO_BUILD_DIR) --go_grpc_out=$(PROTO_BUILD_DIR) \;
+	find "./pkg/api" -delete
+	mv $(PROTO_BUILD_DIR)/github.com/influenzanet/study-service/pkg/api pkg/api
+	find $(PROTO_BUILD_DIR) -delete
+
+#if [ ! -d "./pkg/api" ]; then mkdir -p "./pkg/api"; else  find "./pkg/api" -type f -delete &&  mkdir -p "./pkg/api"; fi
 
 study-service-app:
 	go build -o $(TARGET_DIR) ./cmd/study-service-app
 
 build: study-service-app
-	
+
 mock:
 	mockgen github.com/influenzanet/logging-service/pkg/api LoggingServiceApiClient > test/mocks/logging_service/logging_service.go
 

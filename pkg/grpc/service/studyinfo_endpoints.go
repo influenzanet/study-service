@@ -155,3 +155,11 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 	}
 	return nil, status.Error(codes.NotFound, "no participant found")
 }
+
+func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *api.GetParticipantMessagesReq) (*api.GetParticipantMessagesResp, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
+
+func (s *studyServiceServer) DeleteMessageFromParticipant(ctx context.Context, req *api.DeleteMessagesFromParticipantReq) (*api.ServiceStatus, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
