@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
@@ -157,9 +158,43 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 }
 
 func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *api.GetParticipantMessagesReq) (*api.GetParticipantMessagesResp, error) {
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+	if req == nil || req.InstanceId == "" || req.StudyKey == "" || req.ProfileId == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	pState, err := s.studyDBservice.FindParticipantState(req.InstanceId, req.StudyKey, participantID)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.GetParticipantMessagesResp{
+		Messages: []*api.GetParticipantMessagesResp_Messages{},
+	}
+	for _, message := range pState.Messages {
+		if message.ScheduledFor > time.Now().Unix() {
+			continue
+		}
+		resp.Messages = append(resp.Messages, &api.GetParticipantMessagesResp_Messages{
+			Id:   message.ID,
+			Type: message.Type,
+		})
+	}
+	return resp, nil
 }
 
 func (s *studyServiceServer) DeleteMessageFromParticipant(ctx context.Context, req *api.DeleteMessagesFromParticipantReq) (*api.ServiceStatus, error) {
+	// TODO: check request
+	// req.ProfileId
+	// TODO: get participant ID
+	// TODO: find participant
+	// TODO: remove messages from list
+	// TODO: save participant
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }

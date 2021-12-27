@@ -9,6 +9,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestGetStudiesForUserEndpoint(t *testing.T) {
@@ -376,6 +377,137 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
+		}
+	})
+}
+
+func TestGetParticipantMessages(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	// create study for user in it
+	testStudies := []types.Study{
+		{
+			Status:    types.STUDY_STATUS_ACTIVE,
+			Key:       "studyfor_GetParticipantMessages",
+			SecretKey: "testsecret",
+			Configs: types.StudyConfigs{
+				IdMappingMethod: utils.ID_MAPPING_AESCTR,
+			},
+		},
+	}
+
+	for _, study := range testStudies {
+		_, err := testStudyDBService.CreateStudy(testInstanceID, study)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	testProfileID1 := "testprofileWithoutMessages"
+	testProfileID2 := "testprofileWithMessages"
+
+	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	pState1 := types.ParticipantState{
+		ParticipantID: pid1,
+	}
+
+	pState2 := types.ParticipantState{
+		ParticipantID: pid2,
+		Messages: []types.ParticipantMessage{
+			{
+				ID:           primitive.NilObjectID.Hex(),
+				Type:         "testMessage",
+				ScheduledFor: time.Now().Unix() - 500,
+			},
+			{
+				ID:           primitive.NilObjectID.Hex(),
+				Type:         "testMessage2",
+				ScheduledFor: time.Now().Unix() + 500,
+			},
+		},
+	}
+
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState1)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+	_, err = s.studyDBservice.SaveParticipantState(testInstanceID, testStudies[0].Key, pState2)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err.Error())
+		return
+	}
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.GetParticipantMessages(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.GetParticipantMessages(context.Background(), &api.GetParticipantMessagesReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with user profiles not in the study", func(t *testing.T) {
+		_, err := s.GetParticipantMessages(context.Background(), &api.GetParticipantMessagesReq{
+			ProfileId:  "something else",
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "mongo: no documents in result")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with profile with no messages", func(t *testing.T) {
+		resp, err := s.GetParticipantMessages(context.Background(), &api.GetParticipantMessagesReq{
+			ProfileId:  testProfileID1,
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if resp == nil || len(resp.Messages) != 0 {
+			t.Errorf("unexpected response: %v", resp)
+		}
+	})
+
+	t.Run("with profile with messages", func(t *testing.T) {
+		resp, err := s.GetParticipantMessages(context.Background(), &api.GetParticipantMessagesReq{
+			ProfileId:  testProfileID2,
+			StudyKey:   testStudies[0].Key,
+			InstanceId: testInstanceID,
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if resp == nil || len(resp.Messages) != 1 {
+			t.Errorf("unexpected response: %v", resp)
 		}
 	})
 }
