@@ -219,3 +219,74 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteMessagesFromParticipant(t *testing.T) {
+	testStudyKey := "teststudy_deletemessages"
+
+	pStates := []types.ParticipantState{
+		{
+			ParticipantID: "1",
+		},
+		{
+			ParticipantID: "2",
+			Messages: []types.ParticipantMessage{
+				{
+					ID:   "m1",
+					Type: "test1",
+				},
+				{
+					ID:   "m2",
+					Type: "test1",
+				},
+				{
+					ID:   "m3",
+					Type: "test2",
+				},
+			},
+		},
+	}
+
+	for _, ps := range pStates {
+		_, err := testDBService.SaveParticipantState(testInstanceID, testStudyKey, ps)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	t.Run("for participant without messages ", func(t *testing.T) {
+		pid := pStates[0].ParticipantID
+		err := testDBService.DeleteMessagesFromParticipant(testInstanceID, testStudyKey, pid, []string{"m1", "m2"})
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+
+		pState, err := testDBService.FindParticipantState(testInstanceID, testStudyKey, pid)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(pState.Messages) != 0 {
+			t.Errorf("unexpected pState: %v", pState)
+		}
+	})
+
+	t.Run("for participant with messages ", func(t *testing.T) {
+		pid := pStates[1].ParticipantID
+		err := testDBService.DeleteMessagesFromParticipant(testInstanceID, testStudyKey, pid, []string{"m1", "m2"})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+
+		pState, err := testDBService.FindParticipantState(testInstanceID, testStudyKey, pid)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if len(pState.Messages) != 1 {
+			t.Errorf("unexpected pState: %v", pState)
+		}
+	})
+}

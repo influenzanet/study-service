@@ -189,12 +189,29 @@ func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *ap
 	return resp, nil
 }
 
-func (s *studyServiceServer) DeleteMessageFromParticipant(ctx context.Context, req *api.DeleteMessagesFromParticipantReq) (*api.ServiceStatus, error) {
-	// TODO: check request
-	// req.ProfileId
-	// TODO: get participant ID
-	// TODO: find participant
-	// TODO: remove messages from list
-	// TODO: save participant
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+func (s *studyServiceServer) DeleteMessagesFromParticipant(ctx context.Context, req *api.DeleteMessagesFromParticipantReq) (*api.ServiceStatus, error) {
+	if req == nil || req.InstanceId == "" || req.StudyKey == "" || req.ProfileId == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	_, err = s.studyDBservice.FindParticipantState(req.InstanceId, req.StudyKey, participantID)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	err = s.studyDBservice.DeleteMessagesFromParticipant(req.InstanceId, req.StudyKey, participantID, req.MessageIds)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+		Msg:    "deleted",
+	}, nil
 }

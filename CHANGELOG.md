@@ -18,6 +18,8 @@
     - Participant state can store list of messages scheduled for the participant.
     - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.
     - New study-engine actions: `ADD_MESSAGE`, `REMOVE_MESSAGES_BY_TYPE`, `REMOVE_ALL_MESSAGES`.
+    - Added DB method to remove messages by id from participant state
+    - New gRPC endpoint to fetch messages for a participant and trigger deletion of messages from a participant's message list.
 
 
 ### Changed

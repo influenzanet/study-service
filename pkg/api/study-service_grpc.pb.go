@@ -46,7 +46,7 @@ type StudyServiceApiClient interface {
 	// any user profile is in the study and one state matches condition:
 	HasParticipantStateWithCondition(ctx context.Context, in *ProfilesWithConditionReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*GetParticipantMessagesResp, error)
-	DeleteMessageFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
+	DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	// ---> Study management
 	CreateNewStudy(ctx context.Context, in *NewStudyRequest, opts ...grpc.CallOption) (*Study, error)
 	GetAllStudies(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*Studies, error)
@@ -249,9 +249,9 @@ func (c *studyServiceApiClient) GetParticipantMessages(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *studyServiceApiClient) DeleteMessageFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+func (c *studyServiceApiClient) DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
 	out := new(ServiceStatus)
-	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/DeleteMessageFromParticipant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/DeleteMessagesFromParticipant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -583,7 +583,7 @@ type StudyServiceApiServer interface {
 	// any user profile is in the study and one state matches condition:
 	HasParticipantStateWithCondition(context.Context, *ProfilesWithConditionReq) (*ServiceStatus, error)
 	GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error)
-	DeleteMessageFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error)
+	DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error)
 	// ---> Study management
 	CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error)
 	GetAllStudies(context.Context, *api_types.TokenInfos) (*Studies, error)
@@ -662,8 +662,8 @@ func (UnimplementedStudyServiceApiServer) HasParticipantStateWithCondition(conte
 func (UnimplementedStudyServiceApiServer) GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetParticipantMessages not implemented")
 }
-func (UnimplementedStudyServiceApiServer) DeleteMessageFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessageFromParticipant not implemented")
+func (UnimplementedStudyServiceApiServer) DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessagesFromParticipant not implemented")
 }
 func (UnimplementedStudyServiceApiServer) CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewStudy not implemented")
@@ -1034,20 +1034,20 @@ func _StudyServiceApi_GetParticipantMessages_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StudyServiceApi_DeleteMessageFromParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StudyServiceApi_DeleteMessagesFromParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteMessagesFromParticipantReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StudyServiceApiServer).DeleteMessageFromParticipant(ctx, in)
+		return srv.(StudyServiceApiServer).DeleteMessagesFromParticipant(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/influenzanet.study_service.StudyServiceApi/DeleteMessageFromParticipant",
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/DeleteMessagesFromParticipant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StudyServiceApiServer).DeleteMessageFromParticipant(ctx, req.(*DeleteMessagesFromParticipantReq))
+		return srv.(StudyServiceApiServer).DeleteMessagesFromParticipant(ctx, req.(*DeleteMessagesFromParticipantReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1495,8 +1495,8 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_GetParticipantMessages_Handler,
 		},
 		{
-			MethodName: "DeleteMessageFromParticipant",
-			Handler:    _StudyServiceApi_DeleteMessageFromParticipant_Handler,
+			MethodName: "DeleteMessagesFromParticipant",
+			Handler:    _StudyServiceApi_DeleteMessagesFromParticipant_Handler,
 		},
 		{
 			MethodName: "CreateNewStudy",

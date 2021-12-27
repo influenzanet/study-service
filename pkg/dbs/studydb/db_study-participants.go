@@ -156,3 +156,15 @@ func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	}
 	return nil
 }
+
+func (dbService *StudyDBService) DeleteMessagesFromParticipant(instanceID string, studyKey string, participantID string, messageIDs []string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{"participantID": participantID}
+	update := bson.M{"$pull": bson.M{"messages": bson.M{
+		"id": bson.M{"$in": messageIDs},
+	}}}
+	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).UpdateOne(ctx, filter, update)
+	return err
+}
