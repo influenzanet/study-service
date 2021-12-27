@@ -414,19 +414,29 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 		ParticipantStateChangePerRule: make([]int32, len(req.Rules)),
 	}
 
+	// Convert rules from API type:
+	rules := make([]*types.Expression, len(req.Rules))
+	for index, rule := range req.Rules {
+		rules[index] = types.ExpressionFromAPI(rule)
+	}
+
 	err := s.studyDBservice.FindAndExecuteOnParticipantsStates(
 		ctx,
 		req.Token.InstanceId,
 		req.StudyKey,
 		"",
 		func(dbService *studydb.StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
+			if p.StudyStatus == types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
+				// ignore temporary participants
+				return nil
+			}
+
 			counters.Participants += 1
 
 			currentState := p
 			anyChange := false
-			for index, rule := range req.Rules {
-				exp := types.ExpressionFromAPI(rule)
-				if exp == nil {
+			for index, rule := range rules {
+				if rule == nil {
 					continue
 				}
 
@@ -434,7 +444,7 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 					InstanceID: instanceID,
 					StudyKey:   studyKey,
 				}
-				newState, err := studyengine.ActionEval(*exp, currentState, event, s.studyDBservice)
+				newState, err := studyengine.ActionEval(*rule, currentState, event, s.studyDBservice)
 				if err != nil {
 					return err
 				}
