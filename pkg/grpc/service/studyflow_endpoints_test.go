@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log"
 	"testing"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
+	"google.golang.org/grpc"
 )
 
 func TestCheckIfParticipantExists(t *testing.T) {
@@ -1214,24 +1216,88 @@ func TestResolvePrefillRules(t *testing.T) {
 	})
 }
 
+type StudyServiceApi_UploadParticipantFileServer struct {
+	*api.UploadParticipantFileReq
+	grpc.ServerStream
+}
+
+func (x *StudyServiceApi_UploadParticipantFileServer) SendAndClose(info *api.FileInfo) error {
+	return nil
+}
+
+func (x *StudyServiceApi_UploadParticipantFileServer) Recv() (*api.UploadParticipantFileReq, error) {
+	if x.UploadParticipantFileReq == nil {
+		return nil, errors.New("no request")
+	}
+	return x.UploadParticipantFileReq, nil
+}
+
 func TestUploadParticipantFile(t *testing.T) {
-	//log.New(, "ERROR", )
-
-	t.Error("Test unimplemented: first iteration should be info")
-	t.Error("Test unimplemented: missing token")
-	t.Error("Test unimplemented: missing study key")
-	t.Error("Test unimplemented: missing wring file type")
-
 	t.Error("Test unimplemented: study with no permission to upload")
 	t.Error("Test unimplemented: study with hardcoded true rule")
 	t.Error("Test unimplemented: study with participant condition on flag")
 
-	t.Run("find last survey by type and extract items", func(t *testing.T) {})
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
 
-	/*
-		s := studyServiceServer{
-			globalDBService:   testGlobalDBService,
-			studyDBservice:    testStudyDBService,
-			StudyGlobalSecret: "globsecretfortest1234",
-		}*/
+	t.Run("missing file info", func(t *testing.T) {
+		err := s.UploadParticipantFile(&StudyServiceApi_UploadParticipantFileServer{UploadParticipantFileReq: nil})
+		if err == nil || err.Error() != "rpc error: code = Unknown desc = file info missing" {
+			t.Errorf("should have thrown error")
+		}
+	})
+
+	t.Run("first iteration should be info", func(t *testing.T) {
+		err := s.UploadParticipantFile(&StudyServiceApi_UploadParticipantFileServer{
+			UploadParticipantFileReq: &api.UploadParticipantFileReq{
+				Data: &api.UploadParticipantFileReq_Chunk{Chunk: []byte{42, 42, 42}}}})
+		if err == nil || err.Error() != "rpc error: code = InvalidArgument desc = missing argument" {
+			t.Error("should have thrown correct error")
+		}
+	})
+
+	t.Run("missing token", func(t *testing.T) {
+		err := s.UploadParticipantFile(&StudyServiceApi_UploadParticipantFileServer{
+			UploadParticipantFileReq: &api.UploadParticipantFileReq{
+				Data: &api.UploadParticipantFileReq_Info_{
+					Info: &api.UploadParticipantFileReq_Info{
+						Token:    nil,
+						StudyKey: "testStudyKey"}}}})
+		if err == nil || err.Error() != "rpc error: code = InvalidArgument desc = missing argument" {
+			t.Error("should have thrown correct error")
+		}
+	})
+
+	t.Run("missing study key", func(t *testing.T) {
+		err := s.UploadParticipantFile(&StudyServiceApi_UploadParticipantFileServer{
+			UploadParticipantFileReq: &api.UploadParticipantFileReq{
+				Data: &api.UploadParticipantFileReq_Info_{
+					Info: &api.UploadParticipantFileReq_Info{
+						Token: &api_types.TokenInfos{
+							Id:         "testId",
+							InstanceId: "testInstanceId",
+						},
+						StudyKey: ""}}}})
+		if err == nil || err.Error() != "rpc error: code = InvalidArgument desc = missing argument" {
+			t.Error("should have thrown correct error")
+		}
+	})
+
+	t.Run("missing file type", func(t *testing.T) {
+		err := s.UploadParticipantFile(&StudyServiceApi_UploadParticipantFileServer{
+			UploadParticipantFileReq: &api.UploadParticipantFileReq{
+				Data: &api.UploadParticipantFileReq_Info_{
+					Info: &api.UploadParticipantFileReq_Info{
+						Token: &api_types.TokenInfos{
+							Id:         "testId",
+							InstanceId: "testInstanceId",
+						},
+						StudyKey: "testStudyKey"}}}})
+		if err == nil || err.Error() != "rpc error: code = InvalidArgument desc = file type missing" {
+			t.Error("should have thrown correct error")
+		}
+	})
 }
