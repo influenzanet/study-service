@@ -184,14 +184,9 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 			logger.Error.Println(err)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-
-		err = s.studyDBservice.DeleteParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
-		if err != nil {
-			logger.Error.Println(err)
-			return nil, status.Error(codes.Internal, err.Error())
-		}
 	} else {
 		// Participant did not exist before:
+		pState.ID = primitive.ObjectID{}
 		pState.ParticipantID = realParticipantID
 		pState.StudyStatus = types.PARTICIPANT_STUDY_STATUS_ACTIVE
 
@@ -200,6 +195,12 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 			logger.Error.Println(err)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
+	}
+
+	err = s.studyDBservice.DeleteParticipantState(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	if err != nil {
+		logger.Error.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	count, err := s.studyDBservice.UpdateParticipantIDonResponses(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId, realParticipantID)
