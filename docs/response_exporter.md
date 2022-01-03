@@ -26,21 +26,27 @@ Detailed description of these types and their mapping to the export table are ex
 
 We start with a description of the columns in the export table that are fixed and independent of the used questionnaire.
 
-### 1.1. Participant ID
+### 1.1. Response ID
+
+**Column Name:**  ```ID```
+
+**Entries in Table:** an unique string identifier for each row of the export table.
+
+### 1.2. Participant ID
 
 **Column Name:**  ```participantID```
 
-**Entries in Table:** the unique identifier string of the participant.
+**Entries in Table:** the unique identifier string for each participant.
 
 
-### 1.2. Survey Version
+### 1.3. Survey Version
 
 **Column Name:**  ```version```
 
-**Entries in Table:** the version of the questionnaire used in the survey
+**Entries in Table:** the version of questionnaire used in the survey
 
 
-### 1.3. Submission Date
+### 1.4. Submission Date
 
 **Column Name:**  ```submitted```
 
