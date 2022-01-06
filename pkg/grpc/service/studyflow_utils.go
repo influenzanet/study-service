@@ -270,9 +270,18 @@ func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenIn
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	resp, err := s.prepareSurveyForParticipant(token.InstanceId, studyKey, participantID, surveyDef)
-	if err != nil {
-		logger.Debug.Println(err)
+	if !s.checkIfParticipantExists(token.InstanceId, studyKey, participantID, "") {
+		resp, err := s.prepareSurveyWithoutParticipant(token.InstanceId, studyKey, surveyDef)
+		if err != nil {
+			logger.Debug.Println(err)
+		}
+		return resp, err
+	} else {
+		resp, err := s.prepareSurveyForParticipant(token.InstanceId, studyKey, participantID, surveyDef)
+		if err != nil {
+			logger.Debug.Println(err)
+		}
+		return resp, err
 	}
-	return resp, err
+
 }
