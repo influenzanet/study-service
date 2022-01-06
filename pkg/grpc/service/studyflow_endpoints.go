@@ -363,9 +363,27 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// Participant state:
 	pState, err := s.studyDBservice.FindParticipantState(instanceID, req.StudyKey, participantID)
 	if err != nil {
-		req.Response = nil
-		logger.Error.Printf("Participant not found for request; %v", req)
-		return nil, status.Error(codes.Internal, "participant state not found")
+		// If no participant yet, but logged in: ENTER study
+		if !token_checks.IsTokenEmpty(req.Token) {
+			_, err := s.EnterStudy(ctx, &api.EnterStudyRequest{
+				Token:     req.Token,
+				StudyKey:  req.StudyKey,
+				ProfileId: req.ProfileId,
+			})
+			if err != nil {
+				logger.Error.Printf("Unexpected error when submitting with non-participant user: %v", err)
+				return nil, status.Error(codes.Internal, "couldn't enter study")
+			}
+			pState, err = s.studyDBservice.FindParticipantState(instanceID, req.StudyKey, participantID)
+			if err != nil {
+				logger.Error.Printf("Unexpected error when submitting with non-participant user: %v", err)
+				return nil, status.Error(codes.Internal, "couldn't enter study")
+			}
+		} else {
+			req.Response = nil
+			logger.Error.Printf("Participant not found for request; %v", req)
+			return nil, status.Error(codes.Internal, "participant state not found")
+		}
 	}
 
 	if req.Token == nil {
