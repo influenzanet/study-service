@@ -172,8 +172,15 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 
 		// Merge participant states
 		existingPState.AssignedSurveys = append(existingPState.AssignedSurveys, pState.AssignedSurveys...)
+		if existingPState.Flags == nil {
+			existingPState.Flags = map[string]string{}
+		}
 		for k, v := range pState.Flags {
 			existingPState.Flags[k] = v
+		}
+
+		if existingPState.LastSubmissions == nil {
+			existingPState.LastSubmissions = map[string]int64{}
 		}
 		for k, v := range pState.LastSubmissions {
 			existingPState.LastSubmissions[k] = v
