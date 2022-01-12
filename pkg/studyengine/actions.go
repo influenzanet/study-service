@@ -2,6 +2,7 @@ package studyengine
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
@@ -194,9 +195,18 @@ func updateFlagAction(action types.Expression, oldState types.ParticipantState, 
 	}
 
 	key, ok := k.(string)
-	value, ok2 := v.(string)
-	if !ok || !ok2 {
-		return newState, errors.New("could not parse key/value")
+	if !ok {
+		return newState, errors.New("could not parse flag key")
+	}
+
+	value := ""
+	switch flagVal := v.(type) {
+	case string:
+		value = flagVal
+	case float64:
+		value = fmt.Sprintf("%f", flagVal)
+	case bool:
+		value = fmt.Sprintf("%t", flagVal)
 	}
 
 	if newState.Flags == nil {

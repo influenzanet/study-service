@@ -1,6 +1,7 @@
 package studyengine
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -155,6 +156,32 @@ func TestActions(t *testing.T) {
 			return
 		}
 		if v != action.Data[1].Str {
+			t.Errorf("updated status error -> expected: %s, have: %s", action.Data[1].Str, v)
+		}
+	})
+
+	t.Run("UPDATE_FLAG with number", func(t *testing.T) {
+		action := types.Expression{
+			Name: "UPDATE_FLAG",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "keyNum"},
+				{DType: "num", Num: 14},
+			},
+		}
+		newState, err := ActionEval(action, participantState, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		v, ok := newState.Flags["keyNum"]
+		if !ok {
+			t.Error("could not find new flag")
+			return
+		}
+		res, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if res != action.Data[1].Num {
 			t.Errorf("updated status error -> expected: %s, have: %s", action.Data[1].Str, v)
 		}
 	})
