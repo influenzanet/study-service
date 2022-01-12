@@ -988,6 +988,167 @@ func TestEvalHasParticipantFlagKey(t *testing.T) {
 	})
 }
 
+func TestEvalHasResponseKey(t *testing.T) {
+	testEvalContext := EvalContext{
+		Event: types.StudyEvent{
+			Type: "SUBMIT",
+			Response: types.SurveyResponse{
+				Key: "weekly",
+				Responses: []types.SurveyItemResponse{
+					{
+						Key: "weekly.Q1", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "something"},
+								{Key: "2"},
+							}},
+					},
+					{
+						Key: "weekly.Q2", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "123.23", Dtype: "date"},
+							}},
+					},
+				},
+			},
+		},
+	}
+
+	//
+	t.Run("no survey item response found", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q3"},
+			{DType: "str", Str: "rg.1"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
+	t.Run("repsonse item in question missing", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.wrong"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
+	t.Run("has key", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.2"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+}
+func TestEvalHasResponseKeyWithValue(t *testing.T) {
+	testEvalContext := EvalContext{
+		Event: types.StudyEvent{
+			Type: "SUBMIT",
+			Response: types.SurveyResponse{
+				Key: "weekly",
+				Responses: []types.SurveyItemResponse{
+					{
+						Key: "weekly.Q1", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "something"},
+								{Key: "2"},
+							}},
+					},
+					{
+						Key: "weekly.Q2", Response: &types.ResponseItem{
+							Key: "rg", Items: []types.ResponseItem{
+								{Key: "1", Value: "123.23", Dtype: "date"},
+							}},
+					},
+				},
+			},
+		},
+	}
+
+	//
+	t.Run("no survey item response found", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKeyWithValue", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q3"},
+			{DType: "str", Str: "rg.1"},
+			{DType: "str", Str: "something"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
+	t.Run("repsonse item in question missing", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKeyWithValue", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.wrong"},
+			{DType: "str", Str: "something"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
+	t.Run("has empty value", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKeyWithValue", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.2"},
+			{DType: "str", Str: "something"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
+	t.Run("normal", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKeyWithValue", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.1"},
+			{DType: "str", Str: "something"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if !v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+}
 func TestEvalGetResponseValueAsNum(t *testing.T) {
 	testEvalContext := EvalContext{
 		Event: types.StudyEvent{

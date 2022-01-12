@@ -22,6 +22,8 @@
     - New gRPC endpoint to fetch messages for a participant and trigger deletion of messages from a participant's message list.
 - Study engine:
     - `hasParticipantFlagKey` new expression, that will check if a participant has a flag attribute with a specific key, where the value is not checked.
+    - `hasResponseKey` new expression, that will return true if the question has a response that contains a key at the specified path (e.g.: T0.Q1, rg.scg.1.b)
+    - `hasResponseKeyWithValue` new expression, that will return true if the question has a response that contains a key at the specified path with the given value (e.g.: T0.Q1, rg.scg.1.b, value)
 
 ### Changed
 

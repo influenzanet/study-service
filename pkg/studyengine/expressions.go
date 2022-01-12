@@ -36,6 +36,10 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.getResponseValueAsStr(expression)
 	case "countResponseItems":
 		val, err = evalCtx.countResponseItems(expression)
+	case "hasResponseKey":
+		val, err = evalCtx.hasResponseKey(expression)
+	case "hasResponseKeyWithValue":
+		val, err = evalCtx.hasResponseKeyWithValue(expression)
 	// Old responses:
 	case "checkConditionForOldResponses":
 		val, err = evalCtx.checkConditionForOldResponses(expression)
@@ -674,6 +678,73 @@ func (ctx EvalContext) countResponseItems(exp types.Expression) (val float64, er
 	}
 
 	val = float64(len(responseObject.Items))
+	return
+}
+
+func (ctx EvalContext) hasResponseKey(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	itemKey, err := ctx.mustGetStrValue(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	responseGroupKey, err := ctx.mustGetStrValue(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+
+	// find survey item:
+	surveyItem, err := findSurveyItemResponse(ctx.Event.Response.Responses, itemKey)
+	if err != nil {
+		// Item not found
+		return false, nil
+	}
+
+	_, err = findResponseObject(surveyItem, responseGroupKey)
+	if err != nil {
+		// Item not found
+		return false, nil
+	}
+	return true, nil
+}
+
+func (ctx EvalContext) hasResponseKeyWithValue(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 3 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	itemKey, err := ctx.mustGetStrValue(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	responseKey, err := ctx.mustGetStrValue(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+
+	value, err := ctx.mustGetStrValue(exp.Data[2])
+	if err != nil {
+		return val, err
+	}
+
+	// find survey item:
+	surveyItem, err := findSurveyItemResponse(ctx.Event.Response.Responses, itemKey)
+	if err != nil {
+		// Item not found
+		return false, nil
+	}
+
+	responseObject, err := findResponseObject(surveyItem, responseKey)
+	if err != nil {
+		// Item not found
+		return false, nil
+	}
+
+	val = responseObject.Value == value
 	return
 }
 
