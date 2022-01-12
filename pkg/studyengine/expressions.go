@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -86,6 +87,7 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.timestampWithOffset(expression)
 	default:
 		err = fmt.Errorf("expression name not known: %s", expression.Name)
+		logger.Debug.Println(err)
 		return
 	}
 	return
@@ -979,7 +981,8 @@ func (ctx EvalContext) or(exp types.Expression) (val bool, err error) {
 	for _, d := range exp.Data {
 		arg1, err := ctx.expressionArgResolver(d)
 		if err != nil {
-			return val, err
+			logger.Debug.Printf("exp in 'or' returned error: %v", err)
+			continue
 		}
 		switch arg1Val := arg1.(type) {
 		case bool:

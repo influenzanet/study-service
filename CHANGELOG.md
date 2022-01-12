@@ -32,6 +32,7 @@
 - 'Unknown' question types are now exported as JSON
 - Study Engine:
     - `UPDATE_FLAG` action accepts other data types than strings for the value attribute.
+    - `or` expression doesn't stop if any of the argumets return an error, instead it continues checking the remaining options
 
 
 ### Fixed

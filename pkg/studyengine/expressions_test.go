@@ -1044,6 +1044,21 @@ func TestEvalHasResponseKey(t *testing.T) {
 		}
 	})
 
+	t.Run("repsonse item in partly there missing", func(t *testing.T) {
+		exp := types.Expression{Name: "hasResponseKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "weekly.Q1"},
+			{DType: "str", Str: "rg.1.1"},
+		}}
+		v, err := ExpressionEval(exp, testEvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if v.(bool) {
+			t.Errorf("unexpected value: %b", v)
+		}
+	})
+
 	t.Run("has key", func(t *testing.T) {
 		exp := types.Expression{Name: "hasResponseKey", Data: []types.ExpressionArg{
 			{DType: "str", Str: "weekly.Q1"},
