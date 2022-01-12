@@ -52,6 +52,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.hasStudyStatus(expression)
 	case "hasParticipantFlag":
 		val, err = evalCtx.hasParticipantFlag(expression)
+	case "hasParticipantFlagKey":
+		val, err = evalCtx.hasParticipantFlagKey(expression)
 	case "lastSubmissionDateOlderThan":
 		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
 	case "hasMessageTypeAssigned":
@@ -337,6 +339,31 @@ func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val floa
 	}
 
 	return -1, nil
+}
+
+func (ctx EvalContext) hasParticipantFlagKey(exp types.Expression) (val bool, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	if exp.Data[0].IsNumber() {
+		return val, errors.New("unexpected argument types")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument 1")
+	}
+
+	_, ok = ctx.ParticipantState.Flags[arg1Val]
+	if !ok {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (val bool, err error) {

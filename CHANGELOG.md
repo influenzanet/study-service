@@ -20,7 +20,8 @@
     - New study-engine actions: `ADD_MESSAGE`, `REMOVE_MESSAGES_BY_TYPE`, `REMOVE_ALL_MESSAGES`.
     - Added DB method to remove messages by id from participant state
     - New gRPC endpoint to fetch messages for a participant and trigger deletion of messages from a participant's message list.
-
+- Study engine:
+    - `hasParticipantFlagKey` new expression, that will check if a participant has a flag attribute with a specific key, where the value is not checked.
 
 ### Changed
 
@@ -28,7 +29,7 @@
 - `GET_LAST_SURVEY_ITEM` survey prefill rule accepts now an optional third argument to filter for responses that were submitted not sooner than the provided value in seconds.
 - 'Unknown' question types are now exported as JSON
 - Study Engine:
-    - UPDATE_FLAG action accepts other data types than strings for the value attribute.
+    - `UPDATE_FLAG` action accepts other data types than strings for the value attribute.
 
 
 ### Fixed

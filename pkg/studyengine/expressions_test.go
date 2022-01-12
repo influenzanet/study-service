@@ -922,6 +922,72 @@ func TestEvalHasParticipantFlag(t *testing.T) {
 	})
 }
 
+func TestEvalHasParticipantFlagKey(t *testing.T) {
+	t.Run("participant hasn't got any participant flags (empty / nil)", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlagKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has other key", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlagKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+				Flags: map[string]string{
+					"key2": "1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if ret.(bool) {
+			t.Error("should be false")
+		}
+	})
+
+	t.Run("participant has correct key", func(t *testing.T) {
+		exp := types.Expression{Name: "hasParticipantFlagKey", Data: []types.ExpressionArg{
+			{DType: "str", Str: "key1"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+				Flags: map[string]string{
+					"key2": "1",
+					"key1": "1",
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if !ret.(bool) {
+			t.Error("should be true")
+		}
+	})
+}
+
 func TestEvalGetResponseValueAsNum(t *testing.T) {
 	testEvalContext := EvalContext{
 		Event: types.StudyEvent{
