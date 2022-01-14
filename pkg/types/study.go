@@ -49,8 +49,9 @@ type StudyConfigs struct {
 }
 
 type StudyStats struct {
-	ParticipantCount int64 `bson:"participantCount"`
-	ResponseCount    int64 `bson:"responseCount"`
+	ParticipantCount     int64 `bson:"participantCount"`
+	TempParticipantCount int64 `bson:"tempParticipantCount"`
+	ResponseCount        int64 `bson:"responseCount"`
 }
 
 type Tag struct {

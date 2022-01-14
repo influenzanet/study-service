@@ -105,14 +105,19 @@ func (s *StudyTimerService) UpdateStudyStats(instanceID string, studyKey string)
 	if err != nil {
 		logger.Error.Printf("DB ERROR for participant counting for study: %s -> %s", studyKey, err.Error())
 	}
+	tpCount, err := s.studyDBService.GetParticipantCountByStatus(instanceID, studyKey, types.PARTICIPANT_STUDY_STATUS_TEMPORARY)
+	if err != nil {
+		logger.Error.Printf("DB ERROR for participant counting for study: %s -> %s", studyKey, err.Error())
+	}
 	rCount, err := s.studyDBService.CountSurveyResponsesByKey(instanceID, studyKey, "", 0, 0)
 	if err != nil {
 		logger.Error.Printf("DB ERROR for response counting for study: %s -> %s", studyKey, err.Error())
 	}
 
 	if err := s.studyDBService.UpdateStudyStats(instanceID, studyKey, types.StudyStats{
-		ParticipantCount: pCount,
-		ResponseCount:    rCount,
+		ParticipantCount:     pCount,
+		TempParticipantCount: tpCount,
+		ResponseCount:        rCount,
 	}); err != nil {
 		logger.Error.Printf("DB ERROR for updating stats for study: %s -> %s", studyKey, err.Error())
 	}
