@@ -171,6 +171,19 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 	return prefills, nil
 }
 
+func (s *studyServiceServer) saveReports(instanceID string, studyKey string, reports map[string]types.Report, withResponseID string) {
+	// save reports
+	for _, report := range reports {
+		report.ResponseID = withResponseID
+		err := s.studyDBservice.SaveReport(instanceID, studyKey, report)
+		if err != nil {
+			logger.Error.Printf("unexpected error while save report: %v", err)
+		} else {
+			logger.Debug.Printf("Report with key '%s' for participant %s saved.", report.Key, report.ParticipantID)
+		}
+	}
+}
+
 func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
