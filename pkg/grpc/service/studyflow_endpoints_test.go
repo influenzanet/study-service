@@ -474,7 +474,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		}},
 	}
 	for _, sr := range surveyResps {
-		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		_, err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -883,7 +883,7 @@ func TestResolveContextRules(t *testing.T) {
 		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
-		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		_, err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -1175,7 +1175,7 @@ func TestResolvePrefillRules(t *testing.T) {
 		}},
 	}
 	for _, sr := range surveyResps {
-		err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		_, err := testStudyDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

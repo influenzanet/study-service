@@ -13,12 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) AddSurveyResponse(instanceID string, studyKey string, response types.SurveyResponse) error {
+func (dbService *StudyDBService) AddSurveyResponse(instanceID string, studyKey string, response types.SurveyResponse) (string, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 	response.ArrivedAt = time.Now().Unix()
-	_, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).InsertOne(ctx, response)
-	return err
+	res, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).InsertOne(ctx, response)
+	id := res.InsertedID.(primitive.ObjectID)
+	return id.Hex(), err
 }
 
 type ResponseQuery struct {

@@ -17,7 +17,7 @@ import (
 
 func addTestSurveyResponses(studyDBservice *studydb.StudyDBService, instID string, studyKey string, repsonses []types.SurveyResponse) error {
 	for _, resp := range repsonses {
-		err := studyDBservice.AddSurveyResponse(testInstanceID, studyKey, resp)
+		_, err := studyDBservice.AddSurveyResponse(testInstanceID, studyKey, resp)
 		if err != nil {
 			return err
 		}

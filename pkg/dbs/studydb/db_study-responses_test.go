@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/influenzanet/study-service/pkg/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestDbAddSurveyResponse(t *testing.T) {
@@ -26,9 +27,12 @@ func TestDbAddSurveyResponse(t *testing.T) {
 		},
 	}
 	t.Run("saving response", func(t *testing.T) {
-		err := testDBService.AddSurveyResponse(testInstanceID, testStudy, testResp)
+		id, err := testDBService.AddSurveyResponse(testInstanceID, testStudy, testResp)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
+		}
+		if len(id) < 2 || id == primitive.NilObjectID.Hex() {
+			t.Errorf("unexpected id: %s", id)
 		}
 	})
 }
@@ -50,7 +54,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 		{Key: "s2", ParticipantID: "u1", SubmittedAt: time.Now().Add(-14 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
-		err := testDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		_, err := testDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -152,7 +156,7 @@ func TestDbUpdateParticipantID(t *testing.T) {
 		{Key: "s1", ParticipantID: "u2", SubmittedAt: time.Now().Add(-23 * time.Hour * 24).Unix()},
 	}
 	for _, sr := range surveyResps {
-		err := testDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
+		_, err := testDBService.AddSurveyResponse(testInstanceID, testStudyKey, sr)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

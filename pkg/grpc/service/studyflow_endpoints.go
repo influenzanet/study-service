@@ -430,7 +430,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// Save responses
 	response := types.SurveyResponseFromAPI(req.Response)
 	response.ParticipantID = participantID
-	err = s.studyDBservice.AddSurveyResponse(instanceID, req.StudyKey, response)
+	rID, err := s.studyDBservice.AddSurveyResponse(instanceID, req.StudyKey, response)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -453,7 +453,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	s.saveReports(instanceID, req.StudyKey, actionResult.ReportsToCreate, "TODO")
+	s.saveReports(instanceID, req.StudyKey, actionResult.ReportsToCreate, rID)
 
 	// Prepare response
 	resp := api.AssignedSurveys{
