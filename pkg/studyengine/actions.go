@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -54,23 +55,20 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 		newState, err = removeAllMessages(action, oldState, event)
 	case "REMOVE_MESSAGES_BY_TYPE":
 		newState, err = removeMessagesByType(action, oldState, event)
-	/*case "INIT_REPORT":
+	case "INIT_REPORT":
 		newState, err = initReport(action, oldState, event)
 	case "UPDATE_REPORT_DATA":
 		newState, err = updateReportData(action, oldState, event)
-
-	case "ADD_REPORT":
-		newState, err = addReport(action, oldState, event)
-	case "REMOVE_ALL_REPORTS":
-		newState, err = removeAllReports(action, oldState, event)
-	case "REMOVE_REPORT_BY_KEY":
-		newState, err = removeReportByKey(action, oldState, event)
-	case "REMOVE_REPORTS_BY_KEY":
-		newState, err = removeReportsByKey(action, oldState, event)
-	*/
+	case "REMOVE_REPORT_DATA":
+		newState, err = removeReportData(action, oldState, event)
+	case "CANCEL_REPORT":
+		newState, err = cancelReport(action, oldState, event)
 	default:
 		newState = oldState
 		err = errors.New("action name not known")
+	}
+	if err != nil {
+		logger.Debug.Printf("error when running action: %v, %v", action, err)
 	}
 	return
 }
@@ -487,5 +485,204 @@ func removeMessagesByType(action types.Expression, oldState ActionData, event ty
 		}
 	}
 	newState.PState.Messages = messages
+	return
+}
+
+// init one empty report for the current event - if report already existing, reset report to empty report
+func initReport(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("initReport must have exactly one argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	reportKey, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	newState.ReportsToCreate[reportKey] = types.Report{
+		Key:           reportKey,
+		ParticipantID: oldState.PState.ParticipantID,
+		Timestamp:     time.Now().Truncate(time.Minute).Unix(),
+	}
+	return
+}
+
+// update one data entry in the report with the key, if report was not initialised, init one directly
+func updateReportData(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) < 3 {
+		return newState, errors.New("updateReportData must have at least 3 arguments")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	reportKey, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	// If report not initialized yet, init report:
+	report, hasKey := newState.ReportsToCreate[reportKey]
+	if !hasKey {
+		report = types.Report{
+			Key:           reportKey,
+			ParticipantID: oldState.PState.ParticipantID,
+			Timestamp:     time.Now().Truncate(time.Minute).Unix(),
+		}
+	}
+
+	// Get attribute Key
+	a, err := EvalContext.expressionArgResolver(action.Data[1])
+	if err != nil {
+		return newState, err
+	}
+	attributeKey, ok1 := a.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	// Get value
+	v, err := EvalContext.expressionArgResolver(action.Data[2])
+	if err != nil {
+		return newState, err
+	}
+	value := ""
+	switch flagVal := v.(type) {
+	case string:
+		value = flagVal
+	case float64:
+		value = fmt.Sprintf("%f", flagVal)
+	case bool:
+		value = fmt.Sprintf("%t", flagVal)
+	}
+
+	newData := types.ReportData{
+		Key:   attributeKey,
+		Value: value,
+	}
+
+	if len(action.Data) > 3 {
+		// Set dtype
+		d, err := EvalContext.expressionArgResolver(action.Data[4])
+		if err != nil {
+			return newState, err
+		}
+		dtype, ok1 := d.(string)
+		if !ok1 {
+			return newState, errors.New("could not parse arguments")
+		}
+		newData.Dtype = dtype
+	}
+
+	index := -1
+	for i, d := range report.Data {
+		if d.Key == attributeKey {
+			index = i
+			break
+		}
+	}
+
+	if index < 0 {
+		report.Data = append(report.Data, newData)
+	} else {
+		report.Data[index] = newData
+	}
+
+	newState.ReportsToCreate[reportKey] = report
+	return
+}
+
+// remove one data entry in the report with the key
+func removeReportData(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) != 2 {
+		return newState, errors.New("removeReportData must have exactly two arguments")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	reportKey, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	// If report not initialized yet, init report:
+	report, hasKey := newState.ReportsToCreate[reportKey]
+	if !hasKey {
+		// nothing to do
+		return newState, nil
+	}
+
+	// Get attribute Key
+	a, err := EvalContext.expressionArgResolver(action.Data[1])
+	if err != nil {
+		return newState, err
+	}
+	attributeKey, ok1 := a.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	index := -1
+	for i, d := range report.Data {
+		if d.Key == attributeKey {
+			index = i
+			break
+		}
+	}
+
+	if index > -1 {
+		report.Data = append(report.Data[:index], report.Data[index+1:]...)
+	}
+
+	newState.ReportsToCreate[reportKey] = report
+	return
+}
+
+// remove the report from this event
+func cancelReport(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("updateReportData must have exactly 1 argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	reportKey, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	_, hasKey := newState.ReportsToCreate[reportKey]
+	if hasKey {
+		delete(newState.ReportsToCreate, reportKey)
+	}
 	return
 }

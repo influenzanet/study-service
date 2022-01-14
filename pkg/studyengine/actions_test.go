@@ -519,3 +519,122 @@ func TestActions(t *testing.T) {
 		}
 	})
 }
+
+func TestReportActions(t *testing.T) {
+	actionData := ActionData{
+		PState: types.ParticipantState{
+			ParticipantID: "participant1234",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+		},
+		ReportsToCreate: map[string]types.Report{},
+	}
+	event := types.StudyEvent{
+		Type: "SUBMIT",
+		Response: types.SurveyResponse{
+			Key: "test",
+		},
+	}
+	var err error
+	t.Run("INIT_REPORT", func(t *testing.T) {
+		action := types.Expression{
+			Name: "INIT_REPORT",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key1"},
+			},
+		}
+
+		actionData, err = ActionEval(action, actionData, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(actionData.ReportsToCreate) < 1 {
+			t.Error("should have one report initialized")
+		}
+	})
+
+	t.Run("UPDATE_REPORT_DATA with no report there yet", func(t *testing.T) {
+		action := types.Expression{
+			Name: "UPDATE_REPORT_DATA",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key2"},
+				{DType: "str", Str: "d1"},
+				{DType: "str", Str: "v1"},
+			},
+		}
+		_, err := ActionEval(action, actionData, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(actionData.ReportsToCreate) < 2 {
+			t.Error("should have two report initialized")
+			return
+		}
+		if len(actionData.ReportsToCreate["key2"].Data) < 1 || actionData.ReportsToCreate["key2"].Data[0].Value != "v1" {
+			t.Error("unexpected report value")
+		}
+	})
+
+	t.Run("UPDATE_REPORT_DATA update existing report existing attribute", func(t *testing.T) {
+		action := types.Expression{
+			Name: "UPDATE_REPORT_DATA",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key2"},
+				{DType: "str", Str: "d1"},
+				{DType: "str", Str: "v2"},
+			},
+		}
+		_, err := ActionEval(action, actionData, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(actionData.ReportsToCreate) < 2 {
+			t.Error("should have two report initialized")
+			return
+		}
+		if len(actionData.ReportsToCreate["key2"].Data) < 1 || actionData.ReportsToCreate["key2"].Data[0].Value != "v2" {
+			t.Error("unexpected report value")
+		}
+	})
+
+	t.Run("REMOVE_REPORT_DATA", func(t *testing.T) {
+		action := types.Expression{
+			Name: "REMOVE_REPORT_DATA",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key2"},
+				{DType: "str", Str: "d1"},
+			},
+		}
+		_, err := ActionEval(action, actionData, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(actionData.ReportsToCreate) < 2 {
+			t.Error("should have two report initialized")
+			return
+		}
+		if len(actionData.ReportsToCreate["key2"].Data) > 0 {
+			t.Error("unexpected report value")
+		}
+	})
+
+	t.Run("CANCEL_REPORT", func(t *testing.T) {
+		action := types.Expression{
+			Name: "CANCEL_REPORT",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key2"},
+			},
+		}
+		_, err := ActionEval(action, actionData, event, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if len(actionData.ReportsToCreate) > 1 {
+			t.Error("should have only one report initialized")
+		}
+	})
+}

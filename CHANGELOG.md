@@ -24,6 +24,7 @@
     - `hasParticipantFlagKey` new expression, that will check if a participant has a flag attribute with a specific key, where the value is not checked.
     - `hasResponseKey` new expression, that will return true if the question has a response that contains a key at the specified path (e.g.: T0.Q1, rg.scg.1.b)
     - `hasResponseKeyWithValue` new expression, that will return true if the question has a response that contains a key at the specified path with the given value (e.g.: T0.Q1, rg.scg.1.b, value)
+    - New actions for working with reports: `INIT_REPORT, UPDATE_REPORT_DATA, REMOVE_REPORT_DATA, CANCEL_REPORT`. At the start o the study event, a map of reports is initalised (empty), and during the event, actions can create one or more report entries. Reports that are in this map at the end of the event will be saved to the database.
 
 
 ### Changed
@@ -34,6 +35,8 @@
 - Study Engine:
     - `UPDATE_FLAG` action accepts other data types than strings for the value attribute.
     - `or` expression doesn't stop if any of the arguments return an error, instead it continues checking the remaining options
+    - Reworked reporting system. Previously, expressions about "reports" were not used yet. Report attribute from the participant state is removed, and a new collection `<studyKey>_reports` is added.  Study actions remove due to this change: `ADD_REPORT, REMOVE_ALL_REPORTS, REMOVE_REPORT_BY_KEY, REMOVE_REPORTS_BY_KEY`.
+
 - Study stats contain count of temporary participants as well.
 
 ### Fixed
