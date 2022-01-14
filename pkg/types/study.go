@@ -220,14 +220,16 @@ func StudyStatsFromAPI(t *api.Study_Stats) StudyStats {
 		return StudyStats{}
 	}
 	return StudyStats{
-		ParticipantCount: t.ParticipantCount,
-		ResponseCount:    t.ResponseCount,
+		ParticipantCount:     t.ParticipantCount,
+		TempParticipantCount: t.TempParticipantCount,
+		ResponseCount:        t.ResponseCount,
 	}
 }
 
 func (t StudyStats) ToAPI() *api.Study_Stats {
 	return &api.Study_Stats{
-		ParticipantCount: t.ParticipantCount,
-		ResponseCount:    t.ResponseCount,
+		ParticipantCount:     t.ParticipantCount,
+		TempParticipantCount: t.TempParticipantCount,
+		ResponseCount:        t.ResponseCount,
 	}
 }
