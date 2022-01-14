@@ -25,6 +25,7 @@
     - `hasResponseKey` new expression, that will return true if the question has a response that contains a key at the specified path (e.g.: T0.Q1, rg.scg.1.b)
     - `hasResponseKeyWithValue` new expression, that will return true if the question has a response that contains a key at the specified path with the given value (e.g.: T0.Q1, rg.scg.1.b, value)
 
+
 ### Changed
 
 - The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps.
@@ -32,8 +33,8 @@
 - 'Unknown' question types are now exported as JSON
 - Study Engine:
     - `UPDATE_FLAG` action accepts other data types than strings for the value attribute.
-    - `or` expression doesn't stop if any of the argumets return an error, instead it continues checking the remaining options
-
+    - `or` expression doesn't stop if any of the arguments return an error, instead it continues checking the remaining options
+- Study stats contain count of temporary participants as well.
 
 ### Fixed
 
