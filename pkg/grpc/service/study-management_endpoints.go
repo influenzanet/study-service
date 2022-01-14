@@ -433,7 +433,10 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 
 			counters.Participants += 1
 
-			currentState := p
+			actionData := studyengine.ActionData{
+				PState:          p,
+				ReportsToCreate: map[string]types.Report{},
+			}
 			anyChange := false
 			for index, rule := range rules {
 				if rule == nil {
@@ -444,26 +447,30 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 					InstanceID: instanceID,
 					StudyKey:   studyKey,
 				}
-				newState, err := studyengine.ActionEval(*rule, currentState, event, s.studyDBservice)
+				newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
 				if err != nil {
 					return err
 				}
 
-				if !reflect.DeepEqual(newState, currentState) {
+				if !reflect.DeepEqual(newState.PState, actionData.PState) {
 					counters.ParticipantStateChangePerRule[index] += 1
 					anyChange = true
 				}
-				currentState = newState
+				actionData = newState
 			}
 
 			if anyChange {
 				// save state back to DB
-				_, err := s.studyDBservice.SaveParticipantState(instanceID, studyKey, currentState)
+				_, err := s.studyDBservice.SaveParticipantState(instanceID, studyKey, actionData.PState)
 				if err != nil {
 					logger.Error.Printf("RunRules: %v", err)
 					return status.Error(codes.Internal, err.Error())
 				}
 
+			}
+
+			for _, report := range actionData.ReportsToCreate {
+				logger.Debug.Printf("TODO: implement saving reports: %v", report)
 			}
 
 			return nil

@@ -16,7 +16,6 @@ type ParticipantState struct {
 	StudyStatus     string               `bson:"studyStatus" json:"studyStatus"` // shows if participant is active in the study - possible values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
 	Flags           map[string]string    `bson:"flags" json:"flags"`
 	AssignedSurveys []AssignedSurvey     `bson:"assignedSurveys" json:"assignedSurveys"`
-	Reports         []SurveyItemResponse `bson:"reports" json:"reports"`
 	LastSubmissions map[string]int64     `bson:"lastSubmission" json:"lastSubmission"` // surveyKey with timestamp
 	Messages        []ParticipantMessage `bson:"messages" json:"messages"`
 }

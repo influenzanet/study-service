@@ -74,8 +74,13 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	studyEvent.StudyKey = studyKey
 	studyEvent.InstanceID = instanceID
 
+	actionState := studyengine.ActionData{
+		PState:          pState,
+		ReportsToCreate: map[string]types.Report{},
+	}
+
 	for _, rule := range rules {
-		pState, err = studyengine.ActionEval(rule, pState, studyEvent, s.studyDBService)
+		actionState, err = studyengine.ActionEval(rule, actionState, studyEvent, s.studyDBService)
 		if err != nil {
 			logger.Error.Printf("ERROR in getAndUpdateParticipantState.ActionEval (%s, %s): %v", instanceID, studyKey, err)
 			continue
@@ -83,6 +88,16 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	}
 	// save state back to DB
 	_, err = studyDBServ.SaveParticipantState(instanceID, studyKey, pState)
+
+	for _, report := range actionState.ReportsToCreate {
+		report.ResponseID = "TIMER"
+		err := studyDBServ.SaveReport(instanceID, studyKey, report)
+		if err != nil {
+			logger.Error.Printf("unexpected error while save report: %v", err)
+		} else {
+			logger.Debug.Printf("Report with key '%s' for participant %s saved.", report.Key, report.ParticipantID)
+		}
+	}
 	return err
 }
 

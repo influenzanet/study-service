@@ -61,16 +61,18 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 		InstanceID: req.Token.InstanceId,
 		StudyKey:   req.StudyKey,
 	}
-	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	actionResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+	pState, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, actionResult.PState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	s.saveReports(req.Token.InstanceId, req.StudyKey, actionResult.ReportsToCreate, "ENTER")
 
 	// Prepare response
 	resp := api.AssignedSurveys{
@@ -117,17 +119,19 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 		InstanceID: req.InstanceId,
 		StudyKey:   req.StudyKey,
 	}
-	pState, err = s.getAndPerformStudyRules(req.InstanceId, req.StudyKey, pState, currentEvent)
+	actionResult, err := s.getAndPerformStudyRules(req.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	_, err = s.studyDBservice.SaveParticipantState(req.InstanceId, req.StudyKey, pState)
+	_, err = s.studyDBservice.SaveParticipantState(req.InstanceId, req.StudyKey, actionResult.PState)
 	if err != nil {
 		logger.Error.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	s.saveReports(req.InstanceId, req.StudyKey, actionResult.ReportsToCreate, "ENTER")
 
 	// Prepare response
 	resp := api.RegisterTempParticipantResponse{
@@ -210,13 +214,22 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
+	// update participant ID to all response object
 	count, err := s.studyDBservice.UpdateParticipantIDonResponses(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId, realParticipantID)
 	if err != nil {
 		logger.Error.Println(err)
 	} else {
 		logger.Debug.Printf("updated %d responses for participant %s", count, realParticipantID)
 	}
-	// TODO: update participant ID to all history object
+
+	// update participant ID to all history object
+	count, err = s.studyDBservice.UpdateParticipantIDonReports(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId, realParticipantID)
+	if err != nil {
+		logger.Error.Println(err)
+	} else {
+		logger.Debug.Printf("updated %d reports for participant %s", count, realParticipantID)
+	}
+
 	// TODO: update participant ID to all personal info responses
 
 	return &api.ServiceStatus{
@@ -429,16 +442,18 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		InstanceID: instanceID,
 		StudyKey:   req.StudyKey,
 	}
-	pState, err = s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
+	actionResult, err := s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	// save state back to DB
-	pState, err = s.studyDBservice.SaveParticipantState(instanceID, req.StudyKey, pState)
+	pState, err = s.studyDBservice.SaveParticipantState(instanceID, req.StudyKey, actionResult.PState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	s.saveReports(instanceID, req.StudyKey, actionResult.ReportsToCreate, "TODO")
 
 	// Prepare response
 	resp := api.AssignedSurveys{
@@ -487,15 +502,17 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 		InstanceID: req.Token.InstanceId,
 		StudyKey:   req.StudyKey,
 	}
-	pState, err = s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
+	actionResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, pState)
+	_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, actionResult.PState)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	s.saveReports(req.Token.InstanceId, req.StudyKey, actionResult.ReportsToCreate, "LEAVE")
 
 	// Prepare response
 	resp := api.AssignedSurveys{

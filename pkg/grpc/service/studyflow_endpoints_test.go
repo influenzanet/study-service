@@ -138,18 +138,19 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 			Type: "ENTER",
 		}
 
-		pState, err = s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		actionResult, err := s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		v, ok := pState.Flags["testKey"]
+		v, ok := actionResult.PState.Flags["testKey"]
 		if !ok {
 			t.Error("testKey not found")
 		}
 		if v != "testValue" {
 			t.Errorf("testValue not matches %s", v)
 		}
+		pState = actionResult.PState
 	})
 	t.Run("SUBMIT event", func(t *testing.T) {
 		testEvent := types.StudyEvent{
@@ -159,12 +160,12 @@ func TestGetAndPerformStudyRules(t *testing.T) {
 			},
 		}
 
-		pState, err = s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
+		actionResult, err := s.getAndPerformStudyRules(testInstanceID, testStudy.Key, pState, testEvent)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		v, ok := pState.Flags["testKey"]
+		v, ok := actionResult.PState.Flags["testKey"]
 		if !ok {
 			t.Error("testKey not found")
 		}

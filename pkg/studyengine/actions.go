@@ -14,7 +14,12 @@ type StudyDBService interface {
 	FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error)
 }
 
-func ActionEval(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
+type ActionData struct {
+	PState          types.ParticipantState
+	ReportsToCreate map[string]types.Report
+}
+
+func ActionEval(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
 	if event.Type == "SUBMIT" {
 		oldState, err = updateLastSubmissionForSurvey(oldState, event)
 		if err != nil {
@@ -49,6 +54,11 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 		newState, err = removeAllMessages(action, oldState, event)
 	case "REMOVE_MESSAGES_BY_TYPE":
 		newState, err = removeMessagesByType(action, oldState, event)
+	/*case "INIT_REPORT":
+		newState, err = initReport(action, oldState, event)
+	case "UPDATE_REPORT_DATA":
+		newState, err = updateReportData(action, oldState, event)
+
 	case "ADD_REPORT":
 		newState, err = addReport(action, oldState, event)
 	case "REMOVE_ALL_REPORTS":
@@ -57,6 +67,7 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 		newState, err = removeReportByKey(action, oldState, event)
 	case "REMOVE_REPORTS_BY_KEY":
 		newState, err = removeReportsByKey(action, oldState, event)
+	*/
 	default:
 		newState = oldState
 		err = errors.New("action name not known")
@@ -64,15 +75,15 @@ func ActionEval(action types.Expression, oldState types.ParticipantState, event 
 	return
 }
 
-func updateLastSubmissionForSurvey(oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func updateLastSubmissionForSurvey(oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if event.Response.Key == "" {
 		return newState, errors.New("no response key found")
 	}
-	if newState.LastSubmissions == nil {
-		newState.LastSubmissions = map[string]int64{}
+	if newState.PState.LastSubmissions == nil {
+		newState.PState.LastSubmissions = map[string]int64{}
 	}
-	newState.LastSubmissions[event.Response.Key] = time.Now().Unix()
+	newState.PState.LastSubmissions[event.Response.Key] = time.Now().Unix()
 	return
 }
 
@@ -86,14 +97,14 @@ func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool
 }
 
 // ifAction is used to conditionally perform actions
-func ifAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
+func ifAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) < 2 {
 		return newState, errors.New("ifAction must have at least two arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 		DbService:        dbService,
 	}
 	var task types.ExpressionArg
@@ -113,7 +124,7 @@ func ifAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // doAction to perform a list of actions
-func doAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
+func doAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
 	newState = oldState
 	for _, action := range action.Data {
 		if action.IsExpression() {
@@ -127,14 +138,14 @@ func doAction(action types.Expression, oldState types.ParticipantState, event ty
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent, dbService StudyDBService) (newState types.ParticipantState, err error) {
+func ifThenAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have at least one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 		DbService:        dbService,
 	}
 	if !checkCondition(action.Data[0], EvalContext) {
@@ -152,14 +163,14 @@ func ifThenAction(action types.Expression, oldState types.ParticipantState, even
 }
 
 // updateStudyStatusAction is used to update if user is active in the study
-func updateStudyStatusAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func updateStudyStatusAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("updateStudyStatusAction must have exactly one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -171,19 +182,19 @@ func updateStudyStatusAction(action types.Expression, oldState types.Participant
 		return newState, errors.New("could not parse argument")
 	}
 
-	newState.StudyStatus = status
+	newState.PState.StudyStatus = status
 	return
 }
 
 // updateFlagAction is used to update one of the string flags from the participant state
-func updateFlagAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func updateFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("updateFlagAction must have exactly two arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -209,27 +220,27 @@ func updateFlagAction(action types.Expression, oldState types.ParticipantState, 
 		value = fmt.Sprintf("%t", flagVal)
 	}
 
-	if newState.Flags == nil {
-		newState.Flags = map[string]string{}
+	if newState.PState.Flags == nil {
+		newState.PState.Flags = map[string]string{}
 	} else {
-		newState.Flags = make(map[string]string)
-		for k, v := range oldState.Flags {
-			newState.Flags[k] = v
+		newState.PState.Flags = make(map[string]string)
+		for k, v := range oldState.PState.Flags {
+			newState.PState.Flags[k] = v
 		}
 	}
-	newState.Flags[key] = value
+	newState.PState.Flags[key] = value
 	return
 }
 
 // removeFlagAction is used to update one of the string flags from the participant state
-func removeFlagAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeFlagAction must have exactly one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -241,26 +252,26 @@ func removeFlagAction(action types.Expression, oldState types.ParticipantState, 
 		return newState, errors.New("could not parse key")
 	}
 
-	if newState.Flags != nil {
-		newState.Flags = make(map[string]string)
-		for k, v := range oldState.Flags {
-			newState.Flags[k] = v
+	if newState.PState.Flags != nil {
+		newState.PState.Flags = make(map[string]string)
+		for k, v := range oldState.PState.Flags {
+			newState.PState.Flags[k] = v
 		}
 	}
 
-	delete(newState.Flags, key)
+	delete(newState.PState.Flags, key)
 	return
 }
 
 // addNewSurveyAction appends a new AssignedSurvey for the participant state
-func addNewSurveyAction(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func addNewSurveyAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 4 {
 		return newState, errors.New("addNewSurveyAction must have exactly four arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -294,33 +305,33 @@ func addNewSurveyAction(action types.Expression, oldState types.ParticipantState
 		ValidUntil: int64(validUntil),
 		Category:   category,
 	}
-	newState.AssignedSurveys = make([]types.AssignedSurvey, len(oldState.AssignedSurveys))
-	copy(newState.AssignedSurveys, oldState.AssignedSurveys)
+	newState.PState.AssignedSurveys = make([]types.AssignedSurvey, len(oldState.PState.AssignedSurveys))
+	copy(newState.PState.AssignedSurveys, oldState.PState.AssignedSurveys)
 
-	newState.AssignedSurveys = append(newState.AssignedSurveys, newSurvey)
+	newState.PState.AssignedSurveys = append(newState.PState.AssignedSurveys, newSurvey)
 	return
 }
 
 // removeAllSurveys clear the assigned survey list
-func removeAllSurveys(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeAllSurveys(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) > 0 {
 		return newState, errors.New("removeAllSurveys must not have arguments")
 	}
 
-	newState.AssignedSurveys = []types.AssignedSurvey{}
+	newState.PState.AssignedSurveys = []types.AssignedSurvey{}
 	return
 }
 
 // removeSurveyByKey removes the first or last occurence of a survey
-func removeSurveyByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeSurveyByKey(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeSurveyByKey must have exactly two arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -342,7 +353,7 @@ func removeSurveyByKey(action types.Expression, oldState types.ParticipantState,
 	switch position {
 	case "first":
 		found := false
-		for _, surv := range newState.AssignedSurveys {
+		for _, surv := range newState.PState.AssignedSurveys {
 			if surv.SurveyKey == surveyKey {
 				if !found {
 					found = true
@@ -353,33 +364,33 @@ func removeSurveyByKey(action types.Expression, oldState types.ParticipantState,
 		}
 	case "last":
 		ind := -1
-		for i, surv := range newState.AssignedSurveys {
+		for i, surv := range newState.PState.AssignedSurveys {
 			if surv.SurveyKey == surveyKey {
 				ind = i
 			}
 		}
 		if ind < 0 {
-			as = newState.AssignedSurveys
+			as = newState.PState.AssignedSurveys
 		} else {
-			as = append(newState.AssignedSurveys[:ind], newState.AssignedSurveys[ind+1:]...)
+			as = append(newState.PState.AssignedSurveys[:ind], newState.PState.AssignedSurveys[ind+1:]...)
 		}
 
 	default:
 		return newState, errors.New("position not known")
 	}
-	newState.AssignedSurveys = as
+	newState.PState.AssignedSurveys = as
 	return
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeSurveysByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeSurveysByKey(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeSurveysByKey must have exactly one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -393,24 +404,24 @@ func removeSurveysByKey(action types.Expression, oldState types.ParticipantState
 	}
 
 	as := []types.AssignedSurvey{}
-	for _, surv := range newState.AssignedSurveys {
+	for _, surv := range newState.PState.AssignedSurveys {
 		if surv.SurveyKey != surveyKey {
 			as = append(as, surv)
 		}
 	}
-	newState.AssignedSurveys = as
+	newState.PState.AssignedSurveys = as
 	return
 }
 
 // addMessage
-func addMessage(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func addMessage(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("addMessage must have exactly two arguments")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	arg1, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -433,30 +444,30 @@ func addMessage(action types.Expression, oldState types.ParticipantState, event 
 		Type:         messageType,
 		ScheduledFor: int64(timestamp),
 	}
-	newState.Messages = make([]types.ParticipantMessage, len(oldState.Messages))
-	copy(newState.Messages, oldState.Messages)
+	newState.PState.Messages = make([]types.ParticipantMessage, len(oldState.PState.Messages))
+	copy(newState.PState.Messages, oldState.PState.Messages)
 
-	newState.Messages = append(newState.Messages, newMessage)
+	newState.PState.Messages = append(newState.PState.Messages, newMessage)
 	return
 }
 
 // removeAllMessages
-func removeAllMessages(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeAllMessages(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 
-	newState.Messages = []types.ParticipantMessage{}
+	newState.PState.Messages = []types.ParticipantMessage{}
 	return
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeMessagesByType(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
+func removeMessagesByType(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeMessagesByType must have exactly one argument")
 	}
 	EvalContext := EvalContext{
 		Event:            event,
-		ParticipantState: newState,
+		ParticipantState: newState.PState,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -470,140 +481,11 @@ func removeMessagesByType(action types.Expression, oldState types.ParticipantSta
 	}
 
 	messages := []types.ParticipantMessage{}
-	for _, msg := range newState.Messages {
+	for _, msg := range newState.PState.Messages {
 		if msg.Type != messageType {
 			messages = append(messages, msg)
 		}
 	}
-	newState.Messages = messages
-	return
-}
-
-// addReport finds and appends a SurveyItemResponse to the reports array
-func addReport(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	newState = oldState
-	if len(action.Data) != 1 {
-		return newState, errors.New("addReport must have exactly one argument")
-	}
-	EvalContext := EvalContext{
-		Event:            event,
-		ParticipantState: newState,
-	}
-	k, err := EvalContext.expressionArgResolver(action.Data[0])
-	if err != nil {
-		return newState, err
-	}
-
-	itemKey, ok1 := k.(string)
-	if !ok1 {
-		return newState, errors.New("could not parse arguments")
-	}
-
-	for _, itemResp := range event.Response.Responses {
-		if itemResp.Key == itemKey {
-			newState.Reports = append(newState.Reports, itemResp)
-			break
-		}
-	}
-	return
-}
-
-// removeAllReports clears the reports array
-func removeAllReports(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	newState = oldState
-	if len(action.Data) > 0 {
-		return newState, errors.New("removeAllReports must not have arguments")
-	}
-	newState.Reports = []types.SurveyItemResponse{}
-	return
-}
-
-// removeReportByKey removes the first or last appearance of the report with specific key
-func removeReportByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	newState = oldState
-	if len(action.Data) != 2 {
-		return newState, errors.New("removeReportByKey must have exactly two arguments")
-	}
-	EvalContext := EvalContext{
-		Event:            event,
-		ParticipantState: newState,
-	}
-	k, err := EvalContext.expressionArgResolver(action.Data[0])
-	if err != nil {
-		return newState, err
-	}
-	pos, err := EvalContext.expressionArgResolver(action.Data[1])
-	if err != nil {
-		return newState, err
-	}
-
-	itemKey, ok1 := k.(string)
-	position, ok2 := pos.(string)
-
-	if !ok1 || !ok2 {
-		return newState, errors.New("could not parse arguments")
-	}
-
-	sr := []types.SurveyItemResponse{}
-	switch position {
-	case "first":
-		found := false
-		for _, surv := range newState.Reports {
-			if surv.Key == itemKey {
-				if !found {
-					found = true
-					continue
-				}
-			}
-			sr = append(sr, surv)
-		}
-	case "last":
-		ind := -1
-		for i, surv := range newState.Reports {
-			if surv.Key == itemKey {
-				ind = i
-			}
-		}
-		if ind < 0 {
-			sr = newState.Reports
-		} else {
-			sr = append(newState.Reports[:ind], newState.Reports[ind+1:]...)
-		}
-
-	default:
-		return newState, errors.New("position not known")
-	}
-	newState.Reports = sr
-	return
-}
-
-// removeReportsByKey removes all responses with a specific key
-func removeReportsByKey(action types.Expression, oldState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	newState = oldState
-	if len(action.Data) != 1 {
-		return newState, errors.New("removeReportsByKey must have exactly one argument")
-	}
-	EvalContext := EvalContext{
-		Event:            event,
-		ParticipantState: newState,
-	}
-	k, err := EvalContext.expressionArgResolver(action.Data[0])
-	if err != nil {
-		return newState, err
-	}
-
-	itemKey, ok1 := k.(string)
-
-	if !ok1 {
-		return newState, errors.New("could not parse arguments")
-	}
-
-	sr := []types.SurveyItemResponse{}
-	for _, surv := range newState.Reports {
-		if surv.Key != itemKey {
-			sr = append(sr, surv)
-		}
-	}
-	newState.Reports = sr
+	newState.PState.Messages = messages
 	return
 }

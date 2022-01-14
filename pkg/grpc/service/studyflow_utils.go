@@ -34,8 +34,12 @@ func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKe
 	return err == nil
 }
 
-func (s *studyServiceServer) getAndPerformStudyRules(instanceID string, studyKey string, pState types.ParticipantState, event types.StudyEvent) (newState types.ParticipantState, err error) {
-	newState = pState
+func (s *studyServiceServer) getAndPerformStudyRules(instanceID string, studyKey string, pState types.ParticipantState, event types.StudyEvent) (newState studyengine.ActionData, err error) {
+	newState = studyengine.ActionData{
+		PState:          pState,
+		ReportsToCreate: map[string]types.Report{},
+	}
+
 	rules, err := s.studyDBservice.GetStudyRules(instanceID, studyKey)
 	if err != nil {
 		return
