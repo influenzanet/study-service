@@ -12,6 +12,7 @@ import (
 	"github.com/influenzanet/go-utils/pkg/constants"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/exporter"
 	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc/codes"
@@ -68,6 +69,106 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 	return resp, nil
 }
 
+func (s *studyServiceServer) StreamParticipantStates(req *api.ParticipantStateQuery, stream api.StudyServiceApi_StreamParticipantStatesServer) error {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return s.missingArgumentError()
+	}
+
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+		})
+		if err != nil {
+			logger.Warning.Printf("unauthorizd access attempt to participant states: (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	sendResponseOverGrpc := func(db *studydb.StudyDBService, pState types.ParticipantState, instanceID string, studyKey string, args ...interface{}) error {
+		if len(args) != 1 {
+			return errors.New("StudyServiceApi_StreamParticipantStatesServer callback: unexpected number of args")
+		}
+		stream, ok := args[0].(api.StudyServiceApi_StreamParticipantStatesServer)
+		if !ok {
+			return errors.New(("StudyServiceApi_StreamParticipantStatesServer callback: can't parse stream"))
+		}
+
+		if err := stream.Send(pState.ToAPI()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	ctx := context.Background()
+	err := s.studyDBservice.FindAndExecuteOnParticipantsStates(
+		ctx,
+		req.Token.InstanceId,
+		req.StudyKey,
+		req.Status,
+		sendResponseOverGrpc, stream)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, req.StudyKey)
+	return nil
+}
+
+func (s *studyServiceServer) StreamReportHistory(req *api.ReportHistoryQuery, stream api.StudyServiceApi_StreamReportHistoryServer) error {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return s.missingArgumentError()
+	}
+
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+		})
+		if err != nil {
+			logger.Warning.Printf("unauthorizd access attempt to report history in (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	sendResponseOverGrpc := func(instanceID string, studyKey string, report types.Report, args ...interface{}) error {
+		if len(args) != 1 {
+			return errors.New("stream callback: unexpected number of args")
+		}
+		stream, ok := args[0].(api.StudyServiceApi_StreamReportHistoryServer)
+		if !ok {
+			return errors.New(("stream callback: can't parse stream"))
+		}
+
+		if err := stream.Send(report.ToAPI()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	query := studydb.ReportQuery{
+		ParticipantID: req.ParticipantId,
+		Key:           req.ReportKey,
+		Since:         req.From,
+		Until:         req.Until,
+	}
+	ctx := context.Background()
+	err := s.studyDBservice.PerformActionForReport(
+		ctx,
+		req.Token.InstanceId,
+		req.StudyKey,
+		query,
+		sendResponseOverGrpc, stream)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, req.StudyKey)
+	return nil
+}
+
 func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, stream api.StudyServiceApi_StreamStudyResponsesServer) error {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return s.missingArgumentError()
@@ -80,6 +181,7 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 			types.STUDY_ROLE_MAINTAINER,
 		})
 		if err != nil {
+			logger.Warning.Printf("unauthorizd access attempt to survey responses in (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
 			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
 			return status.Error(codes.Internal, err.Error())
 		}

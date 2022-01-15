@@ -6,7 +6,15 @@
 
 - Study data model now includes the attribute `idMappingMethod`, which allows to select the method used to convert profile ID into participant ID. This configuration is per study. Currently available methods are: 'aesctr' (default for backwards compatibility), 'sha224', 'sha256', 'same'.
 - Include improved logger, using configurable log levels. Use the environment variable `LOG_LEVEL` to select which level should be applied. Possible values are: `debug info warning error`.
-- New endpoint (`GetResponsesFlatJSON`) and data exporter code to export repsonses in a flat JSON list.
+- New gRPC endpoints:
+    - `GetResponsesFlatJSON`: data exporter to export repsonses in a flat JSON list
+    - `RegisterTemporaryParticipant`: create a participant that has no account yet
+    - `ConvertTemporaryToParticipant`: convert a temporary participant (or merge) into an active participant
+    - `GetAssignedSurveysForTemporaryParticipant`: get assigned surveys for a temporary participant
+    - `GetReportsForUser`: retrieve the report history for a user
+    - `StreamParticipantStates`: stream participant state list according to the query (admin, researcher)
+    - `StreamReportHistory`: stream report list according to the query (admin, researcher)
+
 - Participant File Upload endpoint: method to upload files for study participants
 - Data exporter:
     - Data exporter can parse composite question titles or option labels (when text contains multiple parts).

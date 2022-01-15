@@ -47,6 +47,7 @@ type StudyServiceApiClient interface {
 	HasParticipantStateWithCondition(ctx context.Context, in *ProfilesWithConditionReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*GetParticipantMessagesResp, error)
 	DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
+	GetReportsForUser(ctx context.Context, in *GetReportsForUserReq, opts ...grpc.CallOption) (*ReportHistory, error)
 	// ---> Study management
 	CreateNewStudy(ctx context.Context, in *NewStudyRequest, opts ...grpc.CallOption) (*Study, error)
 	GetAllStudies(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*Studies, error)
@@ -65,6 +66,8 @@ type StudyServiceApiClient interface {
 	// Data access:
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
+	StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error)
+	StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error)
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
 	GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error)
@@ -258,6 +261,15 @@ func (c *studyServiceApiClient) DeleteMessagesFromParticipant(ctx context.Contex
 	return out, nil
 }
 
+func (c *studyServiceApiClient) GetReportsForUser(ctx context.Context, in *GetReportsForUserReq, opts ...grpc.CallOption) (*ReportHistory, error) {
+	out := new(ReportHistory)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetReportsForUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) CreateNewStudy(ctx context.Context, in *NewStudyRequest, opts ...grpc.CallOption) (*Study, error) {
 	out := new(Study)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/CreateNewStudy", in, out, opts...)
@@ -416,8 +428,72 @@ func (x *studyServiceApiStreamStudyResponsesClient) Recv() (*SurveyResponse, err
 	return m, nil
 }
 
+func (c *studyServiceApiClient) StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[2], "/influenzanet.study_service.StudyServiceApi/StreamParticipantStates", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiStreamParticipantStatesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_StreamParticipantStatesClient interface {
+	Recv() (*ParticipantState, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiStreamParticipantStatesClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiStreamParticipantStatesClient) Recv() (*ParticipantState, error) {
+	m := new(ParticipantState)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *studyServiceApiClient) StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[3], "/influenzanet.study_service.StudyServiceApi/StreamReportHistory", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiStreamReportHistoryClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_StreamReportHistoryClient interface {
+	Recv() (*Report, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiStreamReportHistoryClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiStreamReportHistoryClient) Recv() (*Report, error) {
+	m := new(Report)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[2], "/influenzanet.study_service.StudyServiceApi/GetResponsesWideFormatCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetResponsesWideFormatCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -449,7 +525,7 @@ func (x *studyServiceApiGetResponsesWideFormatCSVClient) Recv() (*Chunk, error) 
 }
 
 func (c *studyServiceApiClient) GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[3], "/influenzanet.study_service.StudyServiceApi/GetResponsesLongFormatCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[5], "/influenzanet.study_service.StudyServiceApi/GetResponsesLongFormatCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -481,7 +557,7 @@ func (x *studyServiceApiGetResponsesLongFormatCSVClient) Recv() (*Chunk, error) 
 }
 
 func (c *studyServiceApiClient) GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSON", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[6], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSON", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -513,7 +589,7 @@ func (x *studyServiceApiGetResponsesFlatJSONClient) Recv() (*Chunk, error) {
 }
 
 func (c *studyServiceApiClient) GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[5], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[7], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -584,6 +660,7 @@ type StudyServiceApiServer interface {
 	HasParticipantStateWithCondition(context.Context, *ProfilesWithConditionReq) (*ServiceStatus, error)
 	GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error)
 	DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error)
+	GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error)
 	// ---> Study management
 	CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error)
 	GetAllStudies(context.Context, *api_types.TokenInfos) (*Studies, error)
@@ -602,6 +679,8 @@ type StudyServiceApiServer interface {
 	// Data access:
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
+	StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error
+	StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
 	GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error
@@ -665,6 +744,9 @@ func (UnimplementedStudyServiceApiServer) GetParticipantMessages(context.Context
 func (UnimplementedStudyServiceApiServer) DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessagesFromParticipant not implemented")
 }
+func (UnimplementedStudyServiceApiServer) GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetReportsForUser not implemented")
+}
 func (UnimplementedStudyServiceApiServer) CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewStudy not implemented")
 }
@@ -709,6 +791,12 @@ func (UnimplementedStudyServiceApiServer) GetStudyResponseStatistics(context.Con
 }
 func (UnimplementedStudyServiceApiServer) StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamStudyResponses not implemented")
+}
+func (UnimplementedStudyServiceApiServer) StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamParticipantStates not implemented")
+}
+func (UnimplementedStudyServiceApiServer) StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamReportHistory not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetResponsesWideFormatCSV not implemented")
@@ -1052,6 +1140,24 @@ func _StudyServiceApi_DeleteMessagesFromParticipant_Handler(srv interface{}, ctx
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_GetReportsForUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReportsForUserReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetReportsForUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetReportsForUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetReportsForUser(ctx, req.(*GetReportsForUserReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_CreateNewStudy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(NewStudyRequest)
 	if err := dec(in); err != nil {
@@ -1325,6 +1431,48 @@ func (x *studyServiceApiStreamStudyResponsesServer) Send(m *SurveyResponse) erro
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_StreamParticipantStates_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ParticipantStateQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).StreamParticipantStates(m, &studyServiceApiStreamParticipantStatesServer{stream})
+}
+
+type StudyServiceApi_StreamParticipantStatesServer interface {
+	Send(*ParticipantState) error
+	grpc.ServerStream
+}
+
+type studyServiceApiStreamParticipantStatesServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiStreamParticipantStatesServer) Send(m *ParticipantState) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _StudyServiceApi_StreamReportHistory_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ReportHistoryQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).StreamReportHistory(m, &studyServiceApiStreamReportHistoryServer{stream})
+}
+
+type StudyServiceApi_StreamReportHistoryServer interface {
+	Send(*Report) error
+	grpc.ServerStream
+}
+
+type studyServiceApiStreamReportHistoryServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiStreamReportHistoryServer) Send(m *Report) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _StudyServiceApi_GetResponsesWideFormatCSV_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ResponseExportQuery)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1499,6 +1647,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_DeleteMessagesFromParticipant_Handler,
 		},
 		{
+			MethodName: "GetReportsForUser",
+			Handler:    _StudyServiceApi_GetReportsForUser_Handler,
+		},
+		{
 			MethodName: "CreateNewStudy",
 			Handler:    _StudyServiceApi_CreateNewStudy_Handler,
 		},
@@ -1568,6 +1720,16 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "StreamStudyResponses",
 			Handler:       _StudyServiceApi_StreamStudyResponses_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StreamParticipantStates",
+			Handler:       _StudyServiceApi_StreamParticipantStates_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StreamReportHistory",
+			Handler:       _StudyServiceApi_StreamReportHistory_Handler,
 			ServerStreams: true,
 		},
 		{

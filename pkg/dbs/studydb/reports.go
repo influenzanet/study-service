@@ -1,8 +1,10 @@
 package studydb
 
 import (
+	"context"
 	"errors"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -98,4 +100,68 @@ func (dbService *StudyDBService) UpdateParticipantIDonReports(instanceID string,
 
 	res, err := dbService.collectionRefReportHistory(instanceID, studyKey).UpdateMany(ctx, filter, update)
 	return res.ModifiedCount, err
+}
+
+func (dbService *StudyDBService) PerformActionForReport(
+	ctx context.Context,
+	instanceID string,
+	studyKey string,
+	query ReportQuery,
+	cbk func(instanceID string, studyKey string, report types.Report, args ...interface{}) error,
+	args ...interface{},
+) (err error) {
+	filter := bson.M{}
+	opts := &options.FindOptions{
+		Sort: bson.D{
+			primitive.E{Key: "timestamp", Value: -1},
+		},
+	}
+
+	if len(query.ParticipantID) > 0 {
+		filter["participantID"] = query.ParticipantID
+	}
+
+	if query.Limit > 0 {
+		opts.SetLimit(query.Limit)
+	}
+
+	if len(query.Key) > 0 {
+		filter["key"] = query.Key
+	}
+
+	if query.Since > 0 && query.Until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"timestamp": bson.M{"$gt": query.Since}},
+			bson.M{"timestamp": bson.M{"$lt": query.Until}},
+		}
+	} else if query.Since > 0 {
+		filter["timestamp"] = bson.M{"$gt": query.Since}
+	} else if query.Until > 0 {
+		filter["timestamp"] = bson.M{"$lt": query.Until}
+	}
+
+	cur, err := dbService.collectionRefReportHistory(instanceID, studyKey).Find(
+		ctx,
+		filter,
+	)
+	if err != nil {
+		return err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		var result types.Report
+		err := cur.Decode(&result)
+		if err != nil {
+			return err
+		}
+
+		if err := cbk(instanceID, studyKey, result, args...); err != nil {
+			logger.Error.Println(err)
+		}
+	}
+	if err := cur.Err(); err != nil {
+		return err
+	}
+	return nil
 }

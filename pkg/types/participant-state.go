@@ -1,6 +1,9 @@
 package types
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"github.com/influenzanet/study-service/pkg/api"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 const (
 	PARTICIPANT_STUDY_STATUS_ACTIVE    = "active"
@@ -24,4 +27,18 @@ type ParticipantMessage struct {
 	ID           string `bson:"id" json:"id"`
 	Type         string `bson:"type" json:"type"`
 	ScheduledFor int64  `bson:"scheduledFor" json:"scheduledFor"`
+}
+
+func (p ParticipantState) ToAPI() *api.ParticipantState {
+	assignedSurveys := make([]*api.AssignedSurvey, len(p.AssignedSurveys))
+
+	return &api.ParticipantState{
+		Id:              p.ID.Hex(),
+		ParticipantId:   p.ParticipantID,
+		EnteredAt:       p.EnteredAt,
+		StudyStatus:     p.StudyStatus,
+		Flags:           p.Flags,
+		AssignedSurveys: assignedSurveys,
+		LastSubmissions: p.LastSubmissions,
+	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/token_checks"
 	"github.com/influenzanet/study-service/pkg/api"
+	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 	"github.com/influenzanet/study-service/pkg/utils"
@@ -89,6 +90,82 @@ func (s *studyServiceServer) GetActiveStudies(ctx context.Context, req *api_type
 		})
 
 	}
+	return resp, nil
+}
+
+func (s *studyServiceServer) GetReportsForUser(ctx context.Context, req *api.GetReportsForUserReq) (*api.ReportHistory, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	profileIDs := []string{req.Token.ProfilId}
+	profileIDs = append(profileIDs, req.Token.OtherProfileIds...)
+
+	// filter profiles
+	if len(req.OnlyForProfiles) > 0 {
+		filtered_list := []string{}
+		for _, pF := range req.OnlyForProfiles {
+			for _, p := range profileIDs {
+				if p == pF {
+					filtered_list = append(filtered_list, p)
+					break
+				}
+			}
+		}
+		profileIDs = filtered_list
+	}
+
+	resp := &api.ReportHistory{
+		Reports: []*api.Report{},
+	}
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.Token.InstanceId, types.STUDY_STATUS_ACTIVE, false)
+	if err != nil {
+		logger.Info.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	for _, study := range studies {
+		// filter study keys
+		if len(req.OnlyForStudies) > 0 {
+			keyOk := false
+			for _, fk := range req.OnlyForStudies {
+				if fk == study.Key {
+					keyOk = true
+					break
+				}
+			}
+			if !keyOk {
+				continue
+			}
+		}
+
+		for _, profileID := range profileIDs {
+			// ParticipantID
+			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
+			if err != nil {
+				logger.Error.Printf("couldn't compute participant ID: %v", err)
+				continue
+			}
+
+			query := studydb.ReportQuery{
+				ParticipantID: participantID,
+				Key:           req.ReportKeyFilter,
+				Since:         req.From,
+				Until:         req.Until,
+			}
+			reports, err := s.studyDBservice.FindReports(req.Token.InstanceId, study.Key, query)
+			if err != nil {
+				logger.Debug.Printf("couldn't find reports: %v", err)
+				continue
+			}
+
+			for _, r := range reports {
+				ro := r.ToAPI()
+				ro.StudyKey = study.Key
+				resp.Reports = append(resp.Reports, ro)
+			}
+		}
+	}
+
 	return resp, nil
 }
 
