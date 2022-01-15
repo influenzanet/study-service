@@ -46,25 +46,46 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.checkConditionForOldResponses(expression)
 	// Participant state:
 	case "getStudyEntryTime":
-		val, err = evalCtx.getStudyEntryTime(expression)
+		val, err = evalCtx.getStudyEntryTime(expression, false)
 	case "hasSurveyKeyAssigned":
-		val, err = evalCtx.hasSurveyKeyAssigned(expression)
+		val, err = evalCtx.hasSurveyKeyAssigned(expression, false)
 	case "getSurveyKeyAssignedFrom":
-		val, err = evalCtx.getSurveyKeyAssignedFrom(expression)
+		val, err = evalCtx.getSurveyKeyAssignedFrom(expression, false)
 	case "getSurveyKeyAssignedUntil":
-		val, err = evalCtx.getSurveyKeyAssignedUntil(expression)
+		val, err = evalCtx.getSurveyKeyAssignedUntil(expression, false)
 	case "hasStudyStatus":
-		val, err = evalCtx.hasStudyStatus(expression)
+		val, err = evalCtx.hasStudyStatus(expression, false)
 	case "hasParticipantFlag":
-		val, err = evalCtx.hasParticipantFlag(expression)
+		val, err = evalCtx.hasParticipantFlag(expression, false)
 	case "hasParticipantFlagKey":
-		val, err = evalCtx.hasParticipantFlagKey(expression)
+		val, err = evalCtx.hasParticipantFlagKey(expression, false)
 	case "lastSubmissionDateOlderThan":
-		val, err = evalCtx.lastSubmissionDateOlderThan(expression)
+		val, err = evalCtx.lastSubmissionDateOlderThan(expression, false)
 	case "hasMessageTypeAssigned":
-		val, err = evalCtx.hasMessageTypeAssigned(expression)
+		val, err = evalCtx.hasMessageTypeAssigned(expression, false)
 	case "getMessageNextTime":
-		val, err = evalCtx.getMessageNextTime(expression)
+		val, err = evalCtx.getMessageNextTime(expression, false)
+	// exprssions for merge participant states:
+	case "incomingState:getStudyEntryTime":
+		val, err = evalCtx.getStudyEntryTime(expression, true)
+	case "incomingState:hasSurveyKeyAssigned":
+		val, err = evalCtx.hasSurveyKeyAssigned(expression, true)
+	case "incomingState:getSurveyKeyAssignedFrom":
+		val, err = evalCtx.getSurveyKeyAssignedFrom(expression, true)
+	case "incomingState:getSurveyKeyAssignedUntil":
+		val, err = evalCtx.getSurveyKeyAssignedUntil(expression, true)
+	case "incomingState:hasStudyStatus":
+		val, err = evalCtx.hasStudyStatus(expression, true)
+	case "incomingState:hasParticipantFlag":
+		val, err = evalCtx.hasParticipantFlag(expression, true)
+	case "incomingState:hasParticipantFlagKey":
+		val, err = evalCtx.hasParticipantFlagKey(expression, true)
+	case "incomingState:lastSubmissionDateOlderThan":
+		val, err = evalCtx.lastSubmissionDateOlderThan(expression, true)
+	case "incomingState:hasMessageTypeAssigned":
+		val, err = evalCtx.hasMessageTypeAssigned(expression, true)
+	case "incomingState:getMessageNextTime":
+		val, err = evalCtx.getMessageNextTime(expression, true)
 	// Logical and comparisions:
 	case "eq":
 		val, err = evalCtx.eq(expression)
@@ -142,7 +163,11 @@ func (ctx EvalContext) checkSurveyResponseKey(exp types.Expression) (val bool, e
 	return ctx.Event.Response.Key == arg1Val, nil
 }
 
-func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasStudyStatus(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -152,7 +177,7 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression) (val bool, err error
 		return val, err
 	}
 
-	return ctx.ParticipantState.StudyStatus == arg1Val, nil
+	return pState.StudyStatus == arg1Val, nil
 }
 
 func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val bool, err error) {
@@ -278,11 +303,20 @@ func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val 
 	return result, nil
 }
 
-func (ctx EvalContext) getStudyEntryTime(exp types.Expression) (t float64, err error) {
-	return float64(ctx.ParticipantState.EnteredAt), nil
+func (ctx EvalContext) getStudyEntryTime(exp types.Expression, withIncomingParticipantState bool) (t float64, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+	return float64(pState.EnteredAt), nil
 }
 
-func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+
 	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
 		return val, errors.New("unexpected number or wrong type of argument")
 	}
@@ -295,7 +329,7 @@ func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (val bool, err
 		return val, errors.New("could not cast argument")
 	}
 
-	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+	for _, survey := range pState.AssignedSurveys {
 		if survey.SurveyKey == arg1Val {
 			val = true
 			return
@@ -304,7 +338,12 @@ func (ctx EvalContext) hasSurveyKeyAssigned(exp types.Expression) (val bool, err
 	return
 }
 
-func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val float64, err error) {
+func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression, withIncomingParticipantState bool) (val float64, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+
 	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
 		return val, errors.New("unexpected number or wrong type of argument")
 	}
@@ -314,7 +353,7 @@ func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val float
 		return val, err
 	}
 
-	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+	for _, survey := range pState.AssignedSurveys {
 		if survey.SurveyKey == arg1Val {
 			val = float64(survey.ValidFrom)
 			return
@@ -324,7 +363,12 @@ func (ctx EvalContext) getSurveyKeyAssignedFrom(exp types.Expression) (val float
 	return -1, nil
 }
 
-func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val float64, err error) {
+func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression, withIncomingParticipantState bool) (val float64, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+
 	if len(exp.Data) != 1 || !exp.Data[0].IsString() {
 		return val, errors.New("unexpected number or wrong type of argument")
 	}
@@ -337,7 +381,7 @@ func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val floa
 		return val, errors.New("could not cast argument")
 	}
 
-	for _, survey := range ctx.ParticipantState.AssignedSurveys {
+	for _, survey := range pState.AssignedSurveys {
 		if survey.SurveyKey == arg1Val {
 			val = float64(survey.ValidUntil)
 			return
@@ -347,7 +391,11 @@ func (ctx EvalContext) getSurveyKeyAssignedUntil(exp types.Expression) (val floa
 	return -1, nil
 }
 
-func (ctx EvalContext) hasParticipantFlagKey(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasParticipantFlagKey(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 1 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -365,14 +413,18 @@ func (ctx EvalContext) hasParticipantFlagKey(exp types.Expression) (val bool, er
 		return val, errors.New("could not cast argument 1")
 	}
 
-	_, ok = ctx.ParticipantState.Flags[arg1Val]
+	_, ok = pState.Flags[arg1Val]
 	if !ok {
 		return false, nil
 	}
 	return true, nil
 }
 
-func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasParticipantFlag(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 2 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -399,14 +451,18 @@ func (ctx EvalContext) hasParticipantFlag(exp types.Expression) (val bool, err e
 		return val, errors.New("could not cast argument 2")
 	}
 
-	value, ok := ctx.ParticipantState.Flags[arg1Val]
+	value, ok := pState.Flags[arg1Val]
 	if !ok || value != arg2Val {
 		return false, nil
 	}
 	return true, nil
 }
 
-func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 1 && len(exp.Data) != 2 {
 		return val, errors.New("unexpected numbers of arguments")
 	}
@@ -426,14 +482,14 @@ func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression) (val bo
 		if err != nil {
 			return val, err
 		}
-		lastTs, ok := ctx.ParticipantState.LastSubmissions[arg2Val]
+		lastTs, ok := pState.LastSubmissions[arg2Val]
 		if !ok {
 			return false, nil
 		}
 		return lastTs < refTime, nil
 
 	} else {
-		for _, lastTs := range ctx.ParticipantState.LastSubmissions {
+		for _, lastTs := range pState.LastSubmissions {
 			if lastTs > refTime {
 				return false, nil
 			}
@@ -910,7 +966,11 @@ func (ctx EvalContext) gte(exp types.Expression) (val bool, err error) {
 	}
 }
 
-func (ctx EvalContext) hasMessageTypeAssigned(exp types.Expression) (val bool, err error) {
+func (ctx EvalContext) hasMessageTypeAssigned(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 1 {
 		return val, errors.New("should have at exactly one argument")
 	}
@@ -918,7 +978,7 @@ func (ctx EvalContext) hasMessageTypeAssigned(exp types.Expression) (val bool, e
 	if err != nil {
 		return val, err
 	}
-	for _, m := range ctx.ParticipantState.Messages {
+	for _, m := range pState.Messages {
 		if m.Type == arg1 {
 			return true, nil
 		}
@@ -926,7 +986,11 @@ func (ctx EvalContext) hasMessageTypeAssigned(exp types.Expression) (val bool, e
 	return false, nil
 }
 
-func (ctx EvalContext) getMessageNextTime(exp types.Expression) (val int64, err error) {
+func (ctx EvalContext) getMessageNextTime(exp types.Expression, withIncomingParticipantState bool) (val int64, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
 	if len(exp.Data) != 1 {
 		return val, errors.New("should have at exactly one argument")
 	}
@@ -936,7 +1000,7 @@ func (ctx EvalContext) getMessageNextTime(exp types.Expression) (val int64, err 
 	}
 	msgType := arg1.(string)
 	nextTime := int64(0)
-	for _, m := range ctx.ParticipantState.Messages {
+	for _, m := range pState.Messages {
 		if m.Type == msgType {
 			if nextTime == 0 || nextTime > m.ScheduledFor {
 				nextTime = m.ScheduledFor

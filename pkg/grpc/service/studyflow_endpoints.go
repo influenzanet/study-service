@@ -175,22 +175,19 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 		}
 
 		// Merge participant states
-		existingPState.AssignedSurveys = append(existingPState.AssignedSurveys, pState.AssignedSurveys...)
-		if existingPState.Flags == nil {
-			existingPState.Flags = map[string]string{}
+		event := types.StudyEvent{
+			InstanceID:           req.Token.InstanceId,
+			StudyKey:             req.StudyKey,
+			Type:                 "MERGE",
+			MergeWithParticipant: pState,
 		}
-		for k, v := range pState.Flags {
-			existingPState.Flags[k] = v
-		}
-
-		if existingPState.LastSubmissions == nil {
-			existingPState.LastSubmissions = map[string]int64{}
-		}
-		for k, v := range pState.LastSubmissions {
-			existingPState.LastSubmissions[k] = v
+		mergeResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, existingPState, event)
+		if err != nil {
+			logger.Error.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 
-		_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, existingPState)
+		_, err = s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, mergeResult.PState)
 		if err != nil {
 			logger.Error.Println(err)
 			return nil, status.Error(codes.Internal, err.Error())
