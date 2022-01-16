@@ -115,6 +115,53 @@ func (x *ParticipantState) GetLastSubmissions() map[string]int64 {
 	return nil
 }
 
+type ParticipantStates struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ParticipantStates []*ParticipantState `protobuf:"bytes,1,rep,name=participant_states,json=participantStates,proto3" json:"participant_states,omitempty"`
+}
+
+func (x *ParticipantStates) Reset() {
+	*x = ParticipantStates{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_study_service_participant_state_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ParticipantStates) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ParticipantStates) ProtoMessage() {}
+
+func (x *ParticipantStates) ProtoReflect() protoreflect.Message {
+	mi := &file_study_service_participant_state_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ParticipantStates.ProtoReflect.Descriptor instead.
+func (*ParticipantStates) Descriptor() ([]byte, []int) {
+	return file_study_service_participant_state_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ParticipantStates) GetParticipantStates() []*ParticipantState {
+	if x != nil {
+		return x.ParticipantStates
+	}
+	return nil
+}
+
 var File_study_service_participant_state_proto protoreflect.FileDescriptor
 
 var file_study_service_participant_state_proto_rawDesc = []byte{
@@ -157,11 +204,18 @@ var file_study_service_participant_state_proto_rawDesc = []byte{
 	0x73, 0x74, 0x53, 0x75, 0x62, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74,
 	0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
 	0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x03, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x42, 0x2f,
-	0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69, 0x6e, 0x66,
-	0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74, 0x75, 0x64, 0x79, 0x2d,
-	0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70, 0x69, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x01, 0x28, 0x03, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x70,
+	0x0a, 0x11, 0x50, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x53, 0x74, 0x61,
+	0x74, 0x65, 0x73, 0x12, 0x5b, 0x0a, 0x12, 0x70, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61,
+	0x6e, 0x74, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x2c, 0x2e, 0x69, 0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2e, 0x73,
+	0x74, 0x75, 0x64, 0x79, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x50, 0x61, 0x72,
+	0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x11, 0x70,
+	0x61, 0x72, 0x74, 0x69, 0x63, 0x69, 0x70, 0x61, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x73,
+	0x42, 0x2f, 0x5a, 0x2d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x69,
+	0x6e, 0x66, 0x6c, 0x75, 0x65, 0x6e, 0x7a, 0x61, 0x6e, 0x65, 0x74, 0x2f, 0x73, 0x74, 0x75, 0x64,
+	0x79, 0x2d, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x61, 0x70,
+	0x69, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -176,22 +230,24 @@ func file_study_service_participant_state_proto_rawDescGZIP() []byte {
 	return file_study_service_participant_state_proto_rawDescData
 }
 
-var file_study_service_participant_state_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_study_service_participant_state_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_study_service_participant_state_proto_goTypes = []interface{}{
-	(*ParticipantState)(nil), // 0: influenzanet.study_service.ParticipantState
-	nil,                      // 1: influenzanet.study_service.ParticipantState.FlagsEntry
-	nil,                      // 2: influenzanet.study_service.ParticipantState.LastSubmissionsEntry
-	(*AssignedSurvey)(nil),   // 3: influenzanet.study_service.AssignedSurvey
+	(*ParticipantState)(nil),  // 0: influenzanet.study_service.ParticipantState
+	(*ParticipantStates)(nil), // 1: influenzanet.study_service.ParticipantStates
+	nil,                       // 2: influenzanet.study_service.ParticipantState.FlagsEntry
+	nil,                       // 3: influenzanet.study_service.ParticipantState.LastSubmissionsEntry
+	(*AssignedSurvey)(nil),    // 4: influenzanet.study_service.AssignedSurvey
 }
 var file_study_service_participant_state_proto_depIdxs = []int32{
-	1, // 0: influenzanet.study_service.ParticipantState.flags:type_name -> influenzanet.study_service.ParticipantState.FlagsEntry
-	3, // 1: influenzanet.study_service.ParticipantState.assigned_surveys:type_name -> influenzanet.study_service.AssignedSurvey
-	2, // 2: influenzanet.study_service.ParticipantState.last_submissions:type_name -> influenzanet.study_service.ParticipantState.LastSubmissionsEntry
-	3, // [3:3] is the sub-list for method output_type
-	3, // [3:3] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	2, // 0: influenzanet.study_service.ParticipantState.flags:type_name -> influenzanet.study_service.ParticipantState.FlagsEntry
+	4, // 1: influenzanet.study_service.ParticipantState.assigned_surveys:type_name -> influenzanet.study_service.AssignedSurvey
+	3, // 2: influenzanet.study_service.ParticipantState.last_submissions:type_name -> influenzanet.study_service.ParticipantState.LastSubmissionsEntry
+	0, // 3: influenzanet.study_service.ParticipantStates.participant_states:type_name -> influenzanet.study_service.ParticipantState
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_study_service_participant_state_proto_init() }
@@ -213,6 +269,18 @@ func file_study_service_participant_state_proto_init() {
 				return nil
 			}
 		}
+		file_study_service_participant_state_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ParticipantStates); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -220,7 +288,7 @@ func file_study_service_participant_state_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_study_service_participant_state_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
