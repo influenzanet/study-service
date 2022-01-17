@@ -31,6 +31,9 @@ type ParticipantMessage struct {
 
 func (p ParticipantState) ToAPI() *api.ParticipantState {
 	assignedSurveys := make([]*api.AssignedSurvey, len(p.AssignedSurveys))
+	for i, s := range p.AssignedSurveys {
+		assignedSurveys[i] = s.ToAPI()
+	}
 
 	return &api.ParticipantState{
 		Id:              p.ID.Hex(),
