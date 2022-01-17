@@ -161,6 +161,7 @@ func (s *studyServiceServer) GetReportsForUser(ctx context.Context, req *api.Get
 			for _, r := range reports {
 				ro := r.ToAPI()
 				ro.StudyKey = study.Key
+				ro.ProfileId = profileID
 				resp.Reports = append(resp.Reports, ro)
 			}
 		}
