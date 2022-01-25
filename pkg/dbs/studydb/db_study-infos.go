@@ -37,8 +37,9 @@ func (dbService *StudyDBService) GetStudiesByStatus(instanceID string, status st
 	var opts *options.FindOptions
 	if onlyKeys {
 		projection := bson.D{
-			primitive.E{Key: "key", Value: 1},       // {"secretKey", 1},
-			primitive.E{Key: "secretKey", Value: 1}, // {"secretKey", 1},
+			primitive.E{Key: "key", Value: 1},                     // {"secretKey", 1},
+			primitive.E{Key: "secretKey", Value: 1},               // {"secretKey", 1},
+			primitive.E{Key: "configs.idMappingMethod", Value: 1}, // {"secretKey", 1},
 		}
 		opts = options.Find().SetProjection(projection)
 	}

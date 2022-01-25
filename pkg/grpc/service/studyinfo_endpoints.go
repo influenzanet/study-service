@@ -162,6 +162,7 @@ func (s *studyServiceServer) GetReportsForUser(ctx context.Context, req *api.Get
 				ro := r.ToAPI()
 				ro.StudyKey = study.Key
 				ro.ProfileId = profileID
+				ro.ParticipantId = "" // don't share internal participant id
 				resp.Reports = append(resp.Reports, ro)
 			}
 		}
