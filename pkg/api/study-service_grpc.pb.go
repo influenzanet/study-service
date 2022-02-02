@@ -48,6 +48,7 @@ type StudyServiceApiClient interface {
 	GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*GetParticipantMessagesResp, error)
 	DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetReportsForUser(ctx context.Context, in *GetReportsForUserReq, opts ...grpc.CallOption) (*ReportHistory, error)
+	RemoveConfidentialResponsesForProfiles(ctx context.Context, in *RemoveConfidentialResponsesForProfilesReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	// ---> Study management
 	CreateNewStudy(ctx context.Context, in *NewStudyRequest, opts ...grpc.CallOption) (*Study, error)
 	GetAllStudies(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*Studies, error)
@@ -264,6 +265,15 @@ func (c *studyServiceApiClient) DeleteMessagesFromParticipant(ctx context.Contex
 func (c *studyServiceApiClient) GetReportsForUser(ctx context.Context, in *GetReportsForUserReq, opts ...grpc.CallOption) (*ReportHistory, error) {
 	out := new(ReportHistory)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetReportsForUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) RemoveConfidentialResponsesForProfiles(ctx context.Context, in *RemoveConfidentialResponsesForProfilesReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RemoveConfidentialResponsesForProfiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -661,6 +671,7 @@ type StudyServiceApiServer interface {
 	GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error)
 	DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error)
 	GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error)
+	RemoveConfidentialResponsesForProfiles(context.Context, *RemoveConfidentialResponsesForProfilesReq) (*ServiceStatus, error)
 	// ---> Study management
 	CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error)
 	GetAllStudies(context.Context, *api_types.TokenInfos) (*Studies, error)
@@ -746,6 +757,9 @@ func (UnimplementedStudyServiceApiServer) DeleteMessagesFromParticipant(context.
 }
 func (UnimplementedStudyServiceApiServer) GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReportsForUser not implemented")
+}
+func (UnimplementedStudyServiceApiServer) RemoveConfidentialResponsesForProfiles(context.Context, *RemoveConfidentialResponsesForProfilesReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveConfidentialResponsesForProfiles not implemented")
 }
 func (UnimplementedStudyServiceApiServer) CreateNewStudy(context.Context, *NewStudyRequest) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNewStudy not implemented")
@@ -1154,6 +1168,24 @@ func _StudyServiceApi_GetReportsForUser_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).GetReportsForUser(ctx, req.(*GetReportsForUserReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_RemoveConfidentialResponsesForProfiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveConfidentialResponsesForProfilesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).RemoveConfidentialResponsesForProfiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/RemoveConfidentialResponsesForProfiles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).RemoveConfidentialResponsesForProfiles(ctx, req.(*RemoveConfidentialResponsesForProfilesReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1649,6 +1681,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetReportsForUser",
 			Handler:    _StudyServiceApi_GetReportsForUser_Handler,
+		},
+		{
+			MethodName: "RemoveConfidentialResponsesForProfiles",
+			Handler:    _StudyServiceApi_RemoveConfidentialResponsesForProfiles_Handler,
 		},
 		{
 			MethodName: "CreateNewStudy",

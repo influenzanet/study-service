@@ -523,6 +523,16 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	return &resp, nil
 }
 
+func (s *studyServiceServer) RemoveConfidentialResponsesForProfiles(ctx context.Context, req *api.RemoveConfidentialResponsesForProfilesReq) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+	// TODO: fetch all studies and iterate
+	// TODO: check if profile in token
+	// TODO: remove confidential data for profiles in the current study (loop)
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
+}
+
 func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api_types.TokenInfos) (*api.ServiceStatus, error) {
 	if req == nil || token_checks.IsTokenEmpty(req) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")

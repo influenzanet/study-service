@@ -8,7 +8,8 @@ type SurveyItemResponse struct {
 	// for item groups:
 	Items []SurveyItemResponse `bson:"items,omitempty"`
 	// for single items:
-	Response *ResponseItem `bson:"response,omitempty"`
+	Response         *ResponseItem `bson:"response,omitempty"`
+	ConfidentialMode string        `bson:"confidentialMode,omitempty"`
 }
 
 func (sir SurveyItemResponse) ToAPI() *api.SurveyItemResponse {
@@ -17,9 +18,10 @@ func (sir SurveyItemResponse) ToAPI() *api.SurveyItemResponse {
 		items[i] = si.ToAPI()
 	}
 	apiResp := &api.SurveyItemResponse{
-		Key:   sir.Key,
-		Meta:  sir.Meta.ToAPI(),
-		Items: items,
+		Key:              sir.Key,
+		Meta:             sir.Meta.ToAPI(),
+		Items:            items,
+		ConfidentialMode: sir.ConfidentialMode,
 	}
 	if sir.Response != nil {
 		apiResp.Response = sir.Response.ToAPI()
@@ -36,10 +38,11 @@ func SurveyItemResponseFromAPI(sir *api.SurveyItemResponse) SurveyItemResponse {
 		items[i] = SurveyItemResponseFromAPI(si)
 	}
 	return SurveyItemResponse{
-		Key:      sir.Key,
-		Meta:     ResponseMetaFromAPI(sir.Meta),
-		Items:    items,
-		Response: ResponseItemFromAPI(sir.Response),
+		Key:              sir.Key,
+		Meta:             ResponseMetaFromAPI(sir.Meta),
+		Items:            items,
+		Response:         ResponseItemFromAPI(sir.Response),
+		ConfidentialMode: sir.ConfidentialMode,
 	}
 }
 

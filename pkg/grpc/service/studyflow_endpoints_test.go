@@ -718,6 +718,61 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 	})
 }
 
+func TestRemoveConfidentialResponsesForProfiles(t *testing.T) {
+	s := studyServiceServer{
+		globalDBService:   testGlobalDBService,
+		studyDBservice:    testStudyDBService,
+		StudyGlobalSecret: "globsecretfortest1234",
+	}
+
+	testUserID2 := "234234laaabbb3424"
+
+	t.Run("with missing request", func(t *testing.T) {
+		_, err := s.RemoveConfidentialResponsesForProfiles(context.Background(), nil)
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with empty request", func(t *testing.T) {
+		_, err := s.RemoveConfidentialResponsesForProfiles(context.Background(), &api.RemoveConfidentialResponsesForProfilesReq{})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with wrong profile request", func(t *testing.T) {
+		_, err := s.RemoveConfidentialResponsesForProfiles(context.Background(), &api.RemoveConfidentialResponsesForProfilesReq{
+			Token: &api_types.TokenInfos{
+				InstanceId: testInstanceID,
+				Id:         testUserID2,
+				ProfilId:   testUserID2,
+			},
+			ForProfiles: []string{"wrong"},
+		})
+		ok, msg := shouldHaveGrpcErrorStatus(err, "")
+		if !ok {
+			t.Error(msg)
+		}
+	})
+
+	t.Run("with correct request", func(t *testing.T) {
+		_, err := s.RemoveConfidentialResponsesForProfiles(context.Background(), &api.RemoveConfidentialResponsesForProfilesReq{
+			Token: &api_types.TokenInfos{
+				InstanceId: testInstanceID,
+				Id:         testUserID2,
+				ProfilId:   testUserID2,
+			},
+			ForProfiles: []string{testUserID2},
+		})
+		if err != nil {
+			t.Errorf("unexpected err: %v", err)
+		}
+	})
+}
+
 func TestLeaveStudyEndpoint(t *testing.T) {
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,

@@ -19,9 +19,10 @@ type SurveyItem struct {
 	SelectionMethod *Expression  `bson:"selectionMethod,omitempty"`
 
 	// Question attributes ->
-	Type        string         `bson:"type,omitempty"`
-	Components  *ItemComponent `bson:"components,omitempty"`
-	Validations []Validation   `bson:"validations,omitempty"`
+	Type             string         `bson:"type,omitempty"`
+	Components       *ItemComponent `bson:"components,omitempty"`
+	Validations      []Validation   `bson:"validations,omitempty"`
+	ConfidentialMode string         `bson:"confidentialMode,omitempty"`
 }
 
 func (s SurveyItem) ToAPI() *api.SurveyItem {
@@ -40,18 +41,19 @@ func (s SurveyItem) ToAPI() *api.SurveyItem {
 	}
 
 	return &api.SurveyItem{
-		Id:              id,
-		Key:             s.Key,
-		Follows:         s.Follows,
-		Condition:       s.Condition.ToAPI(),
-		Priority:        s.Priority,
-		Version:         s.Version,
-		VersionTags:     s.VersionTags,
-		Items:           items,
-		SelectionMethod: s.SelectionMethod.ToAPI(),
-		Type:            s.Type,
-		Components:      s.Components.ToAPI(),
-		Validations:     validations,
+		Id:               id,
+		Key:              s.Key,
+		Follows:          s.Follows,
+		Condition:        s.Condition.ToAPI(),
+		Priority:         s.Priority,
+		Version:          s.Version,
+		VersionTags:      s.VersionTags,
+		Items:            items,
+		SelectionMethod:  s.SelectionMethod.ToAPI(),
+		Type:             s.Type,
+		Components:       s.Components.ToAPI(),
+		Validations:      validations,
+		ConfidentialMode: s.ConfidentialMode,
 	}
 }
 
@@ -72,17 +74,18 @@ func SurveyItemFromAPI(s *api.SurveyItem) SurveyItem {
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 
 	return SurveyItem{
-		ID:              _id,
-		Key:             s.Key,
-		Follows:         s.Follows,
-		Condition:       ExpressionFromAPI(s.Condition),
-		Priority:        s.Priority,
-		Version:         s.Version,
-		VersionTags:     s.VersionTags,
-		Items:           items,
-		SelectionMethod: ExpressionFromAPI(s.SelectionMethod),
-		Type:            s.Type,
-		Components:      ItemComponentFromAPI(s.Components),
-		Validations:     validations,
+		ID:               _id,
+		Key:              s.Key,
+		Follows:          s.Follows,
+		Condition:        ExpressionFromAPI(s.Condition),
+		Priority:         s.Priority,
+		Version:          s.Version,
+		VersionTags:      s.VersionTags,
+		Items:            items,
+		SelectionMethod:  ExpressionFromAPI(s.SelectionMethod),
+		Type:             s.Type,
+		Components:       ItemComponentFromAPI(s.Components),
+		Validations:      validations,
+		ConfidentialMode: s.ConfidentialMode,
 	}
 }
