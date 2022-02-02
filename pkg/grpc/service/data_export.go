@@ -181,7 +181,7 @@ func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, 
 			types.STUDY_ROLE_MAINTAINER,
 		})
 		if err != nil {
-			logger.Warning.Printf("unauthorizd access attempt to survey responses in (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
+			logger.Warning.Printf("unauthorizd access attempt to survey responses in (%s-%s): %v", req.Token.InstanceId, req.StudyKey, err)
 			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
 			return status.Error(codes.Internal, err.Error())
 		}
