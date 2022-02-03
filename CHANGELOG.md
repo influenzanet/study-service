@@ -14,6 +14,7 @@
     - `GetReportsForUser`: retrieve the report history for a user
     - `StreamParticipantStates`: stream participant state list according to the query (admin, researcher)
     - `StreamReportHistory`: stream report list according to the query (admin, researcher)
+    - `RemoveConfidentialResponsesForProfiles`: remove data from confidential responses collection for the given profiles of the user
 
 - Participant File Upload endpoint: method to upload files for study participants
 - Data exporter:
@@ -22,6 +23,7 @@
     - Exports now contain two new fixed columns: `ID` (identifying a particular survey submission) and `opened` (containing the POSIX time timestamp at which the client opened the survey).
     - Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
     - `cloze` questions and single/multi-choice options are now exported
+    - Can handle `timeInput` question type as a number input (it is basically a number = seconds since 00:00).
 - New messaging concept:
     - Participant state can store list of messages scheduled for the participant.
     - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.
@@ -34,6 +36,7 @@
     - `hasResponseKeyWithValue` new expression, that will return true if the question has a response that contains a key at the specified path with the given value (e.g.: T0.Q1, rg.scg.1.b, value)
     - New actions for working with reports: `INIT_REPORT, UPDATE_REPORT_DATA, REMOVE_REPORT_DATA, CANCEL_REPORT`. At the start o the study event, a map of reports is initalised (empty), and during the event, actions can create one or more report entries. Reports that are in this map at the end of the event will be saved to the database.
     - implemented new expressions to handle merge event (when two participant states should be merged - convert temporary participant when participant already exists)
+
 
 
 ### Changed

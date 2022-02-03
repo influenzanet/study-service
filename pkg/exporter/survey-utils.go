@@ -194,6 +194,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_TEXT_INPUT
 			case "dateInput":
 				option.OptionType = OPTION_TYPE_DATE_INPUT
+			case "timeInput":
+				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "cloze":
@@ -220,6 +222,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_TEXT_INPUT
 			case "dateInput":
 				option.OptionType = OPTION_TYPE_DATE_INPUT
+			case "timeInput":
+				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "cloze":
@@ -275,6 +279,14 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 		}
 		responseDef.Label = label
 		responseDef.ResponseType = QUESTION_TYPE_DATE_INPUT
+		return []ResponseDef{responseDef}
+	case "timeInput":
+		label, err := getPreviewText(rItem, lang)
+		if err != nil {
+			logger.Debug.Printf("mapToResponseDef: label not found for: %v", rItem)
+		}
+		responseDef.Label = label
+		responseDef.ResponseType = QUESTION_TYPE_NUMBER_INPUT
 		return []ResponseDef{responseDef}
 	case "eq5d-health-indicator":
 		responseDef.Label = ""
@@ -519,6 +531,8 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_TEXT_INPUT
 			case "dateInput":
 				option.OptionType = OPTION_TYPE_DATE_INPUT
+			case "timeInput":
+				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "numberInput":
 				option.OptionType = OPTION_TYPE_NUMBER_INPUT
 			case "dropDownGroup":
