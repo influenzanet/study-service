@@ -256,6 +256,14 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 		responseDef.Label = label
 		responseDef.ResponseType = QUESTION_TYPE_TEXT_INPUT
 		return []ResponseDef{responseDef}
+	case "consent":
+		label, err := getPreviewText(rItem, lang)
+		if err != nil {
+			logger.Debug.Printf("mapToResponseDef: label not found for: %v", rItem)
+		}
+		responseDef.Label = label
+		responseDef.ResponseType = QUESTION_TYPE_CONSENT
+		return []ResponseDef{responseDef}
 	case "multilineTextInput":
 		label, err := getPreviewText(rItem, lang)
 		if err != nil {

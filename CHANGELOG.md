@@ -24,6 +24,7 @@
     - Roles can now be extended with custom names using the scheme `role:customName`. If the role is ommitted (format: `:customName`), the item is still exported, but as an 'unknown' question.
     - `cloze` questions and single/multi-choice options are now exported
     - Can handle `timeInput` question type as a number input (it is basically a number = seconds since 00:00).
+    - Can handle `consent` question type.
 - New messaging concept:
     - Participant state can store list of messages scheduled for the participant.
     - New study-engine expressions `hasMessageTypeAssigned`, `getMessageNextTime`.

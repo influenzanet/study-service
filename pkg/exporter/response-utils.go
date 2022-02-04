@@ -68,6 +68,8 @@ func getResponseColumns(question SurveyQuestion, response *types.SurveyItemRespo
 	switch question.QuestionType {
 	case QUESTION_TYPE_SINGLE_CHOICE:
 		return processResponseForSingleChoice(question, response, questionOptionSep)
+	case QUESTION_TYPE_CONSENT:
+		return processResponseForConsent(question, response, questionOptionSep)
 	case QUESTION_TYPE_DROPDOWN:
 		return processResponseForSingleChoice(question, response, questionOptionSep)
 	case QUESTION_TYPE_LIKERT:
@@ -223,6 +225,53 @@ func handleSingleChoiceGroupList(questionKey string, responseSlotDefs []Response
 			}
 		}
 	}
+	return responseCols
+}
+
+func processResponseForConsent(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	var responseCols map[string]interface{}
+
+	if len(question.Responses) == 1 {
+		rSlot := question.Responses[0]
+		responseCols = handleSimpleConsent(question.ID, rSlot, response, questionOptionSep)
+
+	} else {
+		responseCols = handleConsentList(question.ID, question.Responses, response, questionOptionSep)
+	}
+	return responseCols
+}
+
+func handleSimpleConsent(questionKey string, responseSlotDef ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+	responseCols[questionKey] = ""
+
+	// Find responses
+	rValue := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+responseSlotDef.ID)
+	if rValue != nil {
+		responseCols[questionKey] = TRUE_VALUE
+	} else {
+		responseCols[questionKey] = FALSE_VALUE
+	}
+	return responseCols
+}
+
+func handleConsentList(questionKey string, responseSlotDefs []ResponseDef, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+
+	for _, rSlot := range responseSlotDefs {
+		// Prepare columns:
+		slotKey := questionKey + questionOptionSep + rSlot.ID
+		responseCols[slotKey] = ""
+
+		// Find responses
+		rValue := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+rSlot.ID)
+		if rValue != nil {
+			responseCols[questionKey] = TRUE_VALUE
+		} else {
+			responseCols[questionKey] = FALSE_VALUE
+		}
+	}
+
 	return responseCols
 }
 

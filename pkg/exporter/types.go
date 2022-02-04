@@ -3,6 +3,7 @@ package exporter
 import "github.com/influenzanet/study-service/pkg/api"
 
 const (
+	QUESTION_TYPE_CONSENT                         = "consent"
 	QUESTION_TYPE_SINGLE_CHOICE                   = "single_choice"
 	QUESTION_TYPE_MULTIPLE_CHOICE                 = "multiple_choice"
 	QUESTION_TYPE_TEXT_INPUT                      = "text"
