@@ -227,7 +227,15 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 		logger.Debug.Printf("updated %d reports for participant %s", count, realParticipantID)
 	}
 
-	// TODO: update participant ID to all personal info responses
+	// update participant ID to all confidential responses
+	oldID := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	newID := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.realParticipantID)
+	count, err = s.studyDBservice.UpdateParticipantIDonConfidentialResponses(req.Token.InstanceId, req.StudyKey, oldID, newID)
+	if err != nil {
+		logger.Error.Println(err)
+	} else {
+		logger.Debug.Printf("updated %d confidential responses for participant %s", count, realParticipantID)
+	}
 
 	return &api.ServiceStatus{
 		Status:  api.ServiceStatus_NORMAL,
