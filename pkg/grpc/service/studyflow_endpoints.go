@@ -589,10 +589,51 @@ func (s *studyServiceServer) RemoveConfidentialResponsesForProfiles(ctx context.
 	if req == nil || token_checks.IsTokenEmpty(req.Token) {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	// TODO: fetch all studies and iterate
-	// TODO: check if profile in token
-	// TODO: remove confidential data for profiles in the current study (loop)
-	return nil, status.Error(codes.Unimplemented, "unimplemented")
+
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.Token.InstanceId, "", true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	profileIDs := []string{}
+
+	userProfileIDs := []string{req.Token.ProfilId}
+	userProfileIDs = append(userProfileIDs, req.Token.OtherProfileIds...)
+
+	if len(req.ForProfiles) > 0 {
+		for _, p := range req.ForProfiles {
+			for _, up := range userProfileIDs {
+				if p == up {
+					profileIDs = append(profileIDs, p)
+					break
+				}
+			}
+		}
+		if len(profileIDs) < 1 {
+			logger.Warning.Printf("User '%s' attempted to remove confidential data for profiles with sufficent rights in the token: %v", req.Token.Id, req.ForProfiles)
+			return nil, status.Error(codes.PermissionDenied, "not permitted to manage requested profiles")
+		}
+	} else {
+		profileIDs = userProfileIDs
+	}
+
+	for _, study := range studies {
+		for _, profileID := range profileIDs {
+			_, participantID2, err := s.profileIDToParticipantID(req.Token.InstanceId, study.Key, profileID, false)
+			if err != nil {
+				logger.Error.Printf("unexpected error: %v", err)
+				continue
+			}
+			_, err = s.studyDBservice.DeleteConfidentialResponses(req.Token.InstanceId, study.Key, participantID2, "")
+			if err != nil {
+				logger.Error.Printf("unexpected error: %v", err)
+			}
+		}
+	}
+	return &api.ServiceStatus{
+		Version: "v1",
+		Msg:     "confidential data removal triggered",
+	}, nil
 }
 
 func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api_types.TokenInfos) (*api.ServiceStatus, error) {
