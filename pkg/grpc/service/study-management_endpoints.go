@@ -433,6 +433,12 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 
 			counters.Participants += 1
 
+			participantID2, _, err := s.profileIDToParticipantID(instanceID, studyKey, p.ParticipantID, true)
+			if err != nil {
+				logger.Error.Printf("RunRules: %v", err)
+				return status.Error(codes.Internal, err.Error())
+			}
+
 			actionData := studyengine.ActionData{
 				PState:          p,
 				ReportsToCreate: map[string]types.Report{},
@@ -444,8 +450,9 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 				}
 
 				event := types.StudyEvent{
-					InstanceID: instanceID,
-					StudyKey:   studyKey,
+					InstanceID:                            instanceID,
+					StudyKey:                              studyKey,
+					ParticipantIDForConfidentialResponses: participantID2,
 				}
 				newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
 				if err != nil {
@@ -468,11 +475,7 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 				}
 
 			}
-
-			for _, report := range actionData.ReportsToCreate {
-				logger.Debug.Printf("TODO: implement saving reports: %v", report)
-			}
-
+			s.saveReports(instanceID, req.StudyKey, actionData.ReportsToCreate, "")
 			return nil
 		},
 	)

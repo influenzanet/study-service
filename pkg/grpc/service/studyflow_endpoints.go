@@ -36,7 +36,7 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 	}
 
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
+	participantID, participantID2, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -57,9 +57,10 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:       "ENTER",
-		InstanceID: req.Token.InstanceId,
-		StudyKey:   req.StudyKey,
+		Type:                                  "ENTER",
+		InstanceID:                            req.Token.InstanceId,
+		StudyKey:                              req.StudyKey,
+		ParticipantIDForConfidentialResponses: participantID2,
 	}
 	actionResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -93,7 +94,7 @@ func (s *studyServiceServer) RegisterTemporaryParticipant(ctx context.Context, r
 	}
 
 	// Generate new participantID
-	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, primitive.NewObjectID().Hex())
+	participantID, _, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, primitive.NewObjectID().Hex(), true)
 	if err != nil {
 		logger.Debug.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -160,7 +161,7 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 	}
 
 	// Calculate real participant ID:
-	realParticipantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
+	realParticipantID, realParticipantID2, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -176,10 +177,11 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 
 		// Merge participant states
 		event := types.StudyEvent{
-			InstanceID:           req.Token.InstanceId,
-			StudyKey:             req.StudyKey,
-			Type:                 "MERGE",
-			MergeWithParticipant: pState,
+			InstanceID:                            req.Token.InstanceId,
+			StudyKey:                              req.StudyKey,
+			Type:                                  "MERGE",
+			MergeWithParticipant:                  pState,
+			ParticipantIDForConfidentialResponses: realParticipantID2,
 		}
 		mergeResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, existingPState, event)
 		if err != nil {
@@ -228,17 +230,12 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 	}
 
 	// update participant ID to all confidential responses
-	oldID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	oldID, _, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId, true)
 	if err != nil {
 		logger.Error.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	newID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, realParticipantID)
-	if err != nil {
-		logger.Error.Println(err)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	count, err = s.studyDBservice.UpdateParticipantIDonConfidentialResponses(req.Token.InstanceId, req.StudyKey, oldID, newID)
+	count, err = s.studyDBservice.UpdateParticipantIDonConfidentialResponses(req.Token.InstanceId, req.StudyKey, oldID, realParticipantID2)
 	if err != nil {
 		logger.Error.Println(err)
 	} else {
@@ -368,6 +365,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 
 	var participantID string
+	var participantID2 string
 	var instanceID string
 	if req.Token != nil {
 		if token_checks.IsTokenEmpty(req.Token) {
@@ -380,7 +378,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		}
 
 		var err error
-		participantID, err = s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
+		participantID, participantID2, err = s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId, false)
 		if err != nil {
 			return nil, status.Error(codes.Internal, "could not compute participant id")
 		}
@@ -391,6 +389,11 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		}
 		participantID = req.TemporaryParticipantId
 		instanceID = req.InstanceId
+		var err error
+		participantID2, _, err = s.profileIDToParticipantID(instanceID, req.StudyKey, participantID, false)
+		if err != nil {
+			return nil, status.Error(codes.Internal, "could not compute participant id")
+		}
 	}
 
 	// Participant state:
@@ -468,12 +471,6 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 
 	// Save confidential data:
 	if len(confidentialResponses) > 0 {
-		participantID2, err := s.profileIDToParticipantID(instanceID, req.StudyKey, req.ProfileId)
-		if err != nil {
-			logger.Error.Printf("Unexpected error: %v", err)
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
 		for _, confItem := range confidentialResponses {
 			rItem := types.SurveyResponse{
 				Key:           confItem.Key,
@@ -497,10 +494,11 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:       "SUBMIT",
-		Response:   response,
-		InstanceID: instanceID,
-		StudyKey:   req.StudyKey,
+		Type:                                  "SUBMIT",
+		Response:                              response,
+		InstanceID:                            instanceID,
+		StudyKey:                              req.StudyKey,
+		ParticipantIDForConfidentialResponses: participantID2,
 	}
 	actionResult, err := s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -538,7 +536,7 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	}
 
 	// ParticipantID
-	participantID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId)
+	participantID, participantID2, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -558,9 +556,10 @@ func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudy
 	}
 	// perform study rules/actions
 	currentEvent := types.StudyEvent{
-		Type:       "LEAVE",
-		InstanceID: req.Token.InstanceId,
-		StudyKey:   req.StudyKey,
+		Type:                                  "LEAVE",
+		InstanceID:                            req.Token.InstanceId,
+		StudyKey:                              req.StudyKey,
+		ParticipantIDForConfidentialResponses: participantID2,
 	}
 	actionResult, err := s.getAndPerformStudyRules(req.Token.InstanceId, req.StudyKey, pState, currentEvent)
 	if err != nil {
@@ -612,7 +611,7 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 	for _, study := range studies {
 		for _, profileID := range profileIDs {
 			// ParticipantID
-			participantID, err := s.profileIDToParticipantID(req.InstanceId, study.Key, profileID)
+			participantID, participantID2, err := s.profileIDToParticipantID(req.InstanceId, study.Key, profileID, false)
 			if err != nil {
 				logger.Error.Printf("DeleteParticipantData: %v", err)
 				continue
@@ -622,6 +621,10 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 				continue
 			}
 			_, err = s.studyDBservice.DeleteSurveyResponses(req.InstanceId, study.Key, studydb.ResponseQuery{ParticipantID: participantID})
+			if err != nil {
+				continue
+			}
+			_, err = s.studyDBservice.DeleteConfidentialResponses(req.InstanceId, study.Key, participantID2, "")
 			if err != nil {
 				continue
 			}
@@ -674,7 +677,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 			s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, " upload participant file:"+x.ProfileId)
 			return status.Error(codes.Internal, "permission denied")
 		}
-		participantID, err = s.profileIDToParticipantID(instanceID, info.StudyKey, x.ProfileId)
+		participantID, _, err = s.profileIDToParticipantID(instanceID, info.StudyKey, x.ProfileId, true)
 		if err != nil {
 			return status.Error(codes.Internal, "could not compute participant id")
 		}

@@ -349,12 +349,12 @@ func TestGetAssignedSurveysEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey1", testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, "studyforassignedsurvey2", testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -446,7 +446,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		}
 	}
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -631,12 +631,12 @@ func TestSubmitResponseEndpoint(t *testing.T) {
 
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey2", testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -799,12 +799,12 @@ func TestLeaveStudyEndpoint(t *testing.T) {
 	testUserID1 := "234234laaabbb3423"
 	testUserID2 := "234234laaabbb3424"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID1)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID2)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testUserID2, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -920,7 +920,7 @@ func TestResolveContextRules(t *testing.T) {
 		return
 	}
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudyKey, testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -1201,7 +1201,7 @@ func TestResolvePrefillRules(t *testing.T) {
 	testStudyKey := "teststudy_forresolveprefills"
 	testUserID := "234234laaabbb3423"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, "studyfor_submitsurvey1", testUserID, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return

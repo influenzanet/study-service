@@ -144,7 +144,6 @@ type MockStudyDBService struct {
 }
 
 func (db MockStudyDBService) FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error) {
-
 	for _, r := range db.Responses {
 		if query.ParticipantID != r.ParticipantID {
 			continue
@@ -162,6 +161,10 @@ func (db MockStudyDBService) FindSurveyResponses(instanceID string, studyKey str
 	}
 
 	return responses, nil
+}
+
+func (db MockStudyDBService) DeleteConfidentialResponses(instanceID string, studyKey string, participantID string, key string) (count int64, err error) {
+	return
 }
 
 func TestEvalCheckConditionForOldResponses(t *testing.T) {

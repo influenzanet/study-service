@@ -18,12 +18,25 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKey string, userID string) (string, error) {
+func (s *studyServiceServer) profileIDToParticipantID(instanceID string, studyKey string, userID string, ignoreForConfidentialResponses bool) (string, string, error) {
 	idMappingMethod, studySecret, err := s.studyDBservice.GetStudySecretKey(instanceID, studyKey)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret, idMappingMethod)
+	pID, err := utils.ProfileIDtoParticipantID(userID, s.StudyGlobalSecret, studySecret, idMappingMethod)
+	if err != nil {
+		return "", "", err
+	}
+	if ignoreForConfidentialResponses {
+		return pID, "", nil
+	}
+
+	// for confidential responses
+	pID2, err := utils.ProfileIDtoParticipantID(pID, s.StudyGlobalSecret, studySecret, idMappingMethod)
+	if err != nil {
+		return "", "", err
+	}
+	return pID, pID2, nil
 }
 
 func (s *studyServiceServer) checkIfParticipantExists(instanceID string, studyKey string, participantID string, withStatus string) bool {
@@ -281,7 +294,7 @@ func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenIn
 		return nil, status.Error(codes.Internal, "permission denied")
 	}
 
-	participantID, err := s.profileIDToParticipantID(token.InstanceId, studyKey, profileID)
+	participantID, _, err := s.profileIDToParticipantID(token.InstanceId, studyKey, profileID, true)
 	if err != nil {
 		logger.Debug.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())

@@ -49,22 +49,22 @@ func TestGetStudiesForUserEndpoint(t *testing.T) {
 	testProfileID1 := "234234laaabbb3423_for_getstudies"
 	testProfileID2 := "234234laaabbb3423_for_getstudies2"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[1].Key, testProfileID1)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[1].Key, testProfileID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid3, err := s.profileIDToParticipantID(testInstanceID, testStudies[2].Key, testProfileID1)
+	pid3, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[2].Key, testProfileID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid4, err := s.profileIDToParticipantID(testInstanceID, testStudies[3].Key, testProfileID2)
+	pid4, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[3].Key, testProfileID2, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -247,12 +247,12 @@ func TestHasParticipantStateWithConditionEndpoint(t *testing.T) {
 	testProfileID1 := "234234laaabbb3423_for_hasProf_1"
 	testProfileID2 := "234234laaabbb3423_for_hasProf_2"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
@@ -411,12 +411,12 @@ func TestGetParticipantMessages(t *testing.T) {
 	testProfileID1 := "testprofileWithoutMessages"
 	testProfileID2 := "testprofileWithMessages"
 
-	pid1, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1)
+	pid1, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID1, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
-	pid2, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2)
+	pid2, _, err := s.profileIDToParticipantID(testInstanceID, testStudies[0].Key, testProfileID2, true)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
 		return

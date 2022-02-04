@@ -13,6 +13,7 @@ import (
 
 type StudyDBService interface {
 	FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error)
+	DeleteConfidentialResponses(instanceID string, studyKey string, participantID string, key string) (count int64, err error)
 }
 
 type ActionData struct {
@@ -63,6 +64,10 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 		newState, err = removeReportData(action, oldState, event)
 	case "CANCEL_REPORT":
 		newState, err = cancelReport(action, oldState, event)
+	case "REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY":
+		newState, err = removeConfidentialResponseByKey(action, oldState, event, dbService)
+	case "REMOVE_ALL_CONFIDENTIAL_RESPONSES":
+		newState, err = removeAllConfidentialResponses(action, oldState, event, dbService)
 	default:
 		newState = oldState
 		err = errors.New("action name not known")
@@ -683,6 +688,43 @@ func cancelReport(action types.Expression, oldState ActionData, event types.Stud
 	_, hasKey := newState.ReportsToCreate[reportKey]
 	if hasKey {
 		delete(newState.ReportsToCreate, reportKey)
+	}
+	return
+}
+
+// delete confidential responses for this participant for a particular key only
+func removeConfidentialResponseByKey(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) != 1 {
+		return newState, errors.New("removeConfidentialResponseByKey must have exactly 1 argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	key, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	_, err = dbService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, key)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
+	}
+	return
+}
+
+// delete confidential responses for this participant
+func removeAllConfidentialResponses(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+	newState = oldState
+	_, err = dbService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, "")
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
 	}
 	return
 }

@@ -241,7 +241,7 @@ func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *ap
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId)
+	participantID, _, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId, true)
 	if err != nil {
 		logger.Debug.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -273,7 +273,7 @@ func (s *studyServiceServer) DeleteMessagesFromParticipant(ctx context.Context, 
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
 
-	participantID, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId)
+	participantID, _, err := s.profileIDToParticipantID(req.InstanceId, req.StudyKey, req.ProfileId, true)
 	if err != nil {
 		logger.Debug.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
