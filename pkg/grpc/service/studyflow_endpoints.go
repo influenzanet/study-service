@@ -228,8 +228,16 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 	}
 
 	// update participant ID to all confidential responses
-	oldID := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
-	newID := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.realParticipantID)
+	oldID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.TemporaryParticipantId)
+	if err != nil {
+		logger.Error.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	newID, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, realParticipantID)
+	if err != nil {
+		logger.Error.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	count, err = s.studyDBservice.UpdateParticipantIDonConfidentialResponses(req.Token.InstanceId, req.StudyKey, oldID, newID)
 	if err != nil {
 		logger.Error.Println(err)
@@ -434,10 +442,57 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 
 	// Save responses
 	response := types.SurveyResponseFromAPI(req.Response)
+
+	nonConfidentialResponses := []types.SurveyItemResponse{}
+	confidentialResponses := []types.SurveyItemResponse{}
+
+	// sort out data by confidentiality:
+	for _, item := range response.Responses {
+		if len(item.ConfidentialMode) > 0 {
+			confidentialResponses = append(confidentialResponses, item)
+		} else {
+			nonConfidentialResponses = append(nonConfidentialResponses, item)
+		}
+	}
+	response.Responses = nonConfidentialResponses
 	response.ParticipantID = participantID
-	rID, err := s.studyDBservice.AddSurveyResponse(instanceID, req.StudyKey, response)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	var rID string
+	if len(nonConfidentialResponses) > 0 || len(confidentialResponses) < 1 {
+		// Save responses only if non empty or there were no confidential responses
+		rID, err = s.studyDBservice.AddSurveyResponse(instanceID, req.StudyKey, response)
+		if err != nil {
+			logger.Error.Printf("Unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	// Save confidential data:
+	if len(confidentialResponses) > 0 {
+		participantID2, err := s.profileIDToParticipantID(instanceID, req.StudyKey, req.ProfileId)
+		if err != nil {
+			logger.Error.Printf("Unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		for _, confItem := range confidentialResponses {
+			rItem := types.SurveyResponse{
+				Key:           confItem.Key,
+				ParticipantID: participantID2,
+				Responses:     []types.SurveyItemResponse{confItem},
+			}
+			if confItem.ConfidentialMode == "add" {
+				_, err := s.studyDBservice.AddConfidentialResponse(instanceID, req.StudyKey, rItem)
+				if err != nil {
+					logger.Error.Printf("Unexpected error: %v", err)
+				}
+			} else {
+				// Replace
+				err := s.studyDBservice.ReplaceConfidentialResponse(instanceID, req.StudyKey, rItem)
+				if err != nil {
+					logger.Error.Printf("Unexpected error: %v", err)
+				}
+			}
+		}
 	}
 
 	// perform study rules/actions
