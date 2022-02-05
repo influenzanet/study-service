@@ -69,6 +69,7 @@ type StudyServiceApiClient interface {
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 	StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error)
 	StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error)
+	GetConfidentialResponses(ctx context.Context, in *ConfidentialResponsesQuery, opts ...grpc.CallOption) (*ConfidentialResponses, error)
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
 	GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error)
@@ -502,6 +503,15 @@ func (x *studyServiceApiStreamReportHistoryClient) Recv() (*Report, error) {
 	return m, nil
 }
 
+func (c *studyServiceApiClient) GetConfidentialResponses(ctx context.Context, in *ConfidentialResponsesQuery, opts ...grpc.CallOption) (*ConfidentialResponses, error) {
+	out := new(ConfidentialResponses)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetConfidentialResponses", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error) {
 	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetResponsesWideFormatCSV", opts...)
 	if err != nil {
@@ -692,6 +702,7 @@ type StudyServiceApiServer interface {
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 	StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error
 	StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error
+	GetConfidentialResponses(context.Context, *ConfidentialResponsesQuery) (*ConfidentialResponses, error)
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
 	GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error
@@ -811,6 +822,9 @@ func (UnimplementedStudyServiceApiServer) StreamParticipantStates(*ParticipantSt
 }
 func (UnimplementedStudyServiceApiServer) StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamReportHistory not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetConfidentialResponses(context.Context, *ConfidentialResponsesQuery) (*ConfidentialResponses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfidentialResponses not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetResponsesWideFormatCSV not implemented")
@@ -1505,6 +1519,24 @@ func (x *studyServiceApiStreamReportHistoryServer) Send(m *Report) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_GetConfidentialResponses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfidentialResponsesQuery)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetConfidentialResponses(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetConfidentialResponses",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetConfidentialResponses(ctx, req.(*ConfidentialResponsesQuery))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_GetResponsesWideFormatCSV_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ResponseExportQuery)
 	if err := stream.RecvMsg(m); err != nil {
@@ -1741,6 +1773,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStudyResponseStatistics",
 			Handler:    _StudyServiceApi_GetStudyResponseStatistics_Handler,
+		},
+		{
+			MethodName: "GetConfidentialResponses",
+			Handler:    _StudyServiceApi_GetConfidentialResponses_Handler,
 		},
 		{
 			MethodName: "GetSurveyInfoPreview",

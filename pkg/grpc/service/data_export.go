@@ -14,6 +14,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/exporter"
+	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -66,6 +67,70 @@ func (s *studyServiceServer) GetStudyResponseStatistics(ctx context.Context, req
 		resp.SurveyResponseCounts[k] = count
 	}
 	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "statistics: "+req.StudyKey)
+	return resp, nil
+}
+
+func (s *studyServiceServer) GetConfidentialResponses(ctx context.Context, req *api.ConfidentialResponsesQuery) (*api.ConfidentialResponses, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, s.missingArgumentError()
+	}
+
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+		})
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Confidential data: permission denied for "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	resp := &api.ConfidentialResponses{
+		Responses: []*api.SurveyResponse{},
+	}
+	for _, participantID := range req.ParticipantIds {
+		confPID, _, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, participantID, true)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			continue
+		}
+
+		pState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, participantID)
+		if err != nil {
+			logger.Error.Printf("participant state for %s not found: %v", participantID, err)
+			continue
+		}
+
+		val, err := studyengine.ExpressionEval(*types.ExpressionFromAPI(req.Condition), studyengine.EvalContext{
+			Event: types.StudyEvent{
+				InstanceID:                            req.Token.InstanceId,
+				StudyKey:                              req.StudyKey,
+				ParticipantIDForConfidentialResponses: confPID,
+			},
+			ParticipantState: pState,
+			DbService:        s.studyDBservice,
+		})
+		conditionTrue, ok := val.(bool)
+		if err != nil || !ok || !conditionTrue {
+			logger.Error.Printf("participant '%s' has not fulfilled condition. (%v)", participantID, err)
+			continue
+		}
+
+		pResps, err := s.studyDBservice.FindConfidentialResponses(req.Token.InstanceId, req.StudyKey, confPID, req.KeyFilter)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			continue
+		}
+
+		for _, r := range pResps {
+			r.ParticipantID = participantID // override participant ID so that data can be used
+			resp.Responses = append(resp.Responses, r.ToAPI())
+		}
+	}
+
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "Confidential data: "+req.StudyKey)
 	return resp, nil
 }
 
