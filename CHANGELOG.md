@@ -40,7 +40,6 @@
     - New actions to remove confidential responses: `REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY`, `REMOVE_ALL_CONFIDENTIAL_RESPONSES`
 
 
-
 ### Changed
 
 - The `metaInit`, `metaDisplayed`, and `metaResponse` columns are now exported as JSON arrays of int64 POSIX time timestamps.
@@ -56,6 +55,13 @@
 ### Fixed
 
 - The "long" CSV export format now correctly displays the `metaDisplayed`, `metaResponse` and `metaVersion` columns based on their respective options, rather than based on the `metaInit` option.
+
+
+## [v0.16.3] - 2022-02-15
+
+### Changed
+
+- Add option to set max grpc message size through environment variable
 
 
 ## [v0.16.2] - 2021-06-16
