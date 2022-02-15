@@ -47,6 +47,7 @@ func RunServer(ctx context.Context, port string,
 	studyDBservice *studydb.StudyDBService,
 	globalDBservice *globaldb.GlobalDBService,
 	globalStudySecret string,
+	maxMsgSize int,
 ) error {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -54,7 +55,10 @@ func RunServer(ctx context.Context, port string,
 	}
 
 	// register service
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.MaxRecvMsgSize(maxMsgSize),
+		grpc.MaxSendMsgSize(maxMsgSize),
+	)
 	api.RegisterStudyServiceApiServer(server, NewStudyServiceServer(
 		clients,
 		studyDBservice,

@@ -35,6 +35,7 @@ func main() {
 		studyDBService,
 		globalDBService,
 		conf.Study.GlobalSecret,
+		conf.MaxMsgSize,
 	); err != nil {
 		log.Fatal(err)
 	}

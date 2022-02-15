@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.16.3] - 2022-02-15
+
+### Changed
+
+- Add option to set max grpc message size through environment variable
+
+
 ## [v0.16.2] - 2021-06-16
 
 ### Changed

@@ -15,6 +15,7 @@ type Config struct {
 	StudyDBConfig  types.DBConfig
 	GlobalDBConfig types.DBConfig
 	Study          types.StudyConfig
+	MaxMsgSize     int
 	ServiceURLs    struct {
 		LoggingService string
 	}
@@ -23,6 +24,15 @@ type Config struct {
 func InitConfig() Config {
 	conf := Config{}
 	conf.Port = os.Getenv("STUDY_SERVICE_LISTEN_PORT")
+
+	conf.MaxMsgSize = defaultGRPCMaxMsgSize
+	ms, err := strconv.Atoi(os.Getenv(ENV_GRPC_MAX_MSG_SIZE))
+	if err != nil {
+		log.Println("using default max message size")
+	} else {
+		conf.MaxMsgSize = ms
+	}
+
 	conf.ServiceURLs.LoggingService = os.Getenv("ADDR_LOGGING_SERVICE")
 	conf.StudyDBConfig = getStudyDBConfig()
 	conf.GlobalDBConfig = getGlobalDBConfig()
