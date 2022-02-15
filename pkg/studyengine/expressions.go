@@ -59,6 +59,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.hasParticipantFlag(expression, false)
 	case "hasParticipantFlagKey":
 		val, err = evalCtx.hasParticipantFlagKey(expression, false)
+	case "getParticipantFlagValue":
+		val, err = evalCtx.getParticipantFlagValue(expression, false)
 	case "lastSubmissionDateOlderThan":
 		val, err = evalCtx.lastSubmissionDateOlderThan(expression, false)
 	case "hasMessageTypeAssigned":
@@ -80,6 +82,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.hasParticipantFlag(expression, true)
 	case "incomingState:hasParticipantFlagKey":
 		val, err = evalCtx.hasParticipantFlagKey(expression, true)
+	case "incomingState:getParticipantFlagValue":
+		val, err = evalCtx.getParticipantFlagValue(expression, true)
 	case "incomingState:lastSubmissionDateOlderThan":
 		val, err = evalCtx.lastSubmissionDateOlderThan(expression, true)
 	case "incomingState:hasMessageTypeAssigned":
@@ -418,6 +422,35 @@ func (ctx EvalContext) hasParticipantFlagKey(exp types.Expression, withIncomingP
 		return false, nil
 	}
 	return true, nil
+}
+
+func (ctx EvalContext) getParticipantFlagValue(exp types.Expression, withIncomingParticipantState bool) (val string, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+	if len(exp.Data) != 1 {
+		return val, errors.New("unexpected numbers of arguments")
+	}
+
+	if exp.Data[0].IsNumber() {
+		return val, errors.New("unexpected argument types")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	arg1Val, ok := arg1.(string)
+	if !ok {
+		return val, errors.New("could not cast argument 1")
+	}
+
+	res, ok := pState.Flags[arg1Val]
+	if !ok {
+		return "", nil
+	}
+	return res, nil
 }
 
 func (ctx EvalContext) hasParticipantFlag(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {

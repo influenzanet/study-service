@@ -33,6 +33,7 @@
     - New gRPC endpoint to fetch messages for a participant and trigger deletion of messages from a participant's message list.
 - Study engine:
     - `hasParticipantFlagKey` new expression, that will check if a participant has a flag attribute with a specific key, where the value is not checked.
+    - `getParticipantFlagValue` new expression, that will retrieve the value of a participant flag with a given key.
     - `hasResponseKey` new expression, that will return true if the question has a response that contains a key at the specified path (e.g.: T0.Q1, rg.scg.1.b)
     - `hasResponseKeyWithValue` new expression, that will return true if the question has a response that contains a key at the specified path with the given value (e.g.: T0.Q1, rg.scg.1.b, value)
     - New actions for working with reports: `INIT_REPORT, UPDATE_REPORT_DATA, REMOVE_REPORT_DATA, CANCEL_REPORT`. At the start o the study event, a map of reports is initalised (empty), and during the event, actions can create one or more report entries. Reports that are in this map at the end of the event will be saved to the database.
