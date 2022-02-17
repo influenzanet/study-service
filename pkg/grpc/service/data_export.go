@@ -234,6 +234,58 @@ func (s *studyServiceServer) StreamReportHistory(req *api.ReportHistoryQuery, st
 	return nil
 }
 
+func (s *studyServiceServer) StreamParticipantFileInfos(req *api.FileInfoQuery, stream api.StudyServiceApi_StreamParticipantFileInfosServer) error {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return s.missingArgumentError()
+	}
+
+	if !(token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) &&
+		token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_RESEARCHER)) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_OWNER,
+			types.STUDY_ROLE_MAINTAINER,
+		})
+		if err != nil {
+			logger.Warning.Printf("unauthorizd access attempt to participant file infos responses in (%s-%s): %v", req.Token.InstanceId, req.StudyKey, err)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	sendResponseOverGrpc := func(instanceID string, studyKey string, fileInfo types.FileInfo, args ...interface{}) error {
+		if len(args) != 1 {
+			return errors.New("StreamParticipantFileInfos callback: unexpected number of args")
+		}
+		stream, ok := args[0].(api.StudyServiceApi_StreamParticipantFileInfosServer)
+		if !ok {
+			return errors.New(("StreamParticipantFileInfos callback: can't parse stream"))
+		}
+
+		if err := stream.Send(fileInfo.ToAPI()); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	ctx := context.Background()
+	err := s.studyDBservice.PerformActionForFileInfos(
+		ctx,
+		req.Token.InstanceId,
+		req.StudyKey,
+		studydb.FileInfoQuery{
+			ParticipantID: req.ParticipantId,
+			FileType:      req.FileType,
+			Since:         req.From,
+			Until:         req.Until,
+		},
+		sendResponseOverGrpc, stream)
+	if err != nil {
+		return status.Error(codes.Internal, err.Error())
+	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_DOWNLOAD_RESPONSES, req.StudyKey)
+	return nil
+}
+
 func (s *studyServiceServer) StreamStudyResponses(req *api.SurveyResponseQuery, stream api.StudyServiceApi_StreamStudyResponsesServer) error {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return s.missingArgumentError()

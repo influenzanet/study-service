@@ -236,7 +236,7 @@ func (s *studyServiceServer) HasParticipantStateWithCondition(ctx context.Contex
 	return nil, status.Error(codes.NotFound, "no participant found")
 }
 
-func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *api.GetParticipantMessagesReq) (*api.GetParticipantMessagesResp, error) {
+func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *api.GetParticipantMessagesReq) (*api.StudyMessages, error) {
 	if req == nil || req.InstanceId == "" || req.StudyKey == "" || req.ProfileId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -253,17 +253,65 @@ func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *ap
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	resp := &api.GetParticipantMessagesResp{
-		Messages: []*api.GetParticipantMessagesResp_Messages{},
+	resp := &api.StudyMessages{
+		Messages: []*api.StudyMessage{},
 	}
 	for _, message := range pState.Messages {
 		if message.ScheduledFor > time.Now().Unix() {
 			continue
 		}
-		resp.Messages = append(resp.Messages, &api.GetParticipantMessagesResp_Messages{
+		resp.Messages = append(resp.Messages, &api.StudyMessage{
 			Id:   message.ID,
 			Type: message.Type,
 		})
+	}
+	return resp, nil
+}
+
+func (s *studyServiceServer) GetResearcherMessages(ctx context.Context, req *api.GetReseacherMessagesReq) (*api.StudyMessages, error) {
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "", false)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.StudyMessages{
+		Messages: []*api.StudyMessage{},
+	}
+	for _, study := range studies {
+		messages, err := s.studyDBservice.FindResearcherMessages(req.InstanceId, study.Key)
+		if err != nil {
+			logger.Debug.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		for _, msg := range messages {
+			if len(study.NotificationSubscriptions) < 1 {
+				logger.Debug.Println("no notification subscriptions for the study, removing notification")
+				_, err = s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{string(msg.ID.Hex())})
+				if err != nil {
+					logger.Error.Println(err)
+					return nil, status.Error(codes.Internal, err.Error())
+				}
+				continue
+			}
+			currentMsg := msg.ToAPI()
+			currentMsg.StudyKey = study.Key
+			for _, sub := range study.NotificationSubscriptions {
+				if sub.MessageType == "*" || sub.MessageType == msg.Type {
+					currentMsg.SendTo = append(currentMsg.SendTo, sub.Email)
+				}
+			}
+			if len(currentMsg.SendTo) < 1 {
+				logger.Debug.Println("no notification subscriptions for the current message, removing notification")
+				_, err := s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{string(msg.ID.Hex())})
+				if err != nil {
+					logger.Error.Println(err)
+					return nil, status.Error(codes.Internal, err.Error())
+				}
+				continue
+			}
+			resp.Messages = append(resp.Messages, currentMsg)
+		}
 	}
 	return resp, nil
 }
@@ -285,6 +333,22 @@ func (s *studyServiceServer) DeleteMessagesFromParticipant(ctx context.Context, 
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	err = s.studyDBservice.DeleteMessagesFromParticipant(req.InstanceId, req.StudyKey, participantID, req.MessageIds)
+	if err != nil {
+		logger.Debug.Println(err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+		Msg:    "deleted",
+	}, nil
+}
+
+func (s *studyServiceServer) DeleteResearcherMessages(ctx context.Context, req *api.DeleteResearcherMessagesReq) (*api.ServiceStatus, error) {
+	if req == nil || req.InstanceId == "" || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	_, err := s.studyDBservice.DeleteResearcherMessages(req.InstanceId, req.StudyKey, req.MessageIds)
 	if err != nil {
 		logger.Debug.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())

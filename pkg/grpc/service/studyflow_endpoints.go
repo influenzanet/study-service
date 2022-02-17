@@ -1,9 +1,11 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -870,4 +872,97 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	fileInfo.PreviewPath = ""
 	stream.SendAndClose(fileInfo.ToAPI())
 	return nil
+}
+
+func (s *studyServiceServer) checkIfHasAccessToFile(token *api_types.TokenInfos, studyKey string, fileInfo types.FileInfo) bool {
+	if token_checks.CheckRoleInToken(token, constants.USER_ROLE_ADMIN) {
+		return true
+	}
+
+	// if not admin check if has right role:
+	err := s.HasRoleInStudy(token.InstanceId, studyKey, token.Id,
+		[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+	)
+	if err == nil {
+		return true
+	}
+
+	// if not researcher
+	userProfileIDs := []string{token.ProfilId}
+	userProfileIDs = append(userProfileIDs, token.OtherProfileIds...)
+
+	for _, profileID := range userProfileIDs {
+		pID, _, err := s.profileIDToParticipantID(token.InstanceId, studyKey, profileID, true)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			return false
+		}
+		if fileInfo.ParticipantID == pID {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *studyServiceServer) GetParticipantFile(req *api.GetParticipantFileReq, stream api.StudyServiceApi_GetParticipantFileServer) error {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return s.missingArgumentError()
+	}
+
+	fileInfo, err := s.studyDBservice.FindFileInfo(req.Token.InstanceId, req.StudyKey, req.FileId)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
+		return status.Error(codes.Internal, "file info not found")
+	}
+
+	if !s.checkIfHasAccessToFile(req.Token, req.StudyKey, fileInfo) {
+		logger.Warning.Printf("unauthorizd access attempt to participant file in (%s-%s)", req.Token.TempToken.InstanceId, req.StudyKey)
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+		return status.Error(codes.Internal, "persmission denied")
+	}
+
+	content, err := ioutil.ReadFile(fileInfo.Path)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
+		return status.Error(codes.Internal, "file not found")
+	}
+
+	return StreamFile(stream, bytes.NewBuffer(content))
+}
+
+func (s *studyServiceServer) DeleteParticipantFiles(ctx context.Context, req *api.DeleteParticipantFilesReq) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, s.missingArgumentError()
+	}
+
+	for _, id := range req.FileIds {
+		fileInfo, err := s.studyDBservice.FindFileInfo(req.Token.InstanceId, req.StudyKey, id)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, "file info not found")
+		}
+
+		if !s.checkIfHasAccessToFile(req.Token, req.StudyKey, fileInfo) {
+			logger.Warning.Printf("unauthorizd access attempt to participant file in (%s-%s)", req.Token.TempToken.InstanceId, req.StudyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
+			return nil, status.Error(codes.Internal, "persmission denied")
+		}
+
+		// delete file
+		err = os.Remove(fileInfo.Path)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			continue
+		}
+		os.Remove(fileInfo.PreviewPath)
+
+		// remove file info
+		c, err := s.studyDBservice.DeleteFileInfo(req.Token.InstanceId, req.StudyKey, id)
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+			continue
+		}
+		logger.Debug.Printf("%d file info removed", c)
+	}
+	return &api.ServiceStatus{}, nil
 }

@@ -15,6 +15,14 @@
     - `StreamParticipantStates`: stream participant state list according to the query (admin, researcher)
     - `StreamReportHistory`: stream report list according to the query (admin, researcher)
     - `RemoveConfidentialResponsesForProfiles`: remove data from confidential responses collection for the given profiles of the user
+    - `UploadParticipantFile`: upload one participant file
+    - `DeleteParticipantFiles`: delete a list of participant files by id
+    - `GetParticipantFile`: download one participant file
+    - `StreamParticipantFileInfos`: stream file infos for the query
+    - `GetParticipantMessages`: get messages for a participant
+    - `DeleteMessagesFromParticipant`: delete list of messages for a participant
+    - `GetResearcherMessages`: get all researcher messages form all studies
+    - `DeleteResearcherMessages`: remove researcher messages with study key and id.
 
 - Participant File Upload endpoint: method to upload files for study participants
 - Data exporter:

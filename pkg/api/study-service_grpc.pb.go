@@ -29,11 +29,8 @@ type StudyServiceApiClient interface {
 	LeaveStudy(ctx context.Context, in *LeaveStudyMsg, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	DeleteParticipantData(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*ServiceStatus, error)
 	UploadParticipantFile(ctx context.Context, opts ...grpc.CallOption) (StudyServiceApi_UploadParticipantFileClient, error)
-	//rpc GetParticipantFiles(GetParticipantFilesReq) returns (GetParticipantFilesResp);
-	//rpc GetParticipantFile(GetParticipantFileReq) returns (stream Chunk);
-	//rpc GetParticipantFilePreview(GetParticipantFileReq) returns (stream Chunk);
-	//rpc DeleteParticipantFiles(DeleteParticipantFilesReq) returns (DeleteParticipantFilesResp);
-	//rpc BulkDownloadParticipantFiles(BulkDownloadParticipantFilesReq) returns (stream Chunk);
+	DeleteParticipantFiles(ctx context.Context, in *DeleteParticipantFilesReq, opts ...grpc.CallOption) (*ServiceStatus, error)
+	GetParticipantFile(ctx context.Context, in *GetParticipantFileReq, opts ...grpc.CallOption) (StudyServiceApi_GetParticipantFileClient, error)
 	RegisterTemporaryParticipant(ctx context.Context, in *RegisterTempParticipantReq, opts ...grpc.CallOption) (*RegisterTempParticipantResponse, error)
 	ConvertTemporaryToParticipant(ctx context.Context, in *ConvertTempParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetAssignedSurveysForTemporaryParticipant(ctx context.Context, in *GetAssignedSurveysForTemporaryParticipantReq, opts ...grpc.CallOption) (*AssignedSurveys, error)
@@ -45,8 +42,10 @@ type StudyServiceApiClient interface {
 	GetStudySurveyInfos(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*SurveyInfoResp, error)
 	// any user profile is in the study and one state matches condition:
 	HasParticipantStateWithCondition(ctx context.Context, in *ProfilesWithConditionReq, opts ...grpc.CallOption) (*ServiceStatus, error)
-	GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*GetParticipantMessagesResp, error)
+	GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*StudyMessages, error)
+	GetResearcherMessages(ctx context.Context, in *GetReseacherMessagesReq, opts ...grpc.CallOption) (*StudyMessages, error)
 	DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
+	DeleteResearcherMessages(ctx context.Context, in *DeleteResearcherMessagesReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetReportsForUser(ctx context.Context, in *GetReportsForUserReq, opts ...grpc.CallOption) (*ReportHistory, error)
 	RemoveConfidentialResponsesForProfiles(ctx context.Context, in *RemoveConfidentialResponsesForProfilesReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	// ---> Study management
@@ -69,6 +68,7 @@ type StudyServiceApiClient interface {
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 	StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error)
 	StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error)
+	StreamParticipantFileInfos(ctx context.Context, in *FileInfoQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantFileInfosClient, error)
 	GetConfidentialResponses(ctx context.Context, in *ConfidentialResponsesQuery, opts ...grpc.CallOption) (*ConfidentialResponses, error)
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
@@ -182,6 +182,47 @@ func (x *studyServiceApiUploadParticipantFileClient) CloseAndRecv() (*FileInfo, 
 	return m, nil
 }
 
+func (c *studyServiceApiClient) DeleteParticipantFiles(ctx context.Context, in *DeleteParticipantFilesReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/DeleteParticipantFiles", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) GetParticipantFile(ctx context.Context, in *GetParticipantFileReq, opts ...grpc.CallOption) (StudyServiceApi_GetParticipantFileClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[1], "/influenzanet.study_service.StudyServiceApi/GetParticipantFile", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiGetParticipantFileClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_GetParticipantFileClient interface {
+	Recv() (*Chunk, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiGetParticipantFileClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiGetParticipantFileClient) Recv() (*Chunk, error) {
+	m := new(Chunk)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) RegisterTemporaryParticipant(ctx context.Context, in *RegisterTempParticipantReq, opts ...grpc.CallOption) (*RegisterTempParticipantResponse, error) {
 	out := new(RegisterTempParticipantResponse)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RegisterTemporaryParticipant", in, out, opts...)
@@ -245,9 +286,18 @@ func (c *studyServiceApiClient) HasParticipantStateWithCondition(ctx context.Con
 	return out, nil
 }
 
-func (c *studyServiceApiClient) GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*GetParticipantMessagesResp, error) {
-	out := new(GetParticipantMessagesResp)
+func (c *studyServiceApiClient) GetParticipantMessages(ctx context.Context, in *GetParticipantMessagesReq, opts ...grpc.CallOption) (*StudyMessages, error) {
+	out := new(StudyMessages)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetParticipantMessages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) GetResearcherMessages(ctx context.Context, in *GetReseacherMessagesReq, opts ...grpc.CallOption) (*StudyMessages, error) {
+	out := new(StudyMessages)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetResearcherMessages", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -257,6 +307,15 @@ func (c *studyServiceApiClient) GetParticipantMessages(ctx context.Context, in *
 func (c *studyServiceApiClient) DeleteMessagesFromParticipant(ctx context.Context, in *DeleteMessagesFromParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
 	out := new(ServiceStatus)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/DeleteMessagesFromParticipant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) DeleteResearcherMessages(ctx context.Context, in *DeleteResearcherMessagesReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/DeleteResearcherMessages", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +467,7 @@ func (c *studyServiceApiClient) GetStudyResponseStatistics(ctx context.Context, 
 }
 
 func (c *studyServiceApiClient) StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[1], "/influenzanet.study_service.StudyServiceApi/StreamStudyResponses", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[2], "/influenzanet.study_service.StudyServiceApi/StreamStudyResponses", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -440,7 +499,7 @@ func (x *studyServiceApiStreamStudyResponsesClient) Recv() (*SurveyResponse, err
 }
 
 func (c *studyServiceApiClient) StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[2], "/influenzanet.study_service.StudyServiceApi/StreamParticipantStates", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[3], "/influenzanet.study_service.StudyServiceApi/StreamParticipantStates", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +531,7 @@ func (x *studyServiceApiStreamParticipantStatesClient) Recv() (*ParticipantState
 }
 
 func (c *studyServiceApiClient) StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[3], "/influenzanet.study_service.StudyServiceApi/StreamReportHistory", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/StreamReportHistory", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -503,6 +562,38 @@ func (x *studyServiceApiStreamReportHistoryClient) Recv() (*Report, error) {
 	return m, nil
 }
 
+func (c *studyServiceApiClient) StreamParticipantFileInfos(ctx context.Context, in *FileInfoQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantFileInfosClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[5], "/influenzanet.study_service.StudyServiceApi/StreamParticipantFileInfos", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiStreamParticipantFileInfosClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_StreamParticipantFileInfosClient interface {
+	Recv() (*FileInfo, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiStreamParticipantFileInfosClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiStreamParticipantFileInfosClient) Recv() (*FileInfo, error) {
+	m := new(FileInfo)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) GetConfidentialResponses(ctx context.Context, in *ConfidentialResponsesQuery, opts ...grpc.CallOption) (*ConfidentialResponses, error) {
 	out := new(ConfidentialResponses)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetConfidentialResponses", in, out, opts...)
@@ -513,7 +604,7 @@ func (c *studyServiceApiClient) GetConfidentialResponses(ctx context.Context, in
 }
 
 func (c *studyServiceApiClient) GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[4], "/influenzanet.study_service.StudyServiceApi/GetResponsesWideFormatCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[6], "/influenzanet.study_service.StudyServiceApi/GetResponsesWideFormatCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -545,7 +636,7 @@ func (x *studyServiceApiGetResponsesWideFormatCSVClient) Recv() (*Chunk, error) 
 }
 
 func (c *studyServiceApiClient) GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[5], "/influenzanet.study_service.StudyServiceApi/GetResponsesLongFormatCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[7], "/influenzanet.study_service.StudyServiceApi/GetResponsesLongFormatCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -577,7 +668,7 @@ func (x *studyServiceApiGetResponsesLongFormatCSVClient) Recv() (*Chunk, error) 
 }
 
 func (c *studyServiceApiClient) GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[6], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSON", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[8], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSON", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -609,7 +700,7 @@ func (x *studyServiceApiGetResponsesFlatJSONClient) Recv() (*Chunk, error) {
 }
 
 func (c *studyServiceApiClient) GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[7], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[9], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -662,11 +753,8 @@ type StudyServiceApiServer interface {
 	LeaveStudy(context.Context, *LeaveStudyMsg) (*AssignedSurveys, error)
 	DeleteParticipantData(context.Context, *api_types.TokenInfos) (*ServiceStatus, error)
 	UploadParticipantFile(StudyServiceApi_UploadParticipantFileServer) error
-	//rpc GetParticipantFiles(GetParticipantFilesReq) returns (GetParticipantFilesResp);
-	//rpc GetParticipantFile(GetParticipantFileReq) returns (stream Chunk);
-	//rpc GetParticipantFilePreview(GetParticipantFileReq) returns (stream Chunk);
-	//rpc DeleteParticipantFiles(DeleteParticipantFilesReq) returns (DeleteParticipantFilesResp);
-	//rpc BulkDownloadParticipantFiles(BulkDownloadParticipantFilesReq) returns (stream Chunk);
+	DeleteParticipantFiles(context.Context, *DeleteParticipantFilesReq) (*ServiceStatus, error)
+	GetParticipantFile(*GetParticipantFileReq, StudyServiceApi_GetParticipantFileServer) error
 	RegisterTemporaryParticipant(context.Context, *RegisterTempParticipantReq) (*RegisterTempParticipantResponse, error)
 	ConvertTemporaryToParticipant(context.Context, *ConvertTempParticipantReq) (*ServiceStatus, error)
 	GetAssignedSurveysForTemporaryParticipant(context.Context, *GetAssignedSurveysForTemporaryParticipantReq) (*AssignedSurveys, error)
@@ -678,8 +766,10 @@ type StudyServiceApiServer interface {
 	GetStudySurveyInfos(context.Context, *StudyReferenceReq) (*SurveyInfoResp, error)
 	// any user profile is in the study and one state matches condition:
 	HasParticipantStateWithCondition(context.Context, *ProfilesWithConditionReq) (*ServiceStatus, error)
-	GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error)
+	GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*StudyMessages, error)
+	GetResearcherMessages(context.Context, *GetReseacherMessagesReq) (*StudyMessages, error)
 	DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error)
+	DeleteResearcherMessages(context.Context, *DeleteResearcherMessagesReq) (*ServiceStatus, error)
 	GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error)
 	RemoveConfidentialResponsesForProfiles(context.Context, *RemoveConfidentialResponsesForProfilesReq) (*ServiceStatus, error)
 	// ---> Study management
@@ -702,6 +792,7 @@ type StudyServiceApiServer interface {
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 	StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error
 	StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error
+	StreamParticipantFileInfos(*FileInfoQuery, StudyServiceApi_StreamParticipantFileInfosServer) error
 	GetConfidentialResponses(context.Context, *ConfidentialResponsesQuery) (*ConfidentialResponses, error)
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
@@ -739,6 +830,12 @@ func (UnimplementedStudyServiceApiServer) DeleteParticipantData(context.Context,
 func (UnimplementedStudyServiceApiServer) UploadParticipantFile(StudyServiceApi_UploadParticipantFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method UploadParticipantFile not implemented")
 }
+func (UnimplementedStudyServiceApiServer) DeleteParticipantFiles(context.Context, *DeleteParticipantFilesReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteParticipantFiles not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetParticipantFile(*GetParticipantFileReq, StudyServiceApi_GetParticipantFileServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetParticipantFile not implemented")
+}
 func (UnimplementedStudyServiceApiServer) RegisterTemporaryParticipant(context.Context, *RegisterTempParticipantReq) (*RegisterTempParticipantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterTemporaryParticipant not implemented")
 }
@@ -760,11 +857,17 @@ func (UnimplementedStudyServiceApiServer) GetStudySurveyInfos(context.Context, *
 func (UnimplementedStudyServiceApiServer) HasParticipantStateWithCondition(context.Context, *ProfilesWithConditionReq) (*ServiceStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HasParticipantStateWithCondition not implemented")
 }
-func (UnimplementedStudyServiceApiServer) GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*GetParticipantMessagesResp, error) {
+func (UnimplementedStudyServiceApiServer) GetParticipantMessages(context.Context, *GetParticipantMessagesReq) (*StudyMessages, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetParticipantMessages not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetResearcherMessages(context.Context, *GetReseacherMessagesReq) (*StudyMessages, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResearcherMessages not implemented")
 }
 func (UnimplementedStudyServiceApiServer) DeleteMessagesFromParticipant(context.Context, *DeleteMessagesFromParticipantReq) (*ServiceStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteMessagesFromParticipant not implemented")
+}
+func (UnimplementedStudyServiceApiServer) DeleteResearcherMessages(context.Context, *DeleteResearcherMessagesReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteResearcherMessages not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetReportsForUser(context.Context, *GetReportsForUserReq) (*ReportHistory, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetReportsForUser not implemented")
@@ -822,6 +925,9 @@ func (UnimplementedStudyServiceApiServer) StreamParticipantStates(*ParticipantSt
 }
 func (UnimplementedStudyServiceApiServer) StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamReportHistory not implemented")
+}
+func (UnimplementedStudyServiceApiServer) StreamParticipantFileInfos(*FileInfoQuery, StudyServiceApi_StreamParticipantFileInfosServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamParticipantFileInfos not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetConfidentialResponses(context.Context, *ConfidentialResponsesQuery) (*ConfidentialResponses, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConfidentialResponses not implemented")
@@ -1006,6 +1112,45 @@ func (x *studyServiceApiUploadParticipantFileServer) Recv() (*UploadParticipantF
 	return m, nil
 }
 
+func _StudyServiceApi_DeleteParticipantFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteParticipantFilesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).DeleteParticipantFiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/DeleteParticipantFiles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).DeleteParticipantFiles(ctx, req.(*DeleteParticipantFilesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_GetParticipantFile_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetParticipantFileReq)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).GetParticipantFile(m, &studyServiceApiGetParticipantFileServer{stream})
+}
+
+type StudyServiceApi_GetParticipantFileServer interface {
+	Send(*Chunk) error
+	grpc.ServerStream
+}
+
+type studyServiceApiGetParticipantFileServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiGetParticipantFileServer) Send(m *Chunk) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _StudyServiceApi_RegisterTemporaryParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterTempParticipantReq)
 	if err := dec(in); err != nil {
@@ -1150,6 +1295,24 @@ func _StudyServiceApi_GetParticipantMessages_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_GetResearcherMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetReseacherMessagesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetResearcherMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetResearcherMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetResearcherMessages(ctx, req.(*GetReseacherMessagesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_DeleteMessagesFromParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteMessagesFromParticipantReq)
 	if err := dec(in); err != nil {
@@ -1164,6 +1327,24 @@ func _StudyServiceApi_DeleteMessagesFromParticipant_Handler(srv interface{}, ctx
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).DeleteMessagesFromParticipant(ctx, req.(*DeleteMessagesFromParticipantReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_DeleteResearcherMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteResearcherMessagesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).DeleteResearcherMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/DeleteResearcherMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).DeleteResearcherMessages(ctx, req.(*DeleteResearcherMessagesReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1519,6 +1700,27 @@ func (x *studyServiceApiStreamReportHistoryServer) Send(m *Report) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_StreamParticipantFileInfos_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(FileInfoQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).StreamParticipantFileInfos(m, &studyServiceApiStreamParticipantFileInfosServer{stream})
+}
+
+type StudyServiceApi_StreamParticipantFileInfosServer interface {
+	Send(*FileInfo) error
+	grpc.ServerStream
+}
+
+type studyServiceApiStreamParticipantFileInfosServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiStreamParticipantFileInfosServer) Send(m *FileInfo) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _StudyServiceApi_GetConfidentialResponses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ConfidentialResponsesQuery)
 	if err := dec(in); err != nil {
@@ -1675,6 +1877,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_DeleteParticipantData_Handler,
 		},
 		{
+			MethodName: "DeleteParticipantFiles",
+			Handler:    _StudyServiceApi_DeleteParticipantFiles_Handler,
+		},
+		{
 			MethodName: "RegisterTemporaryParticipant",
 			Handler:    _StudyServiceApi_RegisterTemporaryParticipant_Handler,
 		},
@@ -1707,8 +1913,16 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_GetParticipantMessages_Handler,
 		},
 		{
+			MethodName: "GetResearcherMessages",
+			Handler:    _StudyServiceApi_GetResearcherMessages_Handler,
+		},
+		{
 			MethodName: "DeleteMessagesFromParticipant",
 			Handler:    _StudyServiceApi_DeleteMessagesFromParticipant_Handler,
+		},
+		{
+			MethodName: "DeleteResearcherMessages",
+			Handler:    _StudyServiceApi_DeleteResearcherMessages_Handler,
 		},
 		{
 			MethodName: "GetReportsForUser",
@@ -1790,6 +2004,11 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
+			StreamName:    "GetParticipantFile",
+			Handler:       _StudyServiceApi_GetParticipantFile_Handler,
+			ServerStreams: true,
+		},
+		{
 			StreamName:    "StreamStudyResponses",
 			Handler:       _StudyServiceApi_StreamStudyResponses_Handler,
 			ServerStreams: true,
@@ -1802,6 +2021,11 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "StreamReportHistory",
 			Handler:       _StudyServiceApi_StreamReportHistory_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "StreamParticipantFileInfos",
+			Handler:       _StudyServiceApi_StreamParticipantFileInfos_Handler,
 			ServerStreams: true,
 		},
 		{
