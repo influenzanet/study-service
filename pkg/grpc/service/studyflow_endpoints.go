@@ -454,6 +454,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// sort out data by confidentiality:
 	for _, item := range response.Responses {
 		if len(item.ConfidentialMode) > 0 {
+			item.Meta = types.ResponseMeta{}
 			confidentialResponses = append(confidentialResponses, item)
 		} else {
 			nonConfidentialResponses = append(nonConfidentialResponses, item)
