@@ -25,6 +25,8 @@
     - `DeleteResearcherMessages`: remove researcher messages with study key and id.
 
 - Participant File Upload endpoint: method to upload files for study participants
+- Can configure root path of the persistent storage with PERSISTENCE_STORE_ROOT_PATH env variable.
+
 - Data exporter:
     - Data exporter can parse composite question titles or option labels (when text contains multiple parts).
     - Data exporter logic to handle question type: "responsive single choice array" and "responsive bipolar likert scale array"

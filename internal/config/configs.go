@@ -21,6 +21,7 @@ type Config struct {
 	ServiceURLs    struct {
 		LoggingService string
 	}
+	PersistentStoreConfig types.PersistentStoreConfig
 }
 
 func InitConfig() Config {
@@ -40,6 +41,8 @@ func InitConfig() Config {
 	conf.StudyDBConfig = getStudyDBConfig()
 	conf.GlobalDBConfig = getGlobalDBConfig()
 	conf.Study = getStudyConfig()
+
+	conf.PersistentStoreConfig = getPersistentStoreConfig()
 	return conf
 }
 
@@ -56,6 +59,15 @@ func getLogLevel() logger.LogLevel {
 	default:
 		return logger.LEVEL_INFO
 	}
+}
+
+func getPersistentStoreConfig() types.PersistentStoreConfig {
+	c := types.PersistentStoreConfig{}
+	c.RootPath = os.Getenv(ENV_PERSISTENCE_STORE_ROOT_PATH)
+	if len(c.RootPath) < 1 {
+		c.RootPath = defaultPersistenceStoreRootPath
+	}
+	return c
 }
 
 func getStudyConfig() types.StudyConfig {

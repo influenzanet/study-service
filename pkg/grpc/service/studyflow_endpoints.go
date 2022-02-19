@@ -773,8 +773,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	}
 
-	rootPath := "todo"
-	tempPath := filepath.Join(rootPath, "temp")
+	tempPath := filepath.Join(s.persistenStorageConfig.RootPath, "temp")
 	err = os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
 		logger.Info.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
@@ -844,7 +843,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	// TODO: move file to where it should be
 	relativeTargetFolder := filepath.Join(instanceID, info.StudyKey)
-	absoluteTargetFolder := filepath.Join(rootPath, relativeTargetFolder)
+	absoluteTargetFolder := filepath.Join(s.persistenStorageConfig.RootPath, relativeTargetFolder)
 	targetFileRelativePath := filepath.Join(relativeTargetFolder, filename)
 	targetFileAbsolutePath := filepath.Join(absoluteTargetFolder, filename)
 
@@ -921,7 +920,7 @@ func (s *studyServiceServer) GetParticipantFile(req *api.GetParticipantFileReq, 
 		return status.Error(codes.Internal, "persmission denied")
 	}
 
-	content, err := ioutil.ReadFile(fileInfo.Path)
+	content, err := ioutil.ReadFile(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.Path))
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
 		return status.Error(codes.Internal, "file not found")
@@ -949,12 +948,12 @@ func (s *studyServiceServer) DeleteParticipantFiles(ctx context.Context, req *ap
 		}
 
 		// delete file
-		err = os.Remove(fileInfo.Path)
+		err = os.Remove(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.Path))
 		if err != nil {
 			logger.Error.Printf("unexpected error: %v", err)
 			continue
 		}
-		os.Remove(fileInfo.PreviewPath)
+		os.Remove(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.PreviewPath))
 
 		// remove file info
 		c, err := s.studyDBservice.DeleteFileInfo(req.Token.InstanceId, req.StudyKey, id)

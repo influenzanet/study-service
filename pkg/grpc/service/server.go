@@ -22,10 +22,11 @@ const (
 
 type studyServiceServer struct {
 	api.UnimplementedStudyServiceApiServer
-	clients           *types.APIClients
-	studyDBservice    *studydb.StudyDBService
-	globalDBService   *globaldb.GlobalDBService
-	StudyGlobalSecret string
+	clients                *types.APIClients
+	studyDBservice         *studydb.StudyDBService
+	globalDBService        *globaldb.GlobalDBService
+	StudyGlobalSecret      string
+	persistenStorageConfig types.PersistentStoreConfig
 }
 
 // NewUserManagementServer creates a new service instance
@@ -34,13 +35,15 @@ func NewStudyServiceServer(
 	studyDBservice *studydb.StudyDBService,
 	globalDBservice *globaldb.GlobalDBService,
 	studyGlobalSectret string,
+	persistenStorageConfig types.PersistentStoreConfig,
 ) api.StudyServiceApiServer {
 
 	return &studyServiceServer{
-		clients:           clients,
-		studyDBservice:    studyDBservice,
-		globalDBService:   globalDBservice,
-		StudyGlobalSecret: studyGlobalSectret,
+		clients:                clients,
+		studyDBservice:         studyDBservice,
+		globalDBService:        globalDBservice,
+		StudyGlobalSecret:      studyGlobalSectret,
+		persistenStorageConfig: persistenStorageConfig,
 	}
 }
 
@@ -51,6 +54,7 @@ func RunServer(ctx context.Context, port string,
 	globalDBservice *globaldb.GlobalDBService,
 	globalStudySecret string,
 	maxMsgSize int,
+	persistenStorageConfig types.PersistentStoreConfig,
 ) error {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -67,6 +71,7 @@ func RunServer(ctx context.Context, port string,
 		studyDBservice,
 		globalDBservice,
 		globalStudySecret,
+		persistenStorageConfig,
 	))
 
 	// graceful shutdown

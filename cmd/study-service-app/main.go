@@ -40,6 +40,7 @@ func main() {
 		globalDBService,
 		conf.Study.GlobalSecret,
 		conf.MaxMsgSize,
+		conf.PersistentStoreConfig,
 	); err != nil {
 		log.Fatal(err)
 	}
