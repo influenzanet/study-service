@@ -63,6 +63,7 @@ type StudyServiceApiClient interface {
 	RemoveSurveyFromStudy(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*ServiceStatus, error)
 	DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	RunRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*RuleRunSummary, error)
+	RunRulesForSingleParticipant(ctx context.Context, in *RunRulesForSingleParticipantReq, opts ...grpc.CallOption) (*RuleRunSummary, error)
 	// Data access:
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
@@ -457,6 +458,15 @@ func (c *studyServiceApiClient) RunRules(ctx context.Context, in *StudyRulesReq,
 	return out, nil
 }
 
+func (c *studyServiceApiClient) RunRulesForSingleParticipant(ctx context.Context, in *RunRulesForSingleParticipantReq, opts ...grpc.CallOption) (*RuleRunSummary, error) {
+	out := new(RuleRunSummary)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RunRulesForSingleParticipant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error) {
 	out := new(StudyResponseStatistics)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetStudyResponseStatistics", in, out, opts...)
@@ -787,6 +797,7 @@ type StudyServiceApiServer interface {
 	RemoveSurveyFromStudy(context.Context, *SurveyReferenceRequest) (*ServiceStatus, error)
 	DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error)
 	RunRules(context.Context, *StudyRulesReq) (*RuleRunSummary, error)
+	RunRulesForSingleParticipant(context.Context, *RunRulesForSingleParticipantReq) (*RuleRunSummary, error)
 	// Data access:
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
@@ -913,6 +924,9 @@ func (UnimplementedStudyServiceApiServer) DeleteStudy(context.Context, *StudyRef
 }
 func (UnimplementedStudyServiceApiServer) RunRules(context.Context, *StudyRulesReq) (*RuleRunSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RunRules not implemented")
+}
+func (UnimplementedStudyServiceApiServer) RunRulesForSingleParticipant(context.Context, *RunRulesForSingleParticipantReq) (*RuleRunSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RunRulesForSingleParticipant not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudyResponseStatistics not implemented")
@@ -1619,6 +1633,24 @@ func _StudyServiceApi_RunRules_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_RunRulesForSingleParticipant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RunRulesForSingleParticipantReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).RunRulesForSingleParticipant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/RunRulesForSingleParticipant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).RunRulesForSingleParticipant(ctx, req.(*RunRulesForSingleParticipantReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_GetStudyResponseStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SurveyResponseQuery)
 	if err := dec(in); err != nil {
@@ -1983,6 +2015,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RunRules",
 			Handler:    _StudyServiceApi_RunRules_Handler,
+		},
+		{
+			MethodName: "RunRulesForSingleParticipant",
+			Handler:    _StudyServiceApi_RunRulesForSingleParticipant_Handler,
 		},
 		{
 			MethodName: "GetStudyResponseStatistics",

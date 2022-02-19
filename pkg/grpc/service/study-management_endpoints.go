@@ -492,6 +492,109 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 	return &resp, nil
 }
 
+func (s *studyServiceServer) RunRulesForSingleParticipant(ctx context.Context, req *api.RunRulesForSingleParticipantReq) (*api.RuleRunSummary, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_RUN_CUSTOM_RULES, fmt.Sprintf("permission denied for running custom rules in study %s  ", req.StudyKey))
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	start := time.Now().Unix()
+
+	type Counters struct {
+		Participants                  int32
+		ParticipantStateChangePerRule []int32
+	}
+	counters := &Counters{
+		Participants:                  0,
+		ParticipantStateChangePerRule: make([]int32, len(req.Rules)),
+	}
+
+	// Convert rules from API type:
+	rules := make([]*types.Expression, len(req.Rules))
+	for index, rule := range req.Rules {
+		rules[index] = types.ExpressionFromAPI(rule)
+	}
+
+	p, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.ParticipantId)
+	if err != nil {
+		logger.Debug.Printf("participant not found: %v", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	if p.StudyStatus == types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
+		// ignore temporary participants
+		resp := api.RuleRunSummary{
+			ParticipantCount:              counters.Participants,
+			ParticipantStateChangePerRule: counters.ParticipantStateChangePerRule,
+			Duration:                      time.Now().Unix() - start,
+		}
+		return &resp, nil
+	}
+
+	participantID2, _, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, p.ParticipantID, true)
+	if err != nil {
+		logger.Debug.Printf("unexpected error: %v", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	counters.Participants += 1
+	actionData := studyengine.ActionData{
+		PState:          p,
+		ReportsToCreate: map[string]types.Report{},
+	}
+	anyChange := false
+	for index, rule := range rules {
+		if rule == nil {
+			continue
+		}
+
+		event := types.StudyEvent{
+			InstanceID:                            req.Token.InstanceId,
+			StudyKey:                              req.StudyKey,
+			ParticipantIDForConfidentialResponses: participantID2,
+		}
+		newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
+		if err != nil {
+			logger.Debug.Printf("unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		if !reflect.DeepEqual(newState.PState, actionData.PState) {
+			counters.ParticipantStateChangePerRule[index] += 1
+			anyChange = true
+		}
+		actionData = newState
+	}
+
+	if anyChange {
+		// save state back to DB
+		_, err := s.studyDBservice.SaveParticipantState(req.Token.InstanceId, req.StudyKey, actionData.PState)
+		if err != nil {
+			logger.Debug.Printf("unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+	}
+	s.saveReports(req.Token.InstanceId, req.StudyKey, actionData.ReportsToCreate, "")
+
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_RUN_CUSTOM_RULES, fmt.Sprintf("rules run for study %s: %v", req.StudyKey, req.Rules))
+	resp := api.RuleRunSummary{
+		ParticipantCount:              counters.Participants,
+		ParticipantStateChangePerRule: counters.ParticipantStateChangePerRule,
+		Duration:                      time.Now().Unix() - start,
+	}
+	return &resp, nil
+}
+
 func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyReferenceReq) (*api.ServiceStatus, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
