@@ -50,6 +50,7 @@
     - New actions for working with reports: `INIT_REPORT, UPDATE_REPORT_DATA, REMOVE_REPORT_DATA, CANCEL_REPORT`. At the start o the study event, a map of reports is initalised (empty), and during the event, actions can create one or more report entries. Reports that are in this map at the end of the event will be saved to the database.
     - implemented new expressions to handle merge event (when two participant states should be merged - convert temporary participant when participant already exists)
     - New actions to remove confidential responses: `REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY`, `REMOVE_ALL_CONFIDENTIAL_RESPONSES`
+    - New action: `START_NEW_STUDY_SESSION`. Survey responses will include the session attribute, so the study can simply group batch of responses for a participant.
 
 
 ### Changed
