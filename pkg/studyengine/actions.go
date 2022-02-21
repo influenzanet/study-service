@@ -1,8 +1,11 @@
 package studyengine
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/coneno/logger"
@@ -38,6 +41,8 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 		newState, err = ifThenAction(action, oldState, event, dbService)
 	case "UPDATE_STUDY_STATUS":
 		newState, err = updateStudyStatusAction(action, oldState, event)
+	case "START_NEW_STUDY_SESSION":
+		newState, err = startNewStudySession(action, oldState, event)
 	case "UPDATE_FLAG":
 		newState, err = updateFlagAction(action, oldState, event)
 	case "REMOVE_FLAG":
@@ -186,6 +191,19 @@ func updateStudyStatusAction(action types.Expression, oldState ActionData, event
 	}
 
 	newState.PState.StudyStatus = status
+	return
+}
+
+// startNewStudySession is used to generate a new study session ID
+func startNewStudySession(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+	newState = oldState
+
+	bytes := make([]byte, 4)
+	if _, err := rand.Read(bytes); err != nil {
+		logger.Error.Println(err)
+	}
+
+	newState.PState.CurrentStudySession = strconv.FormatInt(time.Now().Unix(), 16) + hex.EncodeToString(bytes)
 	return
 }
 

@@ -13,14 +13,15 @@ const (
 
 // ParticipantState defines the datamodel for current state of the participant in a study as stored in the database
 type ParticipantState struct {
-	ID              primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
-	ParticipantID   string               `bson:"participantID" json:"participantID"` // reference to the study specific participant ID
-	EnteredAt       int64                `bson:"enteredAt" json:"enteredAt"`
-	StudyStatus     string               `bson:"studyStatus" json:"studyStatus"` // shows if participant is active in the study - possible values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
-	Flags           map[string]string    `bson:"flags" json:"flags"`
-	AssignedSurveys []AssignedSurvey     `bson:"assignedSurveys" json:"assignedSurveys"`
-	LastSubmissions map[string]int64     `bson:"lastSubmission" json:"lastSubmission"` // surveyKey with timestamp
-	Messages        []ParticipantMessage `bson:"messages" json:"messages"`
+	ID                  primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
+	ParticipantID       string               `bson:"participantID" json:"participantID"` // reference to the study specific participant ID
+	CurrentStudySession string               `bson:"currentStudySession" json:"currentStudySession"`
+	EnteredAt           int64                `bson:"enteredAt" json:"enteredAt"`
+	StudyStatus         string               `bson:"studyStatus" json:"studyStatus"` // shows if participant is active in the study - possible values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
+	Flags               map[string]string    `bson:"flags" json:"flags"`
+	AssignedSurveys     []AssignedSurvey     `bson:"assignedSurveys" json:"assignedSurveys"`
+	LastSubmissions     map[string]int64     `bson:"lastSubmission" json:"lastSubmission"` // surveyKey with timestamp
+	Messages            []ParticipantMessage `bson:"messages" json:"messages"`
 }
 
 type ParticipantMessage struct {
@@ -36,12 +37,13 @@ func (p ParticipantState) ToAPI() *api.ParticipantState {
 	}
 
 	return &api.ParticipantState{
-		Id:              p.ID.Hex(),
-		ParticipantId:   p.ParticipantID,
-		EnteredAt:       p.EnteredAt,
-		StudyStatus:     p.StudyStatus,
-		Flags:           p.Flags,
-		AssignedSurveys: assignedSurveys,
-		LastSubmissions: p.LastSubmissions,
+		Id:                  p.ID.Hex(),
+		ParticipantId:       p.ParticipantID,
+		EnteredAt:           p.EnteredAt,
+		CurrentStudySession: p.CurrentStudySession,
+		StudyStatus:         p.StudyStatus,
+		Flags:               p.Flags,
+		AssignedSurveys:     assignedSurveys,
+		LastSubmissions:     p.LastSubmissions,
 	}
 }

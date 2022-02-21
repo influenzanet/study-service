@@ -445,9 +445,32 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		}
 	}
 
-	// Save responses
 	response := types.SurveyResponseFromAPI(req.Response)
 
+	/**
+	 * perform study rules/actions
+	 */
+	currentEvent := types.StudyEvent{
+		Type:                                  "SUBMIT",
+		Response:                              response,
+		InstanceID:                            instanceID,
+		StudyKey:                              req.StudyKey,
+		ParticipantIDForConfidentialResponses: participantID2,
+	}
+	actionResult, err := s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
+	if err != nil {
+		logger.Error.Printf("unexpected error_ %v", err)
+	}
+
+	// save state back to DB
+	pState, err = s.studyDBservice.SaveParticipantState(instanceID, req.StudyKey, actionResult.PState)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	/**
+	 * Save response
+	 */
 	nonConfidentialResponses := []types.SurveyItemResponse{}
 	confidentialResponses := []types.SurveyItemResponse{}
 
@@ -462,6 +485,11 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	}
 	response.Responses = nonConfidentialResponses
 	response.ParticipantID = participantID
+
+	if response.Context == nil {
+		response.Context = map[string]string{}
+	}
+	response.Context["session"] = pState.CurrentStudySession
 	var rID string
 	if len(nonConfidentialResponses) > 0 || len(confidentialResponses) < 1 {
 		// Save responses only if non empty or there were no confidential responses
@@ -495,25 +523,9 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 		}
 	}
 
-	// perform study rules/actions
-	currentEvent := types.StudyEvent{
-		Type:                                  "SUBMIT",
-		Response:                              response,
-		InstanceID:                            instanceID,
-		StudyKey:                              req.StudyKey,
-		ParticipantIDForConfidentialResponses: participantID2,
-	}
-	actionResult, err := s.getAndPerformStudyRules(instanceID, req.StudyKey, pState, currentEvent)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	// save state back to DB
-	pState, err = s.studyDBservice.SaveParticipantState(instanceID, req.StudyKey, actionResult.PState)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
+	/**
+	 * save reports
+	 */
 	s.saveReports(instanceID, req.StudyKey, actionResult.ReportsToCreate, rID)
 
 	// Prepare response
