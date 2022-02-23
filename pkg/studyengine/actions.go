@@ -601,7 +601,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 
 	if len(action.Data) > 3 {
 		// Set dtype
-		d, err := EvalContext.expressionArgResolver(action.Data[4])
+		d, err := EvalContext.expressionArgResolver(action.Data[3])
 		if err != nil {
 			return newState, err
 		}
