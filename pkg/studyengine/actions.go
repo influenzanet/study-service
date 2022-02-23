@@ -163,7 +163,7 @@ func ifThenAction(action types.Expression, oldState ActionData, event types.Stud
 		if action.IsExpression() {
 			newState, err = ActionEval(*action.Exp, newState, event, dbService)
 			if err != nil {
-				return newState, err
+				logger.Debug.Printf("ifThen: %v", err)
 			}
 		}
 	}
