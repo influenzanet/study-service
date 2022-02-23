@@ -551,6 +551,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
 		return newState, err
 	}
 
@@ -572,6 +573,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 	// Get attribute Key
 	a, err := EvalContext.expressionArgResolver(action.Data[1])
 	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
 		return newState, err
 	}
 	attributeKey, ok1 := a.(string)
@@ -582,6 +584,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 	// Get value
 	v, err := EvalContext.expressionArgResolver(action.Data[2])
 	if err != nil {
+		logger.Debug.Printf("value couldn't be retrieved, skipping update: %v", err)
 		return newState, err
 	}
 	value := ""
