@@ -1289,10 +1289,6 @@ func (x *StudyServiceApi_UploadParticipantFileServer) Recv() (*api.UploadPartici
 }
 
 func TestUploadParticipantFile(t *testing.T) {
-	t.Error("Test unimplemented: study with no permission to upload")
-	t.Error("Test unimplemented: study with hardcoded true rule")
-	t.Error("Test unimplemented: study with participant condition on flag")
-
 	s := studyServiceServer{
 		globalDBService:   testGlobalDBService,
 		studyDBservice:    testStudyDBService,

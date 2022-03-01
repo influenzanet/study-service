@@ -799,7 +799,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		FileType:      info.FileType.Value,
 	})
 	if err != nil {
-		logger.Info.Printf("Error UploadParticipantFile: %v", err.Error())
+		logger.Error.Printf("Error UploadParticipantFile: %v", err.Error())
 		return status.Error(codes.Internal, "unexpected error when creating file info object in DB.")
 	}
 
@@ -813,8 +813,8 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	var newFile *os.File
 	newFile, err = os.Create(tempFileName)
 	if err != nil {
-		logger.Info.Printf("error at creating file: %s", err.Error())
-		return status.Error(codes.Internal, "todo")
+		logger.Error.Printf("error at creating file: %s", err.Error())
+		return status.Errorf(codes.Internal, "error at creating file: %s", err.Error())
 	}
 
 	for {
@@ -836,25 +836,36 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 		fileSize += size
 		if fileSize > maxParticipantFileSize {
-			// TODO: remove temp file and DB reference
+			logger.Error.Printf("file is too large: %d > %d - for: %v", fileSize, maxParticipantFileSize, fileInfo)
+
+			// remove DB reference
+			_, err := s.studyDBservice.DeleteFileInfo(instanceID, info.StudyKey, fileInfo.ID.Hex())
+			if err != nil {
+				logger.Error.Printf("unexpected error: %v", err)
+			}
+			// remove temp file
+			err = os.Remove(tempFileName)
+			if err != nil {
+				logger.Error.Printf("unexpected error: %v", err)
+			}
 			return status.Errorf(codes.InvalidArgument, "file is too large: %d > %d", fileSize, maxParticipantFileSize)
 		}
 
 		if newFile == nil {
-			return status.Error(codes.Internal, "todo")
+			return status.Error(codes.Internal, "file handler object not found")
 		}
 		_, err = newFile.Write(chunk)
 		if err != nil {
-			return status.Error(codes.Internal, "todo")
+			return status.Error(codes.Internal, err.Error())
 		}
 
 	}
 	if newFile == nil {
-		return status.Error(codes.Internal, "todo")
+		return status.Error(codes.Internal, "file handler object not found")
 	}
 	newFile.Close()
 
-	// TODO: move file to where it should be
+	// move file to where it should be
 	relativeTargetFolder := filepath.Join(instanceID, info.StudyKey)
 	absoluteTargetFolder := filepath.Join(s.persistenStorageConfig.RootPath, relativeTargetFolder)
 	targetFileRelativePath := filepath.Join(relativeTargetFolder, filename)
@@ -869,7 +880,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		logger.Info.Printf("Error UploadParticipantFile: err at moving target %v", err.Error())
 	}
 
-	// TODO: update file reference entry with path and finished upload
+	// update file reference entry with path and finished upload
 	fileInfo.Size = int32(fileSize)
 	fileInfo.Status = types.FILE_STATUS_READY
 	fileInfo.Path = targetFileRelativePath
