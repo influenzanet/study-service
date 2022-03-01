@@ -52,6 +52,7 @@
     - implemented new expressions to handle merge event (when two participant states should be merged - convert temporary participant when participant already exists)
     - New actions to remove confidential responses: `REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY`, `REMOVE_ALL_CONFIDENTIAL_RESPONSES`
     - New action: `START_NEW_STUDY_SESSION`. Survey responses will include the session attribute, so the study can simply group batch of responses for a participant.
+- New prefill method `PREFILL_SLOT_WITH_VALUE`
 
 
 ### Changed

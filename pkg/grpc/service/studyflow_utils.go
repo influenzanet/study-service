@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/coneno/logger"
@@ -147,6 +148,44 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 	lastSurveyCache := map[string]types.SurveyResponse{}
 	for _, rule := range rules {
 		switch rule.Name {
+		case "PREFILL_SLOT_WITH_VALUE":
+			if len(rule.Data) < 3 {
+				logger.Error.Printf("not enough arguments in %v", rule)
+				continue
+			}
+			itemKey := rule.Data[0].Str
+			slotKey := rule.Data[1].Str
+			targetValue := rule.Data[2]
+
+			slotKeyParts := strings.Split(slotKey, ".")
+
+			respItem := &types.ResponseItem{}
+			for ind := range slotKeyParts {
+				currentInd := len(slotKeyParts) - 1 - ind
+				currentRespItem := &types.ResponseItem{}
+				currentRespItem.Key = slotKeyParts[currentInd]
+				if ind == 0 {
+					if targetValue.DType == "num" {
+						currentRespItem.Dtype = "number"
+						currentRespItem.Value = fmt.Sprintf("%f", targetValue.Num)
+					} else {
+						currentRespItem.Value = targetValue.Str
+					}
+					respItem = currentRespItem
+				} else {
+					currentRespItem.Items = []types.ResponseItem{
+						*respItem,
+					}
+					respItem = currentRespItem
+				}
+			}
+
+			prefillItem := types.SurveyItemResponse{
+				Key:      itemKey,
+				Response: respItem,
+			}
+
+			prefills.Responses = append(prefills.Responses, prefillItem)
 		case "GET_LAST_SURVEY_ITEM":
 			if len(rule.Data) < 2 {
 				return prefills, errors.New("GET_LAST_SURVEY_ITEM must have at least two arguments")
