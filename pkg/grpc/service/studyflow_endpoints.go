@@ -693,9 +693,8 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 	}, nil
 }
 
-const maxParticipantFileSize = 1 << 25
-
 func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_UploadParticipantFileServer) error {
+	maxParticipantFileSize := s.persistentStorageConfig.MaxParticipantFileSize
 	req, err := stream.Recv()
 	if err != nil {
 		logger.Error.Println("Error: UploadParticipantFile missing file info")
@@ -786,7 +785,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	}
 
-	tempPath := filepath.Join(s.persistenStorageConfig.RootPath, "temp")
+	tempPath := filepath.Join(s.persistentStorageConfig.RootPath, "temp")
 	err = os.MkdirAll(tempPath, os.ModePerm)
 	if err != nil {
 		logger.Info.Printf("Error UploadParticipantFile: err at mkdir %v", err.Error())
@@ -867,7 +866,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 
 	// move file to where it should be
 	relativeTargetFolder := filepath.Join(instanceID, info.StudyKey)
-	absoluteTargetFolder := filepath.Join(s.persistenStorageConfig.RootPath, relativeTargetFolder)
+	absoluteTargetFolder := filepath.Join(s.persistentStorageConfig.RootPath, relativeTargetFolder)
 	targetFileRelativePath := filepath.Join(relativeTargetFolder, filename)
 	targetFileAbsolutePath := filepath.Join(absoluteTargetFolder, filename)
 
@@ -944,7 +943,7 @@ func (s *studyServiceServer) GetParticipantFile(req *api.GetParticipantFileReq, 
 		return status.Error(codes.Internal, "persmission denied")
 	}
 
-	content, err := ioutil.ReadFile(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.Path))
+	content, err := ioutil.ReadFile(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
 		return status.Error(codes.Internal, "file not found")
@@ -972,12 +971,12 @@ func (s *studyServiceServer) DeleteParticipantFiles(ctx context.Context, req *ap
 		}
 
 		// delete file
-		err = os.Remove(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.Path))
+		err = os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
 		if err != nil {
 			logger.Error.Printf("unexpected error: %v", err)
 			continue
 		}
-		os.Remove(filepath.Join(s.persistenStorageConfig.RootPath, fileInfo.PreviewPath))
+		os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.PreviewPath))
 
 		// remove file info
 		c, err := s.studyDBservice.DeleteFileInfo(req.Token.InstanceId, req.StudyKey, id)

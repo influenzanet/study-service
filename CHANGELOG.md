@@ -27,6 +27,7 @@
 
 - Participant File Upload endpoint: method to upload files for study participants
 - Can configure root path of the persistent storage with PERSISTENCE_STORE_ROOT_PATH env variable.
+- Can configure max file size for participant file uploads with PERSISTENCE_STORE_MAX_FILE_SIZE env variable.
 
 - Data exporter:
     - Data exporter can parse composite question titles or option labels (when text contains multiple parts).

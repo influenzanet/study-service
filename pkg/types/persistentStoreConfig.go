@@ -1,5 +1,6 @@
 package types
 
 type PersistentStoreConfig struct {
-	RootPath string
+	RootPath               string
+	MaxParticipantFileSize int
 }

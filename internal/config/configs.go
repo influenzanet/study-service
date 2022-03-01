@@ -67,6 +67,16 @@ func getPersistentStoreConfig() types.PersistentStoreConfig {
 	if len(c.RootPath) < 1 {
 		c.RootPath = defaultPersistenceStoreRootPath
 	}
+
+	val, err := strconv.Atoi(os.Getenv(ENV_PERSISTENCE_MAX_FILE_SIZE))
+	if err != nil || val < 1 {
+		logger.Info.Printf("Using default value for participant file max size. Error while reading env variable: %v", err.Error())
+		c.MaxParticipantFileSize = maxParticipantFileSize
+	} else {
+		c.MaxParticipantFileSize = val
+		logger.Info.Printf("Participant file max size: %d", c.MaxParticipantFileSize)
+	}
+
 	return c
 }
 

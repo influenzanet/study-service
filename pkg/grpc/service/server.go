@@ -22,11 +22,11 @@ const (
 
 type studyServiceServer struct {
 	api.UnimplementedStudyServiceApiServer
-	clients                *types.APIClients
-	studyDBservice         *studydb.StudyDBService
-	globalDBService        *globaldb.GlobalDBService
-	StudyGlobalSecret      string
-	persistenStorageConfig types.PersistentStoreConfig
+	clients                 *types.APIClients
+	studyDBservice          *studydb.StudyDBService
+	globalDBService         *globaldb.GlobalDBService
+	StudyGlobalSecret       string
+	persistentStorageConfig types.PersistentStoreConfig
 }
 
 // NewUserManagementServer creates a new service instance
@@ -35,15 +35,15 @@ func NewStudyServiceServer(
 	studyDBservice *studydb.StudyDBService,
 	globalDBservice *globaldb.GlobalDBService,
 	studyGlobalSectret string,
-	persistenStorageConfig types.PersistentStoreConfig,
+	persistentStorageConfig types.PersistentStoreConfig,
 ) api.StudyServiceApiServer {
 
 	return &studyServiceServer{
-		clients:                clients,
-		studyDBservice:         studyDBservice,
-		globalDBService:        globalDBservice,
-		StudyGlobalSecret:      studyGlobalSectret,
-		persistenStorageConfig: persistenStorageConfig,
+		clients:                 clients,
+		studyDBservice:          studyDBservice,
+		globalDBService:         globalDBservice,
+		StudyGlobalSecret:       studyGlobalSectret,
+		persistentStorageConfig: persistentStorageConfig,
 	}
 }
 
