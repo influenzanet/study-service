@@ -70,11 +70,11 @@ func getPersistentStoreConfig() types.PersistentStoreConfig {
 
 	val, err := strconv.Atoi(os.Getenv(ENV_PERSISTENCE_MAX_FILE_SIZE))
 	if err != nil || val < 1 {
-		logger.Info.Printf("Using default value for participant file max size. Error while reading env variable: %v", err.Error())
 		c.MaxParticipantFileSize = maxParticipantFileSize
+		logger.Info.Printf("Using default value for participant file max size: %d bytes. Reason: couldn't read env variable: %v", c.MaxParticipantFileSize, err.Error())
 	} else {
 		c.MaxParticipantFileSize = val
-		logger.Info.Printf("Participant file max size: %d", c.MaxParticipantFileSize)
+		logger.Info.Printf("Participant file max size: %d bytes", c.MaxParticipantFileSize)
 	}
 
 	return c
