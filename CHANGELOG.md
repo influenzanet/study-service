@@ -24,6 +24,7 @@
     - `GetResearcherMessages`: get all researcher messages form all studies
     - `DeleteResearcherMessages`: remove researcher messages with study key and id.
     - `RunRulesForSingleParticipant`: run custom rules to a single participant.
+    - `CreateReport`: endpoint to create a participant report, e.g., to use in migration process.
 
 - Participant File Upload endpoint: method to upload files for study participants
 - Can configure root path of the persistent storage with PERSISTENCE_STORE_ROOT_PATH env variable.

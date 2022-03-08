@@ -34,6 +34,7 @@ type StudyServiceApiClient interface {
 	RegisterTemporaryParticipant(ctx context.Context, in *RegisterTempParticipantReq, opts ...grpc.CallOption) (*RegisterTempParticipantResponse, error)
 	ConvertTemporaryToParticipant(ctx context.Context, in *ConvertTempParticipantReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	GetAssignedSurveysForTemporaryParticipant(ctx context.Context, in *GetAssignedSurveysForTemporaryParticipantReq, opts ...grpc.CallOption) (*AssignedSurveys, error)
+	CreateReport(ctx context.Context, in *CreateReportReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	// for all profiles (also not active studies):
 	GetStudiesForUser(ctx context.Context, in *GetStudiesForUserReq, opts ...grpc.CallOption) (*StudiesForUser, error)
 	// all active studies even if user not in:
@@ -245,6 +246,15 @@ func (c *studyServiceApiClient) ConvertTemporaryToParticipant(ctx context.Contex
 func (c *studyServiceApiClient) GetAssignedSurveysForTemporaryParticipant(ctx context.Context, in *GetAssignedSurveysForTemporaryParticipantReq, opts ...grpc.CallOption) (*AssignedSurveys, error) {
 	out := new(AssignedSurveys)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetAssignedSurveysForTemporaryParticipant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) CreateReport(ctx context.Context, in *CreateReportReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/CreateReport", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -768,6 +778,7 @@ type StudyServiceApiServer interface {
 	RegisterTemporaryParticipant(context.Context, *RegisterTempParticipantReq) (*RegisterTempParticipantResponse, error)
 	ConvertTemporaryToParticipant(context.Context, *ConvertTempParticipantReq) (*ServiceStatus, error)
 	GetAssignedSurveysForTemporaryParticipant(context.Context, *GetAssignedSurveysForTemporaryParticipantReq) (*AssignedSurveys, error)
+	CreateReport(context.Context, *CreateReportReq) (*ServiceStatus, error)
 	// for all profiles (also not active studies):
 	GetStudiesForUser(context.Context, *GetStudiesForUserReq) (*StudiesForUser, error)
 	// all active studies even if user not in:
@@ -855,6 +866,9 @@ func (UnimplementedStudyServiceApiServer) ConvertTemporaryToParticipant(context.
 }
 func (UnimplementedStudyServiceApiServer) GetAssignedSurveysForTemporaryParticipant(context.Context, *GetAssignedSurveysForTemporaryParticipantReq) (*AssignedSurveys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAssignedSurveysForTemporaryParticipant not implemented")
+}
+func (UnimplementedStudyServiceApiServer) CreateReport(context.Context, *CreateReportReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateReport not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetStudiesForUser(context.Context, *GetStudiesForUserReq) (*StudiesForUser, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudiesForUser not implemented")
@@ -1215,6 +1229,24 @@ func _StudyServiceApi_GetAssignedSurveysForTemporaryParticipant_Handler(srv inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).GetAssignedSurveysForTemporaryParticipant(ctx, req.(*GetAssignedSurveysForTemporaryParticipantReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_CreateReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateReportReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).CreateReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/CreateReport",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).CreateReport(ctx, req.(*CreateReportReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1923,6 +1955,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAssignedSurveysForTemporaryParticipant",
 			Handler:    _StudyServiceApi_GetAssignedSurveysForTemporaryParticipant_Handler,
+		},
+		{
+			MethodName: "CreateReport",
+			Handler:    _StudyServiceApi_CreateReport_Handler,
 		},
 		{
 			MethodName: "GetStudiesForUser",

@@ -693,6 +693,55 @@ func (s *studyServiceServer) DeleteParticipantData(ctx context.Context, req *api
 	}, nil
 }
 
+func (s *studyServiceServer) CreateReport(ctx context.Context, req *api.CreateReportReq) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.ProfileId == "" || req.Report == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	var err error
+	participantID, _, err := s.profileIDToParticipantID(req.Token.InstanceId, req.StudyKey, req.ProfileId, true)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err.Error())
+		return nil, status.Error(codes.Internal, "could not compute participant id")
+	}
+	instanceID := req.Token.InstanceId
+
+	if err := utils.CheckIfProfileIDinToken(req.Token, req.ProfileId); err != nil {
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_WRONG_PROFILE_ID, "create report:"+req.ProfileId)
+		return nil, status.Error(codes.Internal, "permission denied")
+	}
+
+	rData := make([]types.ReportData, len(req.Report.Data))
+	for i, d := range req.Report.Data {
+		if d != nil {
+			rData[i] = types.ReportData{
+				Key:   d.Key,
+				Value: d.Value,
+				Dtype: d.Dtype,
+			}
+		}
+	}
+	report := types.Report{
+		Key:           req.Report.Key,
+		ParticipantID: participantID,
+		ResponseID:    req.Report.ResponseId,
+		Timestamp:     req.Report.Timestamp,
+		Data:          rData,
+	}
+
+	err = s.studyDBservice.SaveReport(instanceID, req.StudyKey, report)
+	if err != nil {
+		logger.Error.Printf("unexpected error while save report: %v", err)
+		return nil, status.Error(codes.Internal, err.Error())
+	} else {
+		logger.Debug.Printf("Report with key '%s' for participant %s saved.", report.Key, report.ParticipantID)
+	}
+
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+	}, nil
+}
+
 func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_UploadParticipantFileServer) error {
 	maxParticipantFileSize := s.persistentStorageConfig.MaxParticipantFileSize
 	req, err := stream.Recv()
