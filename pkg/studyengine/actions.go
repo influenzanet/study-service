@@ -587,21 +587,8 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 		logger.Debug.Printf("value couldn't be retrieved, skipping update: %v", err)
 		return newState, err
 	}
-	value := ""
-	switch flagVal := v.(type) {
-	case string:
-		value = flagVal
-	case float64:
-		value = fmt.Sprintf("%f", flagVal)
-	case bool:
-		value = fmt.Sprintf("%t", flagVal)
-	}
 
-	newData := types.ReportData{
-		Key:   attributeKey,
-		Value: value,
-	}
-
+	dType := ""
 	if len(action.Data) > 3 {
 		// Set dtype
 		d, err := EvalContext.expressionArgResolver(action.Data[3])
@@ -612,7 +599,27 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 		if !ok1 {
 			return newState, errors.New("could not parse arguments")
 		}
-		newData.Dtype = dtype
+		dType = dtype
+	}
+
+	value := ""
+	switch flagVal := v.(type) {
+	case string:
+		value = flagVal
+	case float64:
+		if dType == "int" {
+			value = fmt.Sprintf("%d", int(flagVal))
+		} else {
+			value = fmt.Sprintf("%f", flagVal)
+		}
+	case bool:
+		value = fmt.Sprintf("%t", flagVal)
+	}
+
+	newData := types.ReportData{
+		Key:   attributeKey,
+		Value: value,
+		Dtype: dType,
 	}
 
 	index := -1
