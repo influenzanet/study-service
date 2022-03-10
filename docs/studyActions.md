@@ -88,8 +88,20 @@ updates the status of the participant (e.g. from active to inactive). possible s
 **Return:** `(types.ParticipantState, error)`
 
 
+
+## 5. START_NEW_STUDY_SESSION
+
+```go
+startNewStudySession(action, oldState, event)
+```
+generates a new study session ID.
+
+**Return:** `(types.ParticipantState, error)`
+
+
+
 <!-- example for flag: “vaccinatationStatus”: “2" -->
-## 5. UPDATE_FLAG
+## 6. UPDATE_FLAG
 
 ```go
 updateFlagAction(action, oldState, event)
@@ -109,7 +121,7 @@ updates one flag of the participant state. The flag attribute of the `Participan
 **Return:** `(types.ParticipantState, error)`
 
 
-## 6. REMOVE_FLAG
+## 7. REMOVE_FLAG
 
 ```go
 removeFlagAction(action, oldState, event)
@@ -128,7 +140,7 @@ deletes the flag with the specified key of the participant state. The flag attri
 **Return:** `(types.ParticipantState, error)`
 
 
-## 7. ADD_NEW_SURVEY
+## 8. ADD_NEW_SURVEY
 
 ```go
 addNewSurveyAction(action, oldState, event)
@@ -150,7 +162,7 @@ appends a new survey to the assigned surveys of the participant state (expressed
 **Return:** `(types.ParticipantState, error)`
 
 
-## 8. REMOVE_ALL_SURVEYS
+## 9. REMOVE_ALL_SURVEYS
 
 ```go
 removeAllSurveys(action, oldState, event)
@@ -163,7 +175,7 @@ clears the list of assigned surveys of participant state.
 **Return:** `(types.ParticipantState, error)`
 
 
-## 9. REMOVE_SURVEY_BY_KEY
+## 10. REMOVE_SURVEY_BY_KEY
 
 ```go
 removeSurveyByKey(action, oldState, event)
@@ -184,7 +196,7 @@ removes the first or last occurence of a survey with specific key in the list of
 
 
 
-## 10. REMOVE_SURVEYS_BY_KEY
+## 11. REMOVE_SURVEYS_BY_KEY
 
 ```go
 removeSurveysByKey(action, oldState, event)
