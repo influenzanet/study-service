@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.0.3] - 2022-03-??
+
+### Changed
+
+- Fix report ignoring logic
+
 ## [v1.0.2] - 2022-03-15
 
 ### Changed

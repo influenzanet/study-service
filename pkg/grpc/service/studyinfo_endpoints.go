@@ -159,10 +159,15 @@ func (s *studyServiceServer) GetReportsForUser(ctx context.Context, req *api.Get
 			}
 
 			for _, r := range reports {
+				ignore := false
 				for _, ignoredKey := range req.IgnoreReports {
 					if r.Key == ignoredKey {
-						continue
+						ignore = true
+						break
 					}
+				}
+				if ignore {
+					continue
 				}
 				ro := r.ToAPI()
 				ro.StudyKey = study.Key
