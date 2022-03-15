@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.0.2] - 2022-03-15
+
+### Changed
+
+- Participant state export model includes scheduled participant messages as well.
+
 ## [v1.0.1] - 2022-03-10
 
 ### Changed
