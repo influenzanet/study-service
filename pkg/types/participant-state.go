@@ -30,10 +30,22 @@ type ParticipantMessage struct {
 	ScheduledFor int64  `bson:"scheduledFor" json:"scheduledFor"`
 }
 
+func (m ParticipantMessage) ToAPI() *api.ParticipantMessage {
+	return &api.ParticipantMessage{
+		Id:           m.ID,
+		Type:         m.Type,
+		ScheduledFor: m.ScheduledFor,
+	}
+}
+
 func (p ParticipantState) ToAPI() *api.ParticipantState {
 	assignedSurveys := make([]*api.AssignedSurvey, len(p.AssignedSurveys))
 	for i, s := range p.AssignedSurveys {
 		assignedSurveys[i] = s.ToAPI()
+	}
+	messages := make([]*api.ParticipantMessage, len(p.Messages))
+	for i, s := range p.Messages {
+		messages[i] = s.ToAPI()
 	}
 
 	return &api.ParticipantState{
@@ -45,5 +57,6 @@ func (p ParticipantState) ToAPI() *api.ParticipantState {
 		Flags:               p.Flags,
 		AssignedSurveys:     assignedSurveys,
 		LastSubmissions:     p.LastSubmissions,
+		Messages:            messages,
 	}
 }
