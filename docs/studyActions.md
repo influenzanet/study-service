@@ -65,7 +65,7 @@ Conditionally performs a list of actions. The function checks the first argument
 
 Functional description:
 ```
-IFTHEN(condtion, actions...)
+IFTHEN(condition, actions...)
 ```
 
 Go Implementation:
@@ -85,7 +85,7 @@ ifThenAction(action, oldState, event, dbService)
 
 ## 4. UPDATE_STUDY_STATUS
 
-Updates the status of the participant (e.g. from active to inactive). possible status values: "active", "inactive", "paused", "finished").
+Updates the status of the participant (e.g. from active to inactive). Possible status values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
 
 Functional description:
 ```
@@ -96,7 +96,6 @@ Go Implementation:
 ```go
 updateStudyStatusAction(action, oldState, event)
 ```
-updates the status of the participant (e.g. from active to exited). Possible status values: "active", "temporary", "exited". Other values are possible and are handled like "exited" on the server.
 
 
 **Required Parameter:**
@@ -109,7 +108,26 @@ updates the status of the participant (e.g. from active to exited). Possible sta
 
 **Return:** `(types.ParticipantState, error)`
 
-## 5. UPDATE_FLAG
+## 5. START_NEW_STUDY_SESSION
+
+Generates an ID for a new study session.		
+    
+Functional description:
+```
+START_NEW_STUDY_SESSION()
+```
+
+Go Implementation:
+```go
+startNewStudySession(action, oldState, event)
+```
+	
+
+**Return:** `(types.ParticipantState, error)`
+		
+
+
+## 6. UPDATE_FLAG
 
 Updates one flag of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
 
@@ -133,7 +151,7 @@ updateFlagAction(action, oldState, event)
 
 **Return:** `(types.ParticipantState, error)`
 
-## 6. REMOVE_FLAG
+## 7. REMOVE_FLAG
 
 Deletes the flag with the specified key of the participant state. The flag attribute of the `ParticipantState` object is a map with string keys addressing corresponding string values.
 
@@ -158,7 +176,7 @@ removeFlagAction(action, oldState, event)
 **Return:** `(types.ParticipantState, error)`
 
 
-## 7. ADD_NEW_SURVEY
+## 8. ADD_NEW_SURVEY
 
 Appends a new survey to the assigned surveys of the participant state (expressed by the attribute `AssignedSurveys` of `ParticipantState`).
 
@@ -186,7 +204,7 @@ addNewSurveyAction(action, oldState, event)
 **Return:** `(types.ParticipantState, error)`
 
 
-## 8. REMOVE_ALL_SURVEYS
+## 9. REMOVE_ALL_SURVEYS
 
 Clears the list of assigned surveys of participant state.
 
@@ -206,7 +224,7 @@ removeAllSurveys(action, oldState, event)
 **Return:** `(types.ParticipantState, error)`
 
 
-## 9. REMOVE_SURVEY_BY_KEY
+## 10. REMOVE_SURVEY_BY_KEY
 
 Removes the first or last occurence of a survey with specific key in the list of assigned surveys of the participant state.
 
@@ -227,7 +245,7 @@ removeSurveyByKey(action, oldState, event)
 
 **Return:** `(types.ParticipantState, error)`
 
-## 10. REMOVE_SURVEYS_BY_KEY
+## 11. REMOVE_SURVEYS_BY_KEY
 
 Removes all surveys with the specified key in the list of assigned surveys of the participant state.
 
@@ -249,49 +267,76 @@ removeSurveysByKey(action, oldState, event)
 
 **Return:** `(types.ParticipantState, error)`
 
-<!--reports currently not used. Will be potentially removed or renamed by Peter-->
 
-## 11. ADD_REPORT
+## 12. ADD_MESSAGE
 
-Finds and appends a response to a survey item (expressed by the `SurveyItemResponse` object) to the reports array of the participant state.
+appends a message to the message array of participant state.
 
 Functional description:
 ```
-  ADD_REPORT(survey)
+ADD_MESSAGE(messageType, timestamp)
 ```
 
 Go Implementation:
 
 ```go
-addReport(action, oldState, event)
+addMessage(action, oldState, event)
 ```
 
 **Required Parameter:**
 
->   `action.Data[0]` : the string key of the survey item response to be added to reports array.
+>   `action.Data[0]` : the message type as string that specifies which template message should be send.
+>   `action.Data[1]` : the timestamp as float the message is scheduled for.
+
+ **Note:**
+ The length of `action.Data` must be 2.
+
+**Return:** `(types.ParticipantState, error)`
+
+## 13. REMOVE_ALL_MESSAGES
+
+Clears the message list of participant state.
+
+Functional description:
+```
+  REMOVE_ALL_MESSAGES()
+```
+
+Go Implementation:
+```go
+removeAllMessages(action, oldState, event)
+```
+
+ **Note:**  No arguments are allowed.
+
+**Return:** `(types.ParticipantState, error)`
+
+
+## 13. REMOVE_MESSAGES_BY_TYPE
+
+Removes all messages with the specified type in the list of messages of the participant state.
+
+Functional description:
+```
+  REMOVE_MESSAGES_BY_TYPE(messageType)
+```
+
+Go Implementation:
+```go
+removeMessagesByType(action, oldState, event)
+```
+
+**Required Parameter:**
+
+>   `action.Data[0]` : the string type of the messages to be removed. \
+
 
  **Note:**
  The length of `action.Data` must be 1.
 
 **Return:** `(types.ParticipantState, error)`
 
-## 12. REMOVE_ALL_REPORTS
 
-Clears the reports array of participant state.
-
-Functional description:
-```
-  REMOVE_ALL_REPORTS()
-```
-
-Go Implementation:
-```go
-removeAllReports(action, oldState, event)
-```
-
- **Note:**  No arguments are allowed.
-
-**Return:** `(types.ParticipantState, error)`
 
 ## 13. REMOVE_REPORT_BY_KEY
 
