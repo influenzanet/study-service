@@ -270,7 +270,7 @@ removeSurveysByKey(action, oldState, event)
 
 ## 12. ADD_MESSAGE
 
-appends a message to the message array of participant state.
+Appends a message to the message array of participant state.
 
 Functional description:
 ```
@@ -286,7 +286,7 @@ addMessage(action, oldState, event)
 **Required Parameter:**
 
 >   `action.Data[0]` : the message type as string that specifies which template message should be send.
->   `action.Data[1]` : the timestamp as float the message is scheduled for.
+>   `action.Data[1]` : the timestamp at which the message will be triggered. The argument type should be a number, an hard-coded timestamp or an expression expected to return a number or timestamp e.g. by using the `timestampWithOffset` method of StudyEngine.
 
  **Note:**
  The length of `action.Data` must be 2.
@@ -312,7 +312,7 @@ removeAllMessages(action, oldState, event)
 **Return:** `(types.ParticipantState, error)`
 
 
-## 13. REMOVE_MESSAGES_BY_TYPE
+## 14. REMOVE_MESSAGES_BY_TYPE
 
 Removes all messages with the specified type in the list of messages of the participant state.
 
@@ -337,45 +337,69 @@ removeMessagesByType(action, oldState, event)
 **Return:** `(types.ParticipantState, error)`
 
 
+## 15. INIT_REPORT
 
-## 13. REMOVE_REPORT_BY_KEY
-
-Removes the first or last occurence of a survey item response with specific key in the list of reports of the participant state.
+Initiates an empty report for the current event specififed by report key. An existing report having the specified key is reset to an empty report.
 
 Functional description:
 ```
-  REMOVE_REPORT_BY_KEY(survey, position)
+  INIT_REPORT(reportKey)
 ```
 
 Go Implementation:
 ```go
-removeReportByKey(action, oldState, event)
+initReport(action, oldState, event)
 ```
 
 **Required Parameter:**
 
->   `action.Data[0]` : the string key of the survey item response to be removed at first or last occurence in reports. \
->   `action.Data[1]` : a string value indicating if the first or last occurence of an survey item response should be removed. Expected values are `"first"` or `"last"`.
+>   `action.Data[0]` : the key of the initiated report as string. \
 
 
  **Note:**
- The length of `action.Data` must be 2.
+ The length of `action.Data` must be 1.
 
 **Return:** `(types.ParticipantState, error)`
 
 
-## 14. REMOVE_REPORTS_BY_KEY
 
-Removes all survey item responses with the specified key in the list of reports of the participant state.
+## 16. UPDATE_REPORT_DATA
+
+Updates the entry of report list with the specified report key. A new report is initialised in case no report with specified report key is existing yet. 
 
 Functional description:
 ```
-  REMOVE_REPORTS_BY_KEY(survey)
+  UPDATE_REPORT_DATA(reportKey, attributeKey, value[, ?dtype])
 ```
 
 Go Implementation:
 ```go
-removeReportsByKey(action, oldState, event)
+updateReportData(action, oldState, event)
+```
+
+**Required Parameter:**
+
+>   `action.Data[0]` :  the key of the report to be updated as string. \
+>   `action.Data[1]` : the attribute key of the report. An existing pair of attribute key and value will be updated or an new pair is appendend to this entry of report list. \
+>   `action.Data[2]` : the corresponding value. \
+>   `action.Data[3]` : some optional attributes for interpreting the report value.
+
+
+**Return:** `(types.ParticipantState, error)`
+
+
+## 17. REMOVE_REPORT_DATA
+
+Removee entry from the report list with the specified report key.
+
+Functional description:
+```
+  REMOVE_REPORT_DATA(reportKey, attributeKey)
+```
+
+Go Implementation:
+```go
+removeReportData(action, oldState, event)
 ```
 
 **Required Parameter:**
