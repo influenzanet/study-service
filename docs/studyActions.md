@@ -365,7 +365,7 @@ initReport(action, oldState, event)
 
 ## 16. UPDATE_REPORT_DATA
 
-Updates the entry of report list with the specified report key. A new report is initialised in case no report with specified report key is existing yet. 
+Updates the data of the report with the specified report key. A new report is initialised in case no report with specified report key is existing yet. 
 
 Functional description:
 ```
@@ -380,7 +380,7 @@ updateReportData(action, oldState, event)
 **Required Parameter:**
 
 >   `action.Data[0]` :  the key of the report to be updated as string. \
->   `action.Data[1]` : the attribute key of the report. An existing pair of attribute key and value will be updated or an new pair is appendend to this entry of report list. \
+>   `action.Data[1]` : the attribute key of the report data entry. An existing pair of attribute key and value will be updated or an new pair is appendend to this report data. \
 >   `action.Data[2]` : the corresponding value. \
 >   `action.Data[3]` : some optional attributes for interpreting the report value.
 
@@ -390,7 +390,7 @@ updateReportData(action, oldState, event)
 
 ## 17. REMOVE_REPORT_DATA
 
-Removee entry from the report list with the specified report key.
+Removes the data from the report with the specified report key. A new report is initialised in case no report with specified report key is existing yet. 
 
 Functional description:
 ```
@@ -404,6 +404,66 @@ removeReportData(action, oldState, event)
 
 **Required Parameter:**
 
->   `action.Data[0]` : the string key of the survey item reponses to be removed.
+>   `action.Data[0]` : the key of the report for which the data will be removed. \
+>   `action.Data[1]` : the attribute key of the data entry that should be removed. In case of no data entry is matching to this key nothing happens.
+
+**Return:** `(types.ParticipantState, error)`
+
+
+## 18. CANCEL_REPORT
+
+Deletes the report with the specified report key from the report list.
+
+Functional description:
+```
+  CANCEL_REPORT(reportKey)
+```
+
+Go Implementation:
+```go
+cancelReport(action, oldState, event)
+```
+
+**Required Parameter:**
+
+>   `action.Data[0]` : the key of the report that is deleted. 
+
+**Return:** `(types.ParticipantState, error)`
+
+
+## 19. REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY
+
+Deletes all confidential responses for this participant with a specified key.
+
+Functional description:
+```
+  REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY(key)
+```
+
+Go Implementation:
+```go
+removeConfidentialResponseByKey(action, oldState, event)
+```
+
+**Required Parameter:**
+
+>   `action.Data[0]` : the key for which the confidential responses of the participant should be deleted.
+
+**Return:** `(types.ParticipantState, error)`
+
+
+## 20. REMOVE_ALL_CONFIDENTIAL_RESPONSES
+
+Deletes all confidential responses for this participant.
+
+Functional description:
+```
+  REMOVE_ALL_CONFIDENTIAL_RESPONSES()
+```
+
+Go Implementation:
+```go
+removeAllConfidentialResponses(action, oldState, event)
+``
 
 **Return:** `(types.ParticipantState, error)`
