@@ -328,7 +328,7 @@ removeMessagesByType(action, oldState, event)
 
 **Required Parameter:**
 
->   `action.Data[0]` : the string type of the messages to be removed. \
+>   `action.Data[0]` : the string type of the messages to be removed. 
 
 
  **Note:**
@@ -339,7 +339,7 @@ removeMessagesByType(action, oldState, event)
 
 ## 15. INIT_REPORT
 
-Initiates an empty report for the current event specififed by report key. An existing report having the specified key is reset to an empty report.
+Initiates an empty report for the current event specified by report key. An existing report having the specified key is reset to an empty report.
 
 Functional description:
 ```
@@ -353,7 +353,7 @@ initReport(action, oldState, event)
 
 **Required Parameter:**
 
->   `action.Data[0]` : the key of the initiated report as string. \
+>   `action.Data[0]` : the key of the initiated report as string. 
 
 
  **Note:**
@@ -464,6 +464,6 @@ Functional description:
 Go Implementation:
 ```go
 removeAllConfidentialResponses(action, oldState, event)
-``
+```
 
 **Return:** `(types.ParticipantState, error)`
