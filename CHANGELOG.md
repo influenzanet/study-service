@@ -5,9 +5,9 @@
 ### Added
 
 - Study-engine can be now extended with external logic via configurable calls to external HTTP endpoints. There are two new expressions for this:
-  - `externalEventHandler`: is a study action that can be used to trigger some externally defined logic.
+  - `EXTERNAL_EVENT_HANDLER`: is a study action that can be used to trigger some externally defined logic.
   - `externalEventEval`: is a study expression that can be used to process the event (e.g. survey responses) externally and retrieve a value, that can be used in the study engine (e.g. determine which survey should be assigned).
-Both expression will attempt to send an HTTP POST message with a payload containing the `participantID`, `eventType`, `studyKey` and if relevant `surveyResponses`.
+Both expression will attempt to send an HTTP POST message with a payload containing the `apiKey`, `participantState`, `eventType`, `studyKey`, `instanceID` and if relevant `surveyResponses`.
   - The expressions requires the following arguments:
     - `serviceName`: this name will be used to look up the URL and API key for the service.
   - For `externalEventEval` the return value of the expression (received through the HTTP response) can be interpreted as string (by default) or a float64 (if return type is defined as "float")

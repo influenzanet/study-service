@@ -1,8 +1,11 @@
 package studyengine
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -59,4 +62,33 @@ func getExternalServicesConfigByName(serviceConfigs []types.ExternalService, nam
 		}
 	}
 	return types.ExternalService{}, fmt.Errorf("no external service config found with name: %s", name)
+}
+
+type ExternalEventPayload struct {
+	APIKey           string                 `json:"apiKey"`
+	ParticipantState types.ParticipantState `json:"participantState"`
+	EventType        string                 `json:"eventType"`
+	StudyKey         string                 `json:"studyKey"`
+	InstanceID       string                 `json:"instanceID"`
+	Response         types.SurveyResponse   `json:"surveyResponses"`
+}
+
+func runHTTPcall(url string, payload ExternalEventPayload) (map[string]interface{}, error) {
+	json_data, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(json_data))
+	if err != nil {
+		return nil, err
+	}
+
+	var res map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

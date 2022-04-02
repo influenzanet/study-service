@@ -78,6 +78,8 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 		newState, err = removeConfidentialResponseByKey(action, oldState, event, configs)
 	case "REMOVE_ALL_CONFIDENTIAL_RESPONSES":
 		newState, err = removeAllConfidentialResponses(action, oldState, event, configs)
+	case "EXTERNAL_EVENT_HANDLER":
+		newState, err = externalEventHandler(action, oldState, event, configs)
 	default:
 		newState = oldState
 		err = errors.New("action name not known")
@@ -771,6 +773,69 @@ func removeAllConfidentialResponses(action types.Expression, oldState ActionData
 	_, err = configs.DBService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, "")
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
+	}
+	return
+}
+
+// call external service to handle event
+func externalEventHandler(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
+	newState = oldState
+
+	if len(action.Data) != 1 {
+		msg := "externalEventHandler must have exactly 1 argument"
+		logger.Error.Printf(msg)
+		return newState, errors.New(msg)
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+		Configs:          configs,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	serviceName, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	serviceConfig, err := getExternalServicesConfigByName(configs.ExternalServiceConfigs, serviceName)
+	if err != nil {
+		logger.Error.Println(err)
+		return newState, err
+	}
+
+	payload := ExternalEventPayload{
+		APIKey:           serviceConfig.APIKey,
+		ParticipantState: newState.PState,
+		EventType:        event.Type,
+		StudyKey:         event.StudyKey,
+		InstanceID:       event.InstanceID,
+		Response:         event.Response,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, payload)
+	if err != nil {
+		logger.Error.Println(err)
+		return newState, err
+	}
+
+	// if relevant, update participant state:
+	pState, hasKey := response["pState"]
+	if hasKey {
+		newState.PState = pState.(types.ParticipantState)
+		logger.Debug.Printf("updated participant state from external service")
+	}
+
+	// collect reports if any:
+	reportsToCreate, hasKey := response["reportsToCreate"]
+	if hasKey {
+		reportsToCreate := reportsToCreate.(map[string]types.Report)
+		for key, value := range reportsToCreate {
+			newState.ReportsToCreate[key] = value
+		}
+		logger.Debug.Printf("updated reports list from external service")
 	}
 	return
 }
