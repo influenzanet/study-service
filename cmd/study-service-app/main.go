@@ -22,7 +22,7 @@ func main() {
 	studyDBService := studydb.NewStudyDBService(conf.StudyDBConfig)
 	globalDBService := globaldb.NewGlobalDBService(conf.GlobalDBConfig)
 
-	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService)
+	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices)
 	sTimerService.Run()
 
 	clients := &types.APIClients{}
@@ -41,6 +41,7 @@ func main() {
 		conf.Study.GlobalSecret,
 		conf.MaxMsgSize,
 		conf.PersistentStoreConfig,
+		conf.ExternalServices,
 	); err != nil {
 		log.Fatal(err)
 	}

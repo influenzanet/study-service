@@ -223,7 +223,9 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		exp := types.Expression{Name: "checkConditionForOldResponses"}
 
 		EvalContext := EvalContext{
-			DbService: nil,
+			Configs: ActionConfigs{
+				DBService: nil,
+			},
 		}
 		_, err := ExpressionEval(exp, EvalContext)
 		if err == nil {
@@ -236,7 +238,9 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		exp := types.Expression{Name: "checkConditionForOldResponses"}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{},
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{},
+			},
 			Event: types.StudyEvent{
 				StudyKey: "testStudy",
 			},
@@ -252,8 +256,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		exp := types.Expression{Name: "checkConditionForOldResponses"}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -271,8 +277,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		exp := types.Expression{Name: "checkConditionForOldResponses"}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -302,8 +310,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -337,8 +347,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -372,8 +384,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -407,8 +421,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -443,8 +459,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",
@@ -481,8 +499,10 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		}}
 
 		EvalContext := EvalContext{
-			DbService: MockStudyDBService{
-				Responses: testResponses,
+			Configs: ActionConfigs{
+				DBService: MockStudyDBService{
+					Responses: testResponses,
+				},
 			},
 			Event: types.StudyEvent{
 				StudyKey:   "testStudy",

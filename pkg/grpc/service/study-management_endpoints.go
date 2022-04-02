@@ -454,7 +454,10 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 					StudyKey:                              studyKey,
 					ParticipantIDForConfidentialResponses: participantID2,
 				}
-				newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
+				newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
+					DBService:              s.studyDBservice,
+					ExternalServiceConfigs: s.studyEngineExternalServices,
+				})
 				if err != nil {
 					return err
 				}
@@ -562,7 +565,10 @@ func (s *studyServiceServer) RunRulesForSingleParticipant(ctx context.Context, r
 			StudyKey:                              req.StudyKey,
 			ParticipantIDForConfidentialResponses: participantID2,
 		}
-		newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
+		newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
+			DBService:              s.studyDBservice,
+			ExternalServiceConfigs: s.studyEngineExternalServices,
+		})
 		if err != nil {
 			logger.Debug.Printf("unexpected error: %v", err)
 			return nil, status.Error(codes.Internal, err.Error())

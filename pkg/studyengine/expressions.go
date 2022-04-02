@@ -17,7 +17,7 @@ import (
 type EvalContext struct {
 	Event            types.StudyEvent
 	ParticipantState types.ParticipantState
-	DbService        StudyDBService
+	Configs          ActionConfigs
 }
 
 func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val interface{}, err error) {
@@ -187,7 +187,7 @@ func (ctx EvalContext) hasStudyStatus(exp types.Expression, withIncomingParticip
 }
 
 func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val bool, err error) {
-	if ctx.DbService == nil {
+	if ctx.Configs.DBService == nil {
 		return val, errors.New("checkConditionForOldResponses: DB connection not available in the context")
 	}
 	if ctx.Event.InstanceID == "" || ctx.Event.StudyKey == "" {
@@ -256,7 +256,7 @@ func (ctx EvalContext) checkConditionForOldResponses(exp types.Expression) (val 
 		}
 	}
 
-	responses, err := ctx.DbService.FindSurveyResponses(ctx.Event.InstanceID, ctx.Event.StudyKey, studydb.ResponseQuery{
+	responses, err := ctx.Configs.DBService.FindSurveyResponses(ctx.Event.InstanceID, ctx.Event.StudyKey, studydb.ResponseQuery{
 		ParticipantID: ctx.ParticipantState.ParticipantID,
 		SurveyKey:     surveyKey,
 		Since:         since,

@@ -809,7 +809,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 		s.SaveLogEvent(info.Token.InstanceId, info.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_SAVE_SURVEY, " upload participant file not permitted")
 		return status.Error(codes.PermissionDenied, "no permission to upload files")
 	} else {
-		// TODO: check upload condition for participant
+		// check upload condition for participant
 		val, err := studyengine.ExpressionEval(*studyDef.Configs.ParticipantFileUploadRule, studyengine.EvalContext{
 			Event: types.StudyEvent{
 				InstanceID: instanceID,
@@ -822,7 +822,10 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 				},
 			},
 			ParticipantState: pState,
-			DbService:        s.studyDBservice,
+			Configs: studyengine.ActionConfigs{
+				DBService:              s.studyDBservice,
+				ExternalServiceConfigs: s.studyEngineExternalServices,
+			},
 		})
 		if err != nil {
 			logger.Info.Printf("Error UploadParticipantFile: err at eval rule %v", err.Error())

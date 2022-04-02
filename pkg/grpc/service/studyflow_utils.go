@@ -59,7 +59,10 @@ func (s *studyServiceServer) getAndPerformStudyRules(instanceID string, studyKey
 		return
 	}
 	for _, rule := range rules {
-		newState, err = studyengine.ActionEval(rule, newState, event, s.studyDBservice)
+		newState, err = studyengine.ActionEval(rule, newState, event, studyengine.ActionConfigs{
+			DBService:              s.studyDBservice,
+			ExternalServiceConfigs: s.studyEngineExternalServices,
+		})
 		if err != nil {
 			return
 		}

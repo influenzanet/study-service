@@ -110,7 +110,10 @@ func (s *studyServiceServer) GetConfidentialResponses(ctx context.Context, req *
 				ParticipantIDForConfidentialResponses: confPID,
 			},
 			ParticipantState: pState,
-			DbService:        s.studyDBservice,
+			Configs: studyengine.ActionConfigs{
+				DBService:              s.studyDBservice,
+				ExternalServiceConfigs: s.studyEngineExternalServices,
+			},
 		})
 		conditionTrue, ok := val.(bool)
 		if err != nil || !ok || !conditionTrue {
