@@ -2,6 +2,7 @@ package studyengine
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -49,4 +50,13 @@ func findResponseObject(surveyItem *types.SurveyItemResponse, responseKey string
 		}
 	}
 	return responseItem, nil
+}
+
+func getExternalServicesConfigByName(serviceConfigs []types.ExternalService, name string) (types.ExternalService, error) {
+	for _, item := range serviceConfigs {
+		if item.Name == name {
+			return item, nil
+		}
+	}
+	return types.ExternalService{}, fmt.Errorf("no external service config found with name: %s", name)
 }
