@@ -167,6 +167,10 @@ func (db MockStudyDBService) DeleteConfidentialResponses(instanceID string, stud
 	return
 }
 
+func (db MockStudyDBService) SaveResearcherMessage(instanceID string, studyKey string, message types.StudyMessage) error {
+	return nil
+}
+
 func TestEvalCheckConditionForOldResponses(t *testing.T) {
 	testResponses := []types.SurveyResponse{
 		{

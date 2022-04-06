@@ -17,6 +17,7 @@ import (
 type StudyDBService interface {
 	FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error)
 	DeleteConfidentialResponses(instanceID string, studyKey string, participantID string, key string) (count int64, err error)
+	SaveResearcherMessage(instanceID string, studyKey string, message types.StudyMessage) error
 }
 
 type ActionData struct {
@@ -66,6 +67,8 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 		newState, err = removeAllMessages(action, oldState, event, configs)
 	case "REMOVE_MESSAGES_BY_TYPE":
 		newState, err = removeMessagesByType(action, oldState, event, configs)
+	case "NOTIFY_RESEARCHER":
+		newState, err = notifyResearcher(action, oldState, event, configs)
 	case "INIT_REPORT":
 		newState, err = initReport(action, oldState, event, configs)
 	case "UPDATE_REPORT_DATA":
@@ -523,6 +526,64 @@ func removeMessagesByType(action types.Expression, oldState ActionData, event ty
 		}
 	}
 	newState.PState.Messages = messages
+	return
+}
+
+// notifyResearcher can save a specific message with a payload, that should be sent out to the researcher
+func notifyResearcher(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) < 1 {
+		return newState, errors.New("notifyResearcher must have at least one argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+		Configs:          configs,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	messageType, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	payload := map[string]string{}
+
+	for i := 1; i < len(action.Data)-1; i = i + 2 {
+		k, err := EvalContext.expressionArgResolver(action.Data[i])
+		if err != nil {
+			return newState, err
+		}
+		v, err := EvalContext.expressionArgResolver(action.Data[i+1])
+		if err != nil {
+			return newState, err
+		}
+
+		key, ok := k.(string)
+		if !ok {
+			return newState, errors.New("could not parse key")
+		}
+		value, ok := v.(string)
+		if !ok {
+			return newState, errors.New("could not parse value")
+		}
+
+		payload[key] = value
+	}
+
+	message := types.StudyMessage{
+		Type:          messageType,
+		ParticipantID: oldState.PState.ParticipantID,
+		Payload:       payload,
+	}
+
+	err = configs.DBService.SaveResearcherMessage(event.InstanceID, event.StudyKey, message)
+	if err != nil {
+		logger.Error.Printf("unexpected error when saving researcher message: %v", err)
+	}
 	return
 }
 

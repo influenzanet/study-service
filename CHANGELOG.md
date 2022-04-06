@@ -22,6 +22,8 @@ services:
   ...
 ```
 
+- New study engine action `NOTIFY_RESEARCHER` with arguments for `messageType` (which message template will be used / message subscription topic) and an optional list of key and value pairs (that can be used to populate the payload for the message).
+
 ### Changed
 
 - Fix issue in report ignoring logic
