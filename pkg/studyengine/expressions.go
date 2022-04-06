@@ -112,6 +112,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
+	case "externalEventEval":
+		val, err = evalCtx.externalEventEval(expression)
 	default:
 		err = fmt.Errorf("expression name not known: %s", expression.Name)
 		logger.Debug.Println(err)
@@ -1190,6 +1192,44 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 
 	t = float64(referenceTime + delta)
 	return
+}
+
+func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{}, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("should have one argument")
+	}
+
+	serviceName, err := ctx.mustGetStrValue(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	serviceConfig, err := getExternalServicesConfigByName(ctx.Configs.ExternalServiceConfigs, serviceName)
+	if err != nil {
+		logger.Error.Println(err)
+		return val, err
+	}
+
+	payload := ExternalEventPayload{
+		APIKey:           serviceConfig.APIKey,
+		ParticipantState: ctx.ParticipantState,
+		EventType:        ctx.Event.Type,
+		StudyKey:         ctx.Event.StudyKey,
+		InstanceID:       ctx.Event.InstanceID,
+		Response:         ctx.Event.Response,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, payload)
+	if err != nil {
+		logger.Error.Println(err)
+		return val, err
+	}
+
+	// if relevant, update participant state:
+	value := response["value"]
+	if exp.ReturnType == "float" {
+		return value.(float64), nil
+	}
+	return value, nil
 }
 
 func (ctx EvalContext) mustGetStrValue(arg types.ExpressionArg) (string, error) {
