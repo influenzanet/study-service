@@ -182,7 +182,7 @@ returns the entered string value of the specified response group item.
 
 Functional Description:
 ```
-getResponseValueAsStr(survey, rg): float
+getResponseValueAsStr(survey, rg): string
 ```
 
 Go Implementation:
@@ -200,6 +200,89 @@ getResponseValueAsStr(expression)
 
 
 **Return:**  `(val string, err error)`
+
+
+## 8. getSelectedKeys
+
+returns the item keys selected by the participant for the specified survey item with specified response group.
+
+Functional Description:
+```
+getSelectedKeys(survey, rg): string
+```
+
+Go Implementation:
+```go
+getSelectedKeys(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response group convertible to type `string`
+
+**Note:** This method returns the selected item keys of the response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns an empty string. The length of `expression.Data` must be `2`.
+
+
+**Return:**  `(val string, err error)`
+
+
+## 9. hasResponseKey
+
+checks if the survey item has the specified response key.
+
+
+Functional Description:
+```
+hasResponseKey(survey, rg): bool
+```
+
+Go Implementation:
+```go
+hasResponseKey(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response convertible to type `string`
+
+**Note:** This method returns true if the survey question with survey item key `expression.Data[0]` has a response with response key `expression.Data[1]`. The length of `expression.Data` must be `2`.
+
+
+**Return:**  `(val bool, err error)`
+
+
+
+## 10. hasResponseKeyWithValue
+
+checks if the survey item has the specified response key and value.
+
+
+Functional Description:
+```
+hasResponseKeyWithValue(survey, rg, value): bool
+```
+
+Go Implementation:
+```go
+hasResponseKeyWithValue(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response convertible to type `string` \
+>   `expression.Data[2]` :  value of the response convertible to type `string` 
+
+
+**Note:** This method returns true if the survey question with survey item key `expression.Data[0]` has a response with response key `expression.Data[1]` and corresponding value `expression.Data[2]`. The length of `expression.Data` must be `3`.
+
+
+**Return:**  `(val bool, err error)`
 
 
  <!--- ## 8. checkConditionForOldResponses
@@ -387,12 +470,116 @@ hasParticipantFlag(expression)
 **Parameter:**    `expression` : a structure of `types.Expression`
 
 **Required in this method:**
->   `expression.Data[0]` : should contain the name of the flag of interest as `string` \
->   `expression.Data[1]` : should contain the flag value of interest as `string`.
+>   `expression.Data[0]` : key of the flag as `string` \
+>   `expression.Data[1]` : flag value as `string`.
 
 **Note:** The length of `expression.Data` must be `2`.
 
 **Return:**  `(bool, error)`
+
+
+## 14. hasParticipantFlagKey
+
+Checks if the participant has the specified flag set to any value.
+
+Functional Description:
+```
+hasParticipantFlagKey(flag_key): bool
+```
+
+Go Implementation:
+
+```go
+hasParticipantFlagKey(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` : the key of the flag as `string` 
+
+**Note:** The length of `expression.Data` must be `1`.
+
+**Return:**  `(bool, error)`
+
+
+
+## 14. hasParticipantFlagValue
+
+returns the value corresponding to the specified flag key set for the participant.
+
+Functional Description:
+```
+hasParticipantFlagKey(flag_key): bool
+```
+
+Go Implementation:
+
+```go
+hasParticipantFlagKey(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` : the key of the flag as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. Returns an empty string if the flag key is not found.
+
+**Return:**  `(string, error)`
+
+
+
+## 14. hasMessageTypeAssigned
+
+checks if the message list of the participant contains the specified messsage type. Returns `true` if the message type is found, `false` otherwise.
+
+Functional Description:
+```
+hasMessageTypeAssigned(message_type): bool
+```
+
+Go Implementation:
+
+```go
+hasMessageTypeAssigned(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` : the type of message as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. 
+
+**Return:**  `(string, error)`
+
+
+## 14. getMessageNextTime
+
+Returns the shortest schedule time from all messages in the message list of the participant equal to the specified message type. Returns 0, if no messages or no messages with specified type are found.
+
+
+Functional Description:
+```
+getMessageNextTime(message_type): bool
+```
+
+Go Implementation:
+
+```go
+getMessageNextTime(expression)
+```
+
+**Parameter:**    `expression` : a structure of `types.Expression`
+
+**Required in this method:**
+>   `expression.Data[0]` : the type of message as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. 
+
+**Return:**  `(string, error)`
+
 
 
 ## 15. lastSubmissionDateOlderThan
