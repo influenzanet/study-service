@@ -23,6 +23,9 @@ services:
 ```
 
 - New study engine action `NOTIFY_RESEARCHER` with arguments for `messageType` (which message template will be used / message subscription topic) and an optional list of key and value pairs (that can be used to populate the payload for the message).
+  - Added gRPC endpoints to fetch or update notification subscriptions of a study.
+
+## [v1.0.3] - 2022-04-15
 
 ### Changed
 

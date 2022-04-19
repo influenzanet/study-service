@@ -15,11 +15,6 @@ const (
 	STUDY_STATUS_INACTIVE = "inactive"
 )
 
-type NotificationSubscription struct {
-	MessageType string `bson:"messageType"`
-	Email       string `bson:"email"`
-}
-
 type Study struct {
 	ID                        primitive.ObjectID         `bson:"_id,omitempty" json:"id,omitempty"`
 	Key                       string                     `bson:"key"`
@@ -62,6 +57,11 @@ type StudyStats struct {
 
 type Tag struct {
 	Label []LocalisedObject `bson:"label"`
+}
+
+type NotificationSubscription struct {
+	MessageType string `bson:"messageType"`
+	Email       string `bson:"email"`
 }
 
 func (s Study) ToAPI() *api.Study {
@@ -237,5 +237,22 @@ func (t StudyStats) ToAPI() *api.Study_Stats {
 		ParticipantCount:     t.ParticipantCount,
 		TempParticipantCount: t.TempParticipantCount,
 		ResponseCount:        t.ResponseCount,
+	}
+}
+
+func NotificationSubscriptionFromAPI(s *api.Subscription) NotificationSubscription {
+	if s == nil {
+		return NotificationSubscription{}
+	}
+	return NotificationSubscription{
+		MessageType: s.MessageType,
+		Email:       s.Email,
+	}
+}
+
+func (s NotificationSubscription) ToAPI() *api.Subscription {
+	return &api.Subscription{
+		MessageType: s.MessageType,
+		Email:       s.Email,
 	}
 }
