@@ -1,6 +1,6 @@
 # Study Expressions
 
-This document describes the current possibilities to evaluate study expressions.
+This document describes the current possibilities to evaluate study expressions. 
 
  Study expressions are analysed and evaluated by methods of a structure that comprises the following attributes:
 
@@ -10,10 +10,163 @@ This document describes the current possibilities to evaluate study expressions.
 
 For each expression type :
 
-- `Functional description` describes in a function call-like syntax an overview of the parameters expected
-- `Go Implementation` describes the current go function definition. Each expression is defined as a function accepting one expression (of type `types.Expression`) embedding the arguments for the call.
+- `Functional description` : describes in a function call-like syntax an overview of the parameters expected
+- `Go Implementation` : describes the current go function definition. Each expression is defined as a function accepting the following arguments:
+  * `expression` : a structure of `types.Expression`,
+  * `withIncomingParticipantState` (shortcut: `withIPS`) : boolean value indicating which participant state to use in this method. `true` means incoming temporary state is used such as from anonymous unlogged participants. `false` means regular participant state is used (i.e. from registered users).
 
-## 1.  countResponseItems
+
+Methods analysing study expressions are listed in the following.
+
+## Response Checking 
+
+### 1. checkSurveyResponseKey
+
+Checks if the specified survey key is equal to the key of the submitted survey during `Event` provided that this key is available.
+
+Functional Description:
+```
+checkSurveyResponseKey(survey): bool
+```
+
+Go Implementation:
+```go
+checkSurveyResponseKey(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : survey key, convertible to `string`
+
+ **Note:** The length of `expression.Data` must be 1.
+
+**Return:** `(bool, error)`
+
+### 2. responseHasKeysAny
+
+Checks if the participant has selected any of the specified item keys.
+
+Functional Description:
+```
+responseHasKeysAny(survey, rg_prefix, comp_key...): bool
+```
+
+Go Implementation:
+```go
+responseHasKeysAny(expression)
+```
+
+**Required Parameter:**
+
+-   `expression.Data[0]` : key of the survey item convertible to type `string`
+-   `expression.Data[1]` : the key of the response group convertible to type `string`
+-   `expression.Data[2:]` : the keys of the target answer items convertible to type `string`
+
+ **Note:**
+This method checks if the participant has selected any of the specified item keys `expression.Data[2:]` of the response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `false`. The length of `expression.Data` must be at least `3`.
+
+**Return:** `(bool, error)`
+
+
+### 3. responseHasOnlyKeysOtherThan
+
+Checks if the participant has selected none of the specified item keys.
+
+Functional Description:
+```
+responseHasOnlyKeysOtherThan(survey, rg_prefix, comp_key...): bool
+```
+
+Go Implementation:
+```go
+responseHasOnlyKeysOtherThan(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : key of the survey item convertible to type `string` \
+>   `expression.Data[1]` : key of the response group convertible to type `string` \
+>   `expression.Data[2:]` : keys of the target answer items convertible to type `string`
+
+**Note:** This method checks if the participant has selected none of the specified item keys `expression.Data[2:]` of response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `false`. The length of `expression.Data` must be at least `3`.
+
+**Return:** `(bool, error)`
+
+### 4. getResponseValueAsNum
+
+Returns the entered numerical value of the specified response group item.
+
+Functional Description:
+```
+getResponseValueAsNum(survey, rg): float
+```
+
+Go Implementation:
+
+```go
+getResponseValueAsNum(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : key of the survey item convertible to type `string` \
+>   `expression.Data[1]` : key of the response group convertible to type `string`
+
+**Note:** This method returns the entered numerical value of the response group with response key `expression.Data[1]` (e.g. numerical input field or slider scale) from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `0`. The length of `expression.Data` must be `2`.
+
+**Return:**  `(float64, error)`
+
+
+### 5. getResponseValueAsStr
+
+Returns the entered string value of the specified response group item.
+
+Functional Description:
+```
+getResponseValueAsStr(survey, rg): string
+```
+
+Go Implementation:
+```go
+getResponseValueAsStr(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response group convertible to type `string`
+
+**Note:** This method returns the entered string value of the response group with response key `expression.Data[1]` (e.g. free input fields) from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns an empty string. The length of `expression.Data` must be `2`.
+
+
+**Return:**  `(string, error)`
+
+
+### 6. getSelectedKeys
+
+Returns the item keys selected by the participant for the specified survey item with specified response group.
+
+Functional Description:
+```
+getSelectedKeys(survey, rg): string
+```
+
+Go Implementation:
+```go
+getSelectedKeys(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response group convertible to type `string`
+
+**Note:** This method returns the selected item keys of the response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns an empty string. The length of `expression.Data` must be `2`.
+
+
+**Return:**  `(string, error)`
+
+### 7.  countResponseItems
 
 Counts the number of selected reponse items of a response group.
 
@@ -27,9 +180,7 @@ Go Implementation:
 countResponseItems(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : key of the survey item convertible to type `string` \
 >   `expression.Data[1]` : key of the response group convertible to type `string`
@@ -40,167 +191,60 @@ This method returns the number of selected response items of the response slot h
 
 **Return:** `(float64, error)`
 
-## 2. checkEventType
 
-Checks if the latest event is of the same type as specified in the parameter expression.
+### 8. hasResponseKey
+
+Checks if the survey item has the specified response key.
 
 Functional Description:
 ```
-checkEventType(event_type): bool
+hasResponseKey(survey, rg): bool
 ```
 
 Go Implementation:
 ```go
-checkEventType(expression)
+hasResponseKey(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
-
->   `expression.Data[0]` : event of interest convertible to `string`
-
-
- **Note:**
-This method checks if the latest event is of the specified type. Types of events can be e.g. "SUBMISSION", "TIMER" or "ENTER". The length of `expression.Data` must be 1.
-
-**Return:** `(bool, error)`
-
-
-<!--- Add error handling?: if not defined or error, returns false with error type-->
-
-
-## 3. checkSurveyResponseKey
-
-Checks if the key of the survey submitted during `Event` is the same as in expression data.
-
-Functional Description:
-```
-checkSurveyResponseKey(survey): bool
-```
-
-Go Implementation:
-```go
-checkSurveyResponseKey(expression)
-```
-
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
-
->   `expression.Data[0]` : survey key, convertible to `string`
-
- **Note:**
-This method checks if the value of `expression.Data[0]` converted to `string` is equal to the key of the submitted survey provided that this key is available. Otherwise it returns `false`. The length of `expression.Data` must be 1.
-
-**Return:** `(bool, error)`
-
-## 4. responseHasKeysAny
-
-checks if the participant has selected any of the specified item keys.
-
-Functional Description:
-```
-responseHasKeysAny(survey, rg_prefix, comp_key...): bool
-```
-
-Go Implementation:
-```go
-responseHasKeysAny(expression)
-```
-
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
-
--   `expression.Data[0]` : key of the survey item convertible to type `string`
--   `expression.Data[1]` : the key of the response group convertible to type `string`
--   `expression.Data[2:]` : the keys of the target answer items convertible to type `string`
-
- **Note:**
-This method checks if the participant has selected any of the specified item keys `expression.Data[2:]` of the response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `false`. The length of `expression.Data` must be at least `3`.
-
-**Return:** `(bool, error)`
-
-
-## 5. responseHasOnlyKeysOtherThan
-
-checks if the participant has selected none of the specified item keys.
-
-Functional Description:
-```
-responseHasOnlyKeysOtherThan(survey, rg_prefix, comp_key...): bool
-```
-
-Go Implementation:
-```go
-responseHasOnlyKeysOtherThan(expression)
-```
-
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
-
--   `expression.Data[0]` : key of the survey item convertible to type `string`
--   `expression.Data[1]` : key of the response group convertible to type `string`
--   `expression.Data[2:]` : keys of the target answer items convertible to type `string`
-
-**Note:** This method checks if the participant has selected none of the specified item keys `expression.Data[2:]` of response group with response key `expression.Data[1]` from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `false`. The length of `expression.Data` must be at least `3`.
-
-**Return:** `(bool, error)`
-
-## 6. getResponseValueAsNum
-
-returns the entered numerical value of the specified response group item.
-
-Functional Description:
-```
-getResponseValueAsNum(survey, rg): float
-```
-
-Go Implementation:
-
-```go
-getResponseValueAsNum(expression)
-```
-
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
-
--   `expression.Data[0]` : key of the survey item convertible to type `string` \
--   `expression.Data[1]` : key of the response group convertible to type `string`
-
-**Note:** This method returns the entered numerical value of the response group with response key `expression.Data[1]` (e.g. numerical input field or slider scale) from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns `0`. The length of `expression.Data` must be `2`.
-
-**Return:**  `(val float64, err error)`
-
-
-## 7. getResponseValueAsStr
-
-returns the entered string value of the specified response group item.
-
-Functional Description:
-```
-getResponseValueAsStr(survey, rg): float
-```
-
-Go Implementation:
-```go
-getResponseValueAsStr(expression)
-```
-
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
 >   `expression.Data[0]` :  key of the survey item convertible to type `string` \
->   `expression.Data[1]` :  key of the response group convertible to type `string`
+>   `expression.Data[1]` :  key of the response convertible to type `string`
 
-**Note:** This method returns the entered string value of the response group with response key `expression.Data[1]` (e.g. free input fields) from the survey question with survey item key `expression.Data[0]`. If the survey item or response object are not found, it returns an empty string. The length of `expression.Data` must be `2`.
+**Note:** This method returns true if the survey question with survey item key `expression.Data[0]` has a response with response key `expression.Data[1]`. The length of `expression.Data` must be `2`.
 
 
-**Return:**  `(val string, err error)`
+**Return:**  `(bool, error)`
 
+
+### 9. hasResponseKeyWithValue
+
+Checks if the survey item has the specified response key and value.
+
+
+Functional Description:
+```
+hasResponseKeyWithValue(survey, rg, value): bool
+```
+
+Go Implementation:
+```go
+hasResponseKeyWithValue(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` :  key of the survey item convertible to type `string` \
+>   `expression.Data[1]` :  key of the response convertible to type `string` \
+>   `expression.Data[2]` :  value of the response convertible to type `string` 
+
+
+**Note:** This method returns true if the survey question with survey item key `expression.Data[0]` has a response with response key `expression.Data[1]` and corresponding value `expression.Data[2]`. The length of `expression.Data` must be `3`.
+
+
+**Return:**  `(bool, error)`
+
+## Old Response Checking 
 
  <!--- ## 8. checkConditionForOldResponses
 
@@ -222,7 +266,8 @@ Arguments:
 
 -->
 
-## 8. checkConditionForOldResponses
+
+### 10. checkConditionForOldResponses
 
 Evaluates the specified expression on old responses.
 
@@ -236,9 +281,8 @@ Go Implementation:
 checkConditionForOldResponses(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
 > 1. `expression.Data[0]`: an expression that should return a boolean value. As the local context will contain the old survey, it will be evaluated as it would be submitted right now.
 > 2. `expression.Data[1]`: optional value of type  `string` or `float64` expecting to be `"all"`, `"any"` or a postive number:
 >       * `"all"`: the method returns true if all the found responses fulfil the condition `expression.Data[0]`. Otherwise or if no responses were found, the method returns false (Default behaviour).
@@ -253,7 +297,9 @@ checkConditionForOldResponses(expression)
 
 **Return:**  `(bool, error)`
 
-## 9. getStudyEntryTime
+## Participant State Checking
+
+### 11. getStudyEntryTime
 
 Returns the time (as posix timestamp) the participant entered the study.
 
@@ -264,14 +310,13 @@ getStudyEntryTime(): float
 
 Go Implementation:
 ```go
-getStudyEntryTime(expression)
+getStudyEntryTime(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
 
 **Return:**  `(float64, error)`
 
-## 10. hasSurveyKeyAssigned
+### 12. hasSurveyKeyAssigned
 
 Checks if the specified survey key is included in the keys of the surveys assigned to the participant.
 
@@ -283,20 +328,19 @@ hasSurveyKeyAssigned(survey): bool
 Go Implementation:
 
 ```go
-hasSurveyKeyAssigned(expression)
+hasSurveyKeyAssigned(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
->   `expression.Data[0]` : survey key of interest as type `string`.
+>   `expression.Data[0]` : survey key of interest as type `string`,\
 
 **Note:** The length of `expression.Data` must be `1`.
 
-**Return:**  `(val bool, err error)`
+**Return:**  `(bool, error)`
 
 
-## 11. getSurveyKeyAssignedFrom
+### 13. getSurveyKeyAssignedFrom
 
 Returns the date when the specified survey was assigned to the participant as posix timestamp.
 
@@ -307,12 +351,11 @@ getSurveyKeyAssignedFrom(survey): float
 
 Go Implementation:
 ```go
-getSurveyKeyAssignedFrom(expression)
+getSurveyKeyAssignedFrom(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
 >   `expression.Data[0]` : should contain the survey key of interest as type `string`.
 
 **Note:** If none of the assigned surveys has the specified survey key, it returns -1. The length of `expression.Data` must be `1`.
@@ -320,7 +363,7 @@ getSurveyKeyAssignedFrom(expression)
 **Return:**  `(float64, error)`
 
 
-## 12. getSurveyKeyAssignedUntil
+### 14. getSurveyKeyAssignedUntil
 
 Returns the date until the specified survey should be submitted by the participant as posix timestamp.
 
@@ -332,12 +375,11 @@ getSurveyKeyAssignedUntil(survey): float
 Go Implementation:
 
 ```go
-getSurveyKeyAssignedUntil(expression)
+getSurveyKeyAssignedUntil(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
 >   `expression.Data[0]` : should contain the survey key of interest as type `string`.
 
 
@@ -345,7 +387,7 @@ getSurveyKeyAssignedUntil(expression)
 
 **Return:**  `(float64, error)`
 
-## 13. hasStudyStatus
+### 15. hasStudyStatus
 
 Checks if the participant has the specified status.
 
@@ -356,20 +398,19 @@ hasStudyStatus(status): bool
 
 Go Implementation:
 ```go
-hasStudyStatus(expression)
+hasStudyStatus(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
 >   `expression.Data[0]` : should contain the status value of type `string` that is compared to the current status of the participant.
 
 
-**Note:** Possible values for the status of the paticipant are ``"active"`, `"temporary"`, `"exited"`. Other values are possible and are handled like `"exited"` on the server. The length of `expression.Data` must be `1`.
+**Note:** Possible values for the status of the paticipant are `active`, `temporary`, `exited`. Other values are possible and are handled like `exited` on the server. The length of `expression.Data` must be `1`.
 
 **Return:**  `(bool, error)`
 
-## 14. hasParticipantFlag
+### 16. hasParticipantFlag
 
 Checks if the participant has the specified flag set with a given value.
 
@@ -381,21 +422,69 @@ hasParticipantFlag(flag_key, value): bool
 Go Implementation:
 
 ```go
-hasParticipantFlag(expression)
+hasParticipantFlag(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
->   `expression.Data[0]` : should contain the name of the flag of interest as `string` \
->   `expression.Data[1]` : should contain the flag value of interest as `string`.
+>   `expression.Data[0]` : key of the flag as `string` \
+>   `expression.Data[1]` : flag value as `string`.
 
 **Note:** The length of `expression.Data` must be `2`.
 
 **Return:**  `(bool, error)`
 
 
-## 15. lastSubmissionDateOlderThan
+### 17. hasParticipantFlagKey
+
+Checks if the participant has the specified flag set to any value.
+
+Functional Description:
+```
+hasParticipantFlagKey(flag_key): bool
+```
+
+Go Implementation:
+
+```go
+hasParticipantFlagKey(expression, withIPS)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : the key of the flag as `string` 
+
+**Note:** The length of `expression.Data` must be `1`.
+
+**Return:**  `(bool, error)`
+
+
+
+### 18. getParticipantFlagValue
+
+Returns the value corresponding to the specified flag key set for the participant.
+
+Functional Description:
+```
+getParticipantFlagValue(flag_key): bool
+```
+
+Go Implementation:
+
+```go
+getParticipantFlagValue(expression, withIPS)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : the key of the flag as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. Returns an empty string if the flag key is not found.
+
+**Return:**  `(string, error)`
+
+
+### 19. lastSubmissionDateOlderThan
 
 Checks if the submission date either of the last survey submitted or the specified survey is older than the specified date.
 
@@ -406,12 +495,11 @@ lastSubmissionDateOlderThan(time[, survey]): bool
 
 Go Implementation:
 ```go
-lastSubmissionDateOlderThan(expression)
+lastSubmissionDateOlderThan(expression, withIPS)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required in this method:**
 >   `expression.Data[0]` : should contain the date of interest as posix time stamp. \
 >   `expression.Data[1]` : optional parameter that should contain the key of the survey whose submission date will be compared to the first argument `expression.Data[0]`.
 
@@ -420,7 +508,57 @@ lastSubmissionDateOlderThan(expression)
 **Return:**  `(bool, error)`
 
 
-## 16. eq
+### 20. hasMessageTypeAssigned
+
+Checks if the message list of the participant contains the specified messsage type. Returns `true` if the message type is found, `false` otherwise.
+
+Functional Description:
+```
+hasMessageTypeAssigned(message_type): bool
+```
+
+Go Implementation:
+
+```go
+hasMessageTypeAssigned(expression, withIPS)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : the type of message as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. 
+
+**Return:**  `(string, error)`
+
+
+### 21. getMessageNextTime
+
+Returns the shortest schedule time from all messages in the message list of the participant equal to the specified message type. Returns 0, if no messages or no messages with specified type are found.
+
+
+Functional Description:
+```
+getMessageNextTime(message_type): bool
+```
+
+Go Implementation:
+
+```go
+getMessageNextTime(expression, withIPS)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : the type of message as `string` 
+
+**Note:** The length of `expression.Data` must be `1`. 
+
+**Return:**  `(string, error)`
+
+## Logical Operations
+
+### 22. eq
 
 Checks if the first two entries of expression data are equal.
 
@@ -434,9 +572,7 @@ Go Implementation:
 eq(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `string` or `float64` \
 >   `expression.Data[1]` : should be a value of type `string` or `float64`
@@ -447,7 +583,7 @@ eq(expression)
 **Return:** `(bool, error)`
 
 
-## 17. lt
+### 23. lt
 
 Checks if the first entry of expression data is less than the second entry.
 
@@ -461,9 +597,7 @@ Go Implementation:
 lt(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `string` or `float64` \
 >   `expression.Data[1]` : should be a value of type `string` or `float64`
@@ -474,7 +608,7 @@ lt(expression)
 **Return:** `(bool, error)`
 
 
-## 18. lte
+### 24. lte
 
 Checks if the first entry of expression data is less than or equal to the second entry.
 
@@ -488,9 +622,7 @@ Go Implementation:
 lte(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `string` or `float64` \
 >   `expression.Data[1]` : should be a value of type `string` or `float64`
@@ -500,7 +632,7 @@ lte(expression)
 
 **Return:** `(bool, error)`
 
-## 19. gt
+### 25. gt
 
 Checks if the first entry of expression data is greater than the second entry.
 
@@ -515,9 +647,7 @@ Go Implementation:
 gt(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `string` or `float64` \
 >   `expression.Data[1]` : should be a value of type `string` or `float64`
@@ -527,7 +657,7 @@ gt(expression)
 
 **Return:** `(bool, error)`
 
-## 20. gte
+### 26. gte
 
 Checks if the first entry of expression data is greater than or equal to the second entry.
 
@@ -542,9 +672,7 @@ Go Implementation:
 gte(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `string` or `float64` \
 >   `expression.Data[1]` : should be a value of type `string` or `float64`
@@ -553,7 +681,7 @@ gte(expression)
  **Note:** Strings are compared lexicographically. The type of the arguments should be either both `string` or `float64`. The length of `expression.Data` must be 2.
 
 
-## 22. and
+### 27. and
 
 Checks if all entries of expression data are unequal to zero or `true`.
 
@@ -567,9 +695,7 @@ Go Implementation:
 and(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[:]` : only values of type `bool` or `float64` are evaluated
 
@@ -581,7 +707,7 @@ The length of `expression.Data` must be at least `2`. This Method returns `true`
 **Return:** `(bool, error)`
 
 
-## 23. or
+### 28. or
 
 Checks if there is one entry of expression data that is `true`or greater than zero.
 
@@ -595,9 +721,7 @@ Go Implementation:
 or(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required in this method:**
+**Required Parameter:**
 
 >   `expression.Data[:]` : only values of type `bool` or `float64` are evaluated
 
@@ -608,7 +732,7 @@ or(expression)
 
 **Return:** `(bool, error)`
 
-## 24. not
+### 29. not
 
 Checks if the first entry of expression data is `0` or `false`.
 
@@ -622,9 +746,7 @@ Go Implementation:
 not(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
-
-**Required:**
+**Required Parameter:**
 
 >   `expression.Data[0]` : should be a value of type `bool` or `float64`
 
@@ -634,7 +756,35 @@ not(expression)
 
 **Return:** `(bool, error)`
 
-## 25. timestampWithOffset
+## Miscellaneous
+
+### 30. checkEventType
+
+Checks if the latest event is of the same type as specified in the parameter expression.
+
+Functional Description:
+```
+checkEventType(event_type): bool
+```
+
+Go Implementation:
+```go
+checkEventType(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : event of interest convertible to `string`
+
+
+ **Note:**
+This method checks if the latest event is of the specified type. Types of events can be e.g. "SUBMISSION", "TIMER" or "ENTER". The length of `expression.Data` must be 1.
+
+**Return:** `(bool, error)`
+
+
+
+### 31. timestampWithOffset
 
 Returns the specified offset time added to either the current time or the specified reference time.
 
@@ -648,9 +798,8 @@ Go Implementation:
 timestampWithOffset(expression)
 ```
 
-**Parameter:**    `expression` : a structure of `types.Expression`
+**Required Parameter:**
 
-**Required:**
 >   `expression.Data[0]` : should contain the offset time convertible to `int64` \
 >   `expression.Data[1]` : optional parameter that should contain the reference time convertible to `int64`.
 
