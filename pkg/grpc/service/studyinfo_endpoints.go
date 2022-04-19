@@ -300,7 +300,7 @@ func (s *studyServiceServer) GetResearcherMessages(ctx context.Context, req *api
 		for _, msg := range messages {
 			if len(study.NotificationSubscriptions) < 1 {
 				logger.Debug.Println("no notification subscriptions for the study, removing notification")
-				_, err = s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{string(msg.ID.Hex())})
+				_, err = s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{msg.ID.Hex()})
 				if err != nil {
 					logger.Error.Println(err)
 					return nil, status.Error(codes.Internal, err.Error())
@@ -316,7 +316,7 @@ func (s *studyServiceServer) GetResearcherMessages(ctx context.Context, req *api
 			}
 			if len(currentMsg.SendTo) < 1 {
 				logger.Debug.Println("no notification subscriptions for the current message, removing notification")
-				_, err := s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{string(msg.ID.Hex())})
+				_, err := s.studyDBservice.DeleteResearcherMessages(req.InstanceId, study.Key, []string{msg.ID.Hex()})
 				if err != nil {
 					logger.Error.Println(err)
 					return nil, status.Error(codes.Internal, err.Error())
