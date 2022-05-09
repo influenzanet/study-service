@@ -65,7 +65,6 @@ func getExternalServicesConfigByName(serviceConfigs []types.ExternalService, nam
 }
 
 type ExternalEventPayload struct {
-	APIKey           string                 `json:"apiKey"`
 	ParticipantState types.ParticipantState `json:"participantState"`
 	EventType        string                 `json:"eventType"`
 	StudyKey         string                 `json:"studyKey"`
@@ -73,12 +72,13 @@ type ExternalEventPayload struct {
 	Response         types.SurveyResponse   `json:"surveyResponses"`
 }
 
-func runHTTPcall(url string, payload ExternalEventPayload) (map[string]interface{}, error) {
+func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[string]interface{}, error) {
 	json_data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO: send API key through header
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
 		return nil, err

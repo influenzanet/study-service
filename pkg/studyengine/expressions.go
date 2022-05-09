@@ -1211,14 +1211,13 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 	}
 
 	payload := ExternalEventPayload{
-		APIKey:           serviceConfig.APIKey,
 		ParticipantState: ctx.ParticipantState,
 		EventType:        ctx.Event.Type,
 		StudyKey:         ctx.Event.StudyKey,
 		InstanceID:       ctx.Event.InstanceID,
 		Response:         ctx.Event.Response,
 	}
-	response, err := runHTTPcall(serviceConfig.URL, payload)
+	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
 	if err != nil {
 		logger.Error.Println(err)
 		return val, err

@@ -869,14 +869,13 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 	}
 
 	payload := ExternalEventPayload{
-		APIKey:           serviceConfig.APIKey,
 		ParticipantState: newState.PState,
 		EventType:        event.Type,
 		StudyKey:         event.StudyKey,
 		InstanceID:       event.InstanceID,
 		Response:         event.Response,
 	}
-	response, err := runHTTPcall(serviceConfig.URL, payload)
+	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
 	if err != nil {
 		logger.Error.Println(err)
 		return newState, err
