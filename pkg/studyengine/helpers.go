@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -78,17 +80,29 @@ func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[s
 		return nil, err
 	}
 
-	// TODO: send API key through header
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(json_data))
+	client := &http.Client{
+		Timeout: time.Second * 30,
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(json_data))
 	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
+		return nil, err
+	}
+	req.Header.Set("Api-Key", APIkey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
 		return nil, err
 	}
 
 	var res map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
 		return nil, err
 	}
-
 	return res, nil
 }
