@@ -877,7 +877,7 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 	}
 	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Error.Printf("error when handling response for '%s': %v", serviceName, err)
 		return newState, err
 	}
 
