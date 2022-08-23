@@ -625,7 +625,7 @@ func (s *studyServiceServer) RemoveConfidentialResponsesForProfiles(ctx context.
 			}
 		}
 		if len(profileIDs) < 1 {
-			logger.Warning.Printf("User '%s' attempted to remove confidential data for profiles with sufficent rights in the token: %v", req.Token.Id, req.ForProfiles)
+			logger.Warning.Printf("User '%s' attempted to remove confidential data for profiles with insufficient rights in the token: %v", req.Token.Id, req.ForProfiles)
 			return nil, status.Error(codes.PermissionDenied, "not permitted to manage requested profiles")
 		}
 	} else {
