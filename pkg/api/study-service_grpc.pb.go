@@ -56,6 +56,8 @@ type StudyServiceApiClient interface {
 	// add, update and remove study members (and roles):
 	SaveStudyMember(ctx context.Context, in *StudyMemberReq, opts ...grpc.CallOption) (*Study, error)
 	RemoveStudyMember(ctx context.Context, in *StudyMemberReq, opts ...grpc.CallOption) (*Study, error)
+	GetResearcherNotificationSubscriptions(ctx context.Context, in *GetResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
+	UpdateResearcherNotificationSubscriptions(ctx context.Context, in *UpdateResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
 	SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyStatus(ctx context.Context, in *StudyStatusReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyProps(ctx context.Context, in *StudyPropsReq, opts ...grpc.CallOption) (*Study, error)
@@ -390,6 +392,24 @@ func (c *studyServiceApiClient) SaveStudyMember(ctx context.Context, in *StudyMe
 func (c *studyServiceApiClient) RemoveStudyMember(ctx context.Context, in *StudyMemberReq, opts ...grpc.CallOption) (*Study, error) {
 	out := new(Study)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RemoveStudyMember", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) GetResearcherNotificationSubscriptions(ctx context.Context, in *GetResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error) {
+	out := new(NotificationSubscriptions)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetResearcherNotificationSubscriptions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) UpdateResearcherNotificationSubscriptions(ctx context.Context, in *UpdateResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error) {
+	out := new(NotificationSubscriptions)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/UpdateResearcherNotificationSubscriptions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -800,6 +820,8 @@ type StudyServiceApiServer interface {
 	// add, update and remove study members (and roles):
 	SaveStudyMember(context.Context, *StudyMemberReq) (*Study, error)
 	RemoveStudyMember(context.Context, *StudyMemberReq) (*Study, error)
+	GetResearcherNotificationSubscriptions(context.Context, *GetResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
+	UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
 	SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error)
 	SaveStudyStatus(context.Context, *StudyStatusReq) (*Study, error)
 	SaveStudyProps(context.Context, *StudyPropsReq) (*Study, error)
@@ -914,6 +936,12 @@ func (UnimplementedStudyServiceApiServer) SaveStudyMember(context.Context, *Stud
 }
 func (UnimplementedStudyServiceApiServer) RemoveStudyMember(context.Context, *StudyMemberReq) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveStudyMember not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetResearcherNotificationSubscriptions(context.Context, *GetResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResearcherNotificationSubscriptions not implemented")
+}
+func (UnimplementedStudyServiceApiServer) UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateResearcherNotificationSubscriptions not implemented")
 }
 func (UnimplementedStudyServiceApiServer) SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStudyRules not implemented")
@@ -1521,6 +1549,42 @@ func _StudyServiceApi_RemoveStudyMember_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_GetResearcherNotificationSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetResearcherNotificationSubscriptionsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetResearcherNotificationSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetResearcherNotificationSubscriptions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetResearcherNotificationSubscriptions(ctx, req.(*GetResearcherNotificationSubscriptionsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateResearcherNotificationSubscriptionsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).UpdateResearcherNotificationSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/UpdateResearcherNotificationSubscriptions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).UpdateResearcherNotificationSubscriptions(ctx, req.(*UpdateResearcherNotificationSubscriptionsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_SaveStudyRules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StudyRulesReq)
 	if err := dec(in); err != nil {
@@ -2019,6 +2083,14 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveStudyMember",
 			Handler:    _StudyServiceApi_RemoveStudyMember_Handler,
+		},
+		{
+			MethodName: "GetResearcherNotificationSubscriptions",
+			Handler:    _StudyServiceApi_GetResearcherNotificationSubscriptions_Handler,
+		},
+		{
+			MethodName: "UpdateResearcherNotificationSubscriptions",
+			Handler:    _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler,
 		},
 		{
 			MethodName: "SaveStudyRules",

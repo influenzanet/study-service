@@ -1,10 +1,35 @@
 # Changelog
 
-## [v1.0.3] - 2022-03-??
+## [v1.1.0] - 2022-06-02
+
+### Added
+
+- Study-engine can be now extended with external logic via configurable calls to external HTTP endpoints. There are two new expressions for this:
+  - `EXTERNAL_EVENT_HANDLER`: is a study action that can be used to trigger some externally defined logic. The https response might contain the updated participant state (`pState`) and/or the map of reports to be created (`reportsToCreate`) after the rules have run. Both of these are optional. If not provided the previous participant state is kept.
+  - `externalEventEval`: is a study expression that can be used to process the event (e.g. survey responses) externally and retrieve a value, that can be used in the study engine (e.g. determine which survey should be assigned). For `externalEventEval` the return value of the expression (received through the HTTP response) can be interpreted as string (by default) or a float64 (if return type is defined as "float").
+Both expression will attempt to send an HTTP POST message with a payload containing the `apiKey`, `participantState`, `eventType`, `studyKey`, `instanceID` and if relevant `surveyResponses`.
+  - The expressions requires the following arguments:
+    - `serviceName`: this name will be used to look up the URL and API key for the service.
+  - To configure an external service, the study-service requires a yaml file containing the list of service configs. The path to such a yaml file can be defined through the environment variable `EXTERNAL_SERVICES_CONFIG_PATH`.
+  - Content of the config file is stuctured as:
+
+```yaml
+services:
+- name: nameOfTheEventHandlerService
+  url: https://<url-of-the-event-handler-endpoint>
+  apiKey: <API key to authenticate the study service>
+- name: secondService
+  ...
+```
+
+- New study engine action `NOTIFY_RESEARCHER` with arguments for `messageType` (which message template will be used / message subscription topic) and an optional list of key and value pairs (that can be used to populate the payload for the message).
+  - Added gRPC endpoints to fetch or update notification subscriptions of a study.
+
+## [v1.0.3] - 2022-04-15
 
 ### Changed
 
-- Fix report ignoring logic
+- Fix issue in report ignoring logic
 
 ## [v1.0.2] - 2022-03-15
 

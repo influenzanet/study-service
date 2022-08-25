@@ -14,3 +14,13 @@ type StudyConfig struct {
 	TimerEventCheckIntervalMin int   // approx. how often this serice should check if to perform the timer event - seconds
 	TimerEventCheckIntervalVar int   // range of the uniform random distribution - varying the check interval to avoid a steady collisions
 }
+
+type ExternalService struct {
+	Name   string `yaml:"name"`
+	URL    string `yaml:"url"`
+	APIKey string `yaml:"apiKey"`
+}
+
+type ExternalServices struct {
+	Services []ExternalService `yaml:"services"`
+}

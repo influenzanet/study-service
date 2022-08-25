@@ -2,12 +2,14 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
+	"gopkg.in/yaml.v2"
 )
 
 // Config is the structure that holds all global configuration data
@@ -22,6 +24,7 @@ type Config struct {
 		LoggingService string
 	}
 	PersistentStoreConfig types.PersistentStoreConfig
+	ExternalServices      []types.ExternalService
 }
 
 func InitConfig() Config {
@@ -43,6 +46,8 @@ func InitConfig() Config {
 	conf.Study = getStudyConfig()
 
 	conf.PersistentStoreConfig = getPersistentStoreConfig()
+
+	conf.ExternalServices = getExternalServicesConfig()
 	return conf
 }
 
@@ -172,4 +177,26 @@ func getGlobalDBConfig() types.DBConfig {
 		MaxPoolSize:     MaxPoolSize,
 		DBNamePrefix:    DBNamePrefix,
 	}
+}
+
+func getExternalServicesConfig() []types.ExternalService {
+	configFilePath := os.Getenv(ENV_EXTERNAL_SERVICES_CONFIG_PATH)
+
+	if configFilePath == "" {
+		return []types.ExternalService{}
+	}
+
+	yamlFile, err := ioutil.ReadFile(configFilePath)
+	if err != nil {
+		logger.Error.Fatalf("cannot read external services config file: %v ", err)
+		return []types.ExternalService{}
+	}
+
+	var services types.ExternalServices
+	err = yaml.UnmarshalStrict(yamlFile, &services)
+	if err != nil {
+		logger.Error.Fatalf("cannot parse external services config file: %v ", err)
+		return []types.ExternalService{}
+	}
+	return services.Services
 }

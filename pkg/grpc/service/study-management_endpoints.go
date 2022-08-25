@@ -388,6 +388,81 @@ func (s *studyServiceServer) SaveStudyProps(ctx context.Context, req *api.StudyP
 	return uStudy.ToAPI(), nil
 }
 
+func (s *studyServiceServer) GetResearcherNotificationSubscriptions(ctx context.Context, req *api.GetResearcherNotificationSubscriptionsReq) (*api.NotificationSubscriptions, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_UPDATE, "permission denied for fetching notification subscriptions for "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	subscriptions := &api.NotificationSubscriptions{
+		Subscriptions: []*api.Subscription{},
+	}
+
+	for _, sub := range study.NotificationSubscriptions {
+		subscriptions.Subscriptions = append(subscriptions.Subscriptions, sub.ToAPI())
+	}
+	logger.Info.Printf("(instance: %s): %s fetched notification subscriptions for study %s", req.Token.InstanceId, req.Token.Id, req.StudyKey)
+	return subscriptions, nil
+}
+
+func (s *studyServiceServer) UpdateResearcherNotificationSubscriptions(ctx context.Context, req *api.UpdateResearcherNotificationSubscriptionsReq) (*api.NotificationSubscriptions, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_UPDATE, "permission denied for updating notification subscriptions for "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	subs := []types.NotificationSubscription{}
+	for _, sub := range req.Subscriptions {
+		subs = append(subs, types.NotificationSubscriptionFromAPI(sub))
+	}
+
+	study.NotificationSubscriptions = subs
+
+	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	subscriptions := &api.NotificationSubscriptions{
+		Subscriptions: []*api.Subscription{},
+	}
+
+	for _, sub := range uStudy.NotificationSubscriptions {
+		subscriptions.Subscriptions = append(subscriptions.Subscriptions, sub.ToAPI())
+	}
+	logger.Info.Printf("(instance: %s): %s updated notification subscriptions for study %s", req.Token.InstanceId, req.Token.Id, req.StudyKey)
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_UPDATE, req.StudyKey)
+	return subscriptions, nil
+}
+
 func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesReq) (*api.RuleRunSummary, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -454,7 +529,10 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 					StudyKey:                              studyKey,
 					ParticipantIDForConfidentialResponses: participantID2,
 				}
-				newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
+				newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
+					DBService:              s.studyDBservice,
+					ExternalServiceConfigs: s.studyEngineExternalServices,
+				})
 				if err != nil {
 					return err
 				}
@@ -562,7 +640,10 @@ func (s *studyServiceServer) RunRulesForSingleParticipant(ctx context.Context, r
 			StudyKey:                              req.StudyKey,
 			ParticipantIDForConfidentialResponses: participantID2,
 		}
-		newState, err := studyengine.ActionEval(*rule, actionData, event, s.studyDBservice)
+		newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
+			DBService:              s.studyDBservice,
+			ExternalServiceConfigs: s.studyEngineExternalServices,
+		})
 		if err != nil {
 			logger.Debug.Printf("unexpected error: %v", err)
 			return nil, status.Error(codes.Internal, err.Error())

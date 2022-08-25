@@ -17,6 +17,7 @@ import (
 type StudyDBService interface {
 	FindSurveyResponses(instanceID string, studyKey string, query studydb.ResponseQuery) (responses []types.SurveyResponse, err error)
 	DeleteConfidentialResponses(instanceID string, studyKey string, participantID string, key string) (count int64, err error)
+	SaveResearcherMessage(instanceID string, studyKey string, message types.StudyMessage) error
 }
 
 type ActionData struct {
@@ -24,7 +25,12 @@ type ActionData struct {
 	ReportsToCreate map[string]types.Report
 }
 
-func ActionEval(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+type ActionConfigs struct {
+	DBService              StudyDBService
+	ExternalServiceConfigs []types.ExternalService
+}
+
+func ActionEval(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	if event.Type == "SUBMIT" {
 		oldState, err = updateLastSubmissionForSurvey(oldState, event)
 		if err != nil {
@@ -34,45 +40,49 @@ func ActionEval(action types.Expression, oldState ActionData, event types.StudyE
 
 	switch action.Name {
 	case "IF":
-		newState, err = ifAction(action, oldState, event, dbService)
+		newState, err = ifAction(action, oldState, event, configs)
 	case "DO":
-		newState, err = doAction(action, oldState, event, dbService)
+		newState, err = doAction(action, oldState, event, configs)
 	case "IFTHEN":
-		newState, err = ifThenAction(action, oldState, event, dbService)
+		newState, err = ifThenAction(action, oldState, event, configs)
 	case "UPDATE_STUDY_STATUS":
-		newState, err = updateStudyStatusAction(action, oldState, event)
+		newState, err = updateStudyStatusAction(action, oldState, event, configs)
 	case "START_NEW_STUDY_SESSION":
-		newState, err = startNewStudySession(action, oldState, event)
+		newState, err = startNewStudySession(action, oldState, event, configs)
 	case "UPDATE_FLAG":
-		newState, err = updateFlagAction(action, oldState, event)
+		newState, err = updateFlagAction(action, oldState, event, configs)
 	case "REMOVE_FLAG":
-		newState, err = removeFlagAction(action, oldState, event)
+		newState, err = removeFlagAction(action, oldState, event, configs)
 	case "ADD_NEW_SURVEY":
-		newState, err = addNewSurveyAction(action, oldState, event)
+		newState, err = addNewSurveyAction(action, oldState, event, configs)
 	case "REMOVE_ALL_SURVEYS":
-		newState, err = removeAllSurveys(action, oldState, event)
+		newState, err = removeAllSurveys(action, oldState, event, configs)
 	case "REMOVE_SURVEY_BY_KEY":
-		newState, err = removeSurveyByKey(action, oldState, event)
+		newState, err = removeSurveyByKey(action, oldState, event, configs)
 	case "REMOVE_SURVEYS_BY_KEY":
-		newState, err = removeSurveysByKey(action, oldState, event)
+		newState, err = removeSurveysByKey(action, oldState, event, configs)
 	case "ADD_MESSAGE":
-		newState, err = addMessage(action, oldState, event)
+		newState, err = addMessage(action, oldState, event, configs)
 	case "REMOVE_ALL_MESSAGES":
-		newState, err = removeAllMessages(action, oldState, event)
+		newState, err = removeAllMessages(action, oldState, event, configs)
 	case "REMOVE_MESSAGES_BY_TYPE":
-		newState, err = removeMessagesByType(action, oldState, event)
+		newState, err = removeMessagesByType(action, oldState, event, configs)
+	case "NOTIFY_RESEARCHER":
+		newState, err = notifyResearcher(action, oldState, event, configs)
 	case "INIT_REPORT":
-		newState, err = initReport(action, oldState, event)
+		newState, err = initReport(action, oldState, event, configs)
 	case "UPDATE_REPORT_DATA":
-		newState, err = updateReportData(action, oldState, event)
+		newState, err = updateReportData(action, oldState, event, configs)
 	case "REMOVE_REPORT_DATA":
-		newState, err = removeReportData(action, oldState, event)
+		newState, err = removeReportData(action, oldState, event, configs)
 	case "CANCEL_REPORT":
-		newState, err = cancelReport(action, oldState, event)
+		newState, err = cancelReport(action, oldState, event, configs)
 	case "REMOVE_CONFIDENTIAL_RESPONSE_BY_KEY":
-		newState, err = removeConfidentialResponseByKey(action, oldState, event, dbService)
+		newState, err = removeConfidentialResponseByKey(action, oldState, event, configs)
 	case "REMOVE_ALL_CONFIDENTIAL_RESPONSES":
-		newState, err = removeAllConfidentialResponses(action, oldState, event, dbService)
+		newState, err = removeAllConfidentialResponses(action, oldState, event, configs)
+	case "EXTERNAL_EVENT_HANDLER":
+		newState, err = externalEventHandler(action, oldState, event, configs)
 	default:
 		newState = oldState
 		err = errors.New("action name not known")
@@ -105,7 +115,7 @@ func checkCondition(condition types.ExpressionArg, EvalContext EvalContext) bool
 }
 
 // ifAction is used to conditionally perform actions
-func ifAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+func ifAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) < 2 {
 		return newState, errors.New("ifAction must have at least two arguments")
@@ -113,7 +123,7 @@ func ifAction(action types.Expression, oldState ActionData, event types.StudyEve
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
-		DbService:        dbService,
+		Configs:          configs,
 	}
 	var task types.ExpressionArg
 	if checkCondition(action.Data[0], EvalContext) {
@@ -123,7 +133,7 @@ func ifAction(action types.Expression, oldState ActionData, event types.StudyEve
 	}
 
 	if task.IsExpression() {
-		newState, err = ActionEval(*task.Exp, newState, event, dbService)
+		newState, err = ActionEval(*task.Exp, newState, event, configs)
 		if err != nil {
 			return newState, err
 		}
@@ -132,11 +142,11 @@ func ifAction(action types.Expression, oldState ActionData, event types.StudyEve
 }
 
 // doAction to perform a list of actions
-func doAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+func doAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	for _, action := range action.Data {
 		if action.IsExpression() {
-			newState, err = ActionEval(*action.Exp, newState, event, dbService)
+			newState, err = ActionEval(*action.Exp, newState, event, configs)
 			if err != nil {
 				return newState, err
 			}
@@ -146,7 +156,7 @@ func doAction(action types.Expression, oldState ActionData, event types.StudyEve
 }
 
 // ifThenAction is used to conditionally perform a sequence of actions
-func ifThenAction(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+func ifThenAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) < 1 {
 		return newState, errors.New("ifThenAction must have at least one argument")
@@ -154,14 +164,14 @@ func ifThenAction(action types.Expression, oldState ActionData, event types.Stud
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
-		DbService:        dbService,
+		Configs:          configs,
 	}
 	if !checkCondition(action.Data[0], EvalContext) {
 		return
 	}
 	for _, action := range action.Data[1:] {
 		if action.IsExpression() {
-			newState, err = ActionEval(*action.Exp, newState, event, dbService)
+			newState, err = ActionEval(*action.Exp, newState, event, configs)
 			if err != nil {
 				logger.Debug.Printf("ifThen: %v", err)
 			}
@@ -171,7 +181,7 @@ func ifThenAction(action types.Expression, oldState ActionData, event types.Stud
 }
 
 // updateStudyStatusAction is used to update if user is active in the study
-func updateStudyStatusAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func updateStudyStatusAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("updateStudyStatusAction must have exactly one argument")
@@ -179,6 +189,7 @@ func updateStudyStatusAction(action types.Expression, oldState ActionData, event
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -195,7 +206,7 @@ func updateStudyStatusAction(action types.Expression, oldState ActionData, event
 }
 
 // startNewStudySession is used to generate a new study session ID
-func startNewStudySession(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func startNewStudySession(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 
 	bytes := make([]byte, 4)
@@ -208,7 +219,7 @@ func startNewStudySession(action types.Expression, oldState ActionData, event ty
 }
 
 // updateFlagAction is used to update one of the string flags from the participant state
-func updateFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func updateFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("updateFlagAction must have exactly two arguments")
@@ -216,6 +227,7 @@ func updateFlagAction(action types.Expression, oldState ActionData, event types.
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -254,7 +266,7 @@ func updateFlagAction(action types.Expression, oldState ActionData, event types.
 }
 
 // removeFlagAction is used to update one of the string flags from the participant state
-func removeFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeFlagAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeFlagAction must have exactly one argument")
@@ -262,6 +274,7 @@ func removeFlagAction(action types.Expression, oldState ActionData, event types.
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -285,7 +298,7 @@ func removeFlagAction(action types.Expression, oldState ActionData, event types.
 }
 
 // addNewSurveyAction appends a new AssignedSurvey for the participant state
-func addNewSurveyAction(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func addNewSurveyAction(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 4 {
 		return newState, errors.New("addNewSurveyAction must have exactly four arguments")
@@ -293,6 +306,7 @@ func addNewSurveyAction(action types.Expression, oldState ActionData, event type
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -334,7 +348,7 @@ func addNewSurveyAction(action types.Expression, oldState ActionData, event type
 }
 
 // removeAllSurveys clear the assigned survey list
-func removeAllSurveys(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeAllSurveys(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) > 0 {
 		return newState, errors.New("removeAllSurveys must not have arguments")
@@ -345,7 +359,7 @@ func removeAllSurveys(action types.Expression, oldState ActionData, event types.
 }
 
 // removeSurveyByKey removes the first or last occurence of a survey
-func removeSurveyByKey(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeSurveyByKey(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeSurveyByKey must have exactly two arguments")
@@ -353,6 +367,7 @@ func removeSurveyByKey(action types.Expression, oldState ActionData, event types
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -404,7 +419,7 @@ func removeSurveyByKey(action types.Expression, oldState ActionData, event types
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeSurveysByKey(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeSurveysByKey(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeSurveysByKey must have exactly one argument")
@@ -412,6 +427,7 @@ func removeSurveysByKey(action types.Expression, oldState ActionData, event type
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -435,7 +451,7 @@ func removeSurveysByKey(action types.Expression, oldState ActionData, event type
 }
 
 // addMessage
-func addMessage(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func addMessage(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("addMessage must have exactly two arguments")
@@ -443,6 +459,7 @@ func addMessage(action types.Expression, oldState ActionData, event types.StudyE
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	arg1, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -473,7 +490,7 @@ func addMessage(action types.Expression, oldState ActionData, event types.StudyE
 }
 
 // removeAllMessages
-func removeAllMessages(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeAllMessages(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 
 	newState.PState.Messages = []types.ParticipantMessage{}
@@ -481,7 +498,7 @@ func removeAllMessages(action types.Expression, oldState ActionData, event types
 }
 
 // removeSurveysByKey removes all the surveys with a specific key
-func removeMessagesByType(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeMessagesByType(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeMessagesByType must have exactly one argument")
@@ -489,6 +506,7 @@ func removeMessagesByType(action types.Expression, oldState ActionData, event ty
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -511,8 +529,66 @@ func removeMessagesByType(action types.Expression, oldState ActionData, event ty
 	return
 }
 
+// notifyResearcher can save a specific message with a payload, that should be sent out to the researcher
+func notifyResearcher(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
+	newState = oldState
+	if len(action.Data) < 1 {
+		return newState, errors.New("notifyResearcher must have at least one argument")
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+		Configs:          configs,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	messageType, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	payload := map[string]string{}
+
+	for i := 1; i < len(action.Data)-1; i = i + 2 {
+		k, err := EvalContext.expressionArgResolver(action.Data[i])
+		if err != nil {
+			return newState, err
+		}
+		v, err := EvalContext.expressionArgResolver(action.Data[i+1])
+		if err != nil {
+			return newState, err
+		}
+
+		key, ok := k.(string)
+		if !ok {
+			return newState, errors.New("could not parse key")
+		}
+		value, ok := v.(string)
+		if !ok {
+			return newState, errors.New("could not parse value")
+		}
+
+		payload[key] = value
+	}
+
+	message := types.StudyMessage{
+		Type:          messageType,
+		ParticipantID: oldState.PState.ParticipantID,
+		Payload:       payload,
+	}
+
+	err = configs.DBService.SaveResearcherMessage(event.InstanceID, event.StudyKey, message)
+	if err != nil {
+		logger.Error.Printf("unexpected error when saving researcher message: %v", err)
+	}
+	return
+}
+
 // init one empty report for the current event - if report already existing, reset report to empty report
-func initReport(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func initReport(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("initReport must have exactly one argument")
@@ -520,6 +596,7 @@ func initReport(action types.Expression, oldState ActionData, event types.StudyE
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -540,7 +617,7 @@ func initReport(action types.Expression, oldState ActionData, event types.StudyE
 }
 
 // update one data entry in the report with the key, if report was not initialised, init one directly
-func updateReportData(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func updateReportData(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) < 3 {
 		return newState, errors.New("updateReportData must have at least 3 arguments")
@@ -548,6 +625,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -641,7 +719,7 @@ func updateReportData(action types.Expression, oldState ActionData, event types.
 }
 
 // remove one data entry in the report with the key
-func removeReportData(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func removeReportData(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 2 {
 		return newState, errors.New("removeReportData must have exactly two arguments")
@@ -649,6 +727,7 @@ func removeReportData(action types.Expression, oldState ActionData, event types.
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -694,7 +773,7 @@ func removeReportData(action types.Expression, oldState ActionData, event types.
 }
 
 // remove the report from this event
-func cancelReport(action types.Expression, oldState ActionData, event types.StudyEvent) (newState ActionData, err error) {
+func cancelReport(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("updateReportData must have exactly 1 argument")
@@ -702,6 +781,7 @@ func cancelReport(action types.Expression, oldState ActionData, event types.Stud
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -721,7 +801,7 @@ func cancelReport(action types.Expression, oldState ActionData, event types.Stud
 }
 
 // delete confidential responses for this participant for a particular key only
-func removeConfidentialResponseByKey(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+func removeConfidentialResponseByKey(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 	if len(action.Data) != 1 {
 		return newState, errors.New("removeConfidentialResponseByKey must have exactly 1 argument")
@@ -729,6 +809,7 @@ func removeConfidentialResponseByKey(action types.Expression, oldState ActionDat
 	EvalContext := EvalContext{
 		Event:            event,
 		ParticipantState: newState.PState,
+		Configs:          configs,
 	}
 	k, err := EvalContext.expressionArgResolver(action.Data[0])
 	if err != nil {
@@ -740,7 +821,7 @@ func removeConfidentialResponseByKey(action types.Expression, oldState ActionDat
 		return newState, errors.New("could not parse arguments")
 	}
 
-	_, err = dbService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, key)
+	_, err = configs.DBService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, key)
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
 	}
@@ -748,11 +829,73 @@ func removeConfidentialResponseByKey(action types.Expression, oldState ActionDat
 }
 
 // delete confidential responses for this participant
-func removeAllConfidentialResponses(action types.Expression, oldState ActionData, event types.StudyEvent, dbService StudyDBService) (newState ActionData, err error) {
+func removeAllConfidentialResponses(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
-	_, err = dbService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, "")
+	_, err = configs.DBService.DeleteConfidentialResponses(event.InstanceID, event.StudyKey, event.ParticipantIDForConfidentialResponses, "")
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
+	}
+	return
+}
+
+// call external service to handle event
+func externalEventHandler(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
+	newState = oldState
+
+	if len(action.Data) != 1 {
+		msg := "externalEventHandler must have exactly 1 argument"
+		logger.Error.Printf(msg)
+		return newState, errors.New(msg)
+	}
+	EvalContext := EvalContext{
+		Event:            event,
+		ParticipantState: newState.PState,
+		Configs:          configs,
+	}
+	k, err := EvalContext.expressionArgResolver(action.Data[0])
+	if err != nil {
+		return newState, err
+	}
+
+	serviceName, ok1 := k.(string)
+	if !ok1 {
+		return newState, errors.New("could not parse arguments")
+	}
+
+	serviceConfig, err := getExternalServicesConfigByName(configs.ExternalServiceConfigs, serviceName)
+	if err != nil {
+		logger.Error.Println(err)
+		return newState, err
+	}
+
+	payload := ExternalEventPayload{
+		ParticipantState: newState.PState,
+		EventType:        event.Type,
+		StudyKey:         event.StudyKey,
+		InstanceID:       event.InstanceID,
+		Response:         event.Response,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
+	if err != nil {
+		logger.Error.Printf("error when handling response for '%s': %v", serviceName, err)
+		return newState, err
+	}
+
+	// if relevant, update participant state:
+	pState, hasKey := response["pState"]
+	if hasKey {
+		newState.PState = pState.(types.ParticipantState)
+		logger.Debug.Printf("updated participant state from external service")
+	}
+
+	// collect reports if any:
+	reportsToCreate, hasKey := response["reportsToCreate"]
+	if hasKey {
+		reportsToCreate := reportsToCreate.(map[string]types.Report)
+		for key, value := range reportsToCreate {
+			newState.ReportsToCreate[key] = value
+		}
+		logger.Debug.Printf("updated reports list from external service")
 	}
 	return
 }

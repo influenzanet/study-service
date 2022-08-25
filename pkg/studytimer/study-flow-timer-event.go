@@ -80,7 +80,10 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	}
 
 	for _, rule := range rules {
-		actionState, err = studyengine.ActionEval(rule, actionState, studyEvent, s.studyDBService)
+		actionState, err = studyengine.ActionEval(rule, actionState, studyEvent, studyengine.ActionConfigs{
+			DBService:              s.studyDBService,
+			ExternalServiceConfigs: s.studyEngineExternalServices,
+		})
 		if err != nil {
 			logger.Error.Printf("ERROR in getAndUpdateParticipantState.ActionEval (%s, %s): %v", instanceID, studyKey, err)
 			continue

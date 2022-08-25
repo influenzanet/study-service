@@ -118,3 +118,28 @@ func TestFindResponseObject(t *testing.T) {
 		}
 	})
 }
+
+func TestGetExternalServicesConfigByName(t *testing.T) {
+	configs := []types.ExternalService{
+		{Name: "test1", URL: "url1"},
+		{Name: "test2", URL: "url2"},
+	}
+
+	t.Run("item not there", func(t *testing.T) {
+		_, err := getExternalServicesConfigByName(configs, "wrong")
+		if err == nil {
+			t.Error("should produce error")
+		}
+	})
+
+	t.Run("item there", func(t *testing.T) {
+		conf, err := getExternalServicesConfigByName(configs, "test2")
+		if err != nil {
+			t.Errorf("unexpected error %v", err)
+			return
+		}
+		if conf.URL != "url2" {
+			t.Errorf("unexpected values %v", conf)
+		}
+	})
+}
