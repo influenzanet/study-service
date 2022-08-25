@@ -6,25 +6,10 @@ Survey Responses from participants are stored in CASE in an object-oriented stru
 
 The response of a single participant at a specific date to one questionnaire is presented by one row in the response table. The columns are composed of fixed columns, context columns, response columns and optional meta information columns. 
 
-Questions have different types. The question type defines how questions are displayed in the questionnaire and what kind of answers the respondent can provide. The following question types are available in CASE:
-
-1. Text
-2. Number
-3. Date
-4. Single Choice
-5. Multiple Choice
-6. Dropdown
-7. Likert
-8. Slider/eq5d_slider 
-10. Matrix 
-11. Unknown
-12. Empty
-
-Detailed description of these types and their mapping to the export table are explained in chapter 3.
 
 ## 1. Fixed columns
 
-We start with a description of the columns in the export table that are fixed and independent of the used questionnaire.
+The first columns of the export table are fixed and independent of the used questionnaire.
 
 ### 1.1. Response ID
 
@@ -38,15 +23,19 @@ We start with a description of the columns in the export table that are fixed an
 
 **Entries in Table:** the unique identifier string for each participant.
 
-
 ### 1.3. Survey Version
 
 **Column Name:**  ```version```
 
 **Entries in Table:** the version of questionnaire used in the survey
 
+### 1.4. Opening Date
 
-### 1.4. Submission Date
+**Column Name:**  ```opened```
+
+**Entries in Table:** the time as POSIX time timestamp when the participant has startet the questionnaire.
+
+### 1.5. Submission Date
 
 **Column Name:**  ```submitted```
 
@@ -75,6 +64,23 @@ Currently the context columns contain the following:
 ## 3. Response columns
 
 Response columns are dynamic columns depending on the kind of questions asked in the specified survey. They present the answers given by the respondent to the questionnaire. 
+
+Questions have different types. The question type defines how questions are displayed in the questionnaire and what kind of answers the respondent can provide. The following question types are available in CASE:
+
+1. Text
+2. Number
+3. Date
+4. Single Choice
+5. Multiple Choice
+6. Input List
+7. Dropdown
+8. Likert/Responsive Arrays
+9. Slider/eq5d_slider 
+10. Cloze
+11. Matrix 
+12. Unknown
+13. Empty
+
 In the following we will describe:
 
  * the definition and features of each question type
@@ -187,41 +193,39 @@ ID 3 | date 4 | ... | *optK<sub>2</sub>* | |*input value* | |...
 * for an additional input field column at option *ji*: the entered value
 
 
-
 **Example for a single-choice Group with additional input fields in response table:**
 
 Suppose a single choice group question *qK* consists of *m* slots with 3 radio button options plus input fields for each option. The structure of this single choice group may looks like this in the questionnaire:
 
-**Question *qK*:**
-
-Response Slot 1
-* Option 11
-    * input 11
-* Option 12
-    * input 12
-* Option 13
-    * input 13
-
-Response Slot 2
-* Option 21
-    * input 21
-* Option 22
-    * input 22
-* Option 23
-    * input 23
-
-.
-.
-.
-
-
-Response Slot m
-* Option m1
-    * input m1
-* Option m2
-    * input m2
-* Option m3
-    * input m3
+> **Question *qK*:**   
+>
+> Response Slot 1
+> * Option 11  
+>     * input 11  
+> * Option 12  
+>     * input 12  
+> * Option 13  
+>    * input 13  
+> 
+> Response Slot 2
+> * Option 21
+>     * input 21
+> * Option 22  
+>     * input 22
+> * Option 23
+>     * input 23
+> 
+> .
+> .
+> .
+> 
+> Response Slot m
+> * Option m1
+>     * input m1
+> * Option m2
+>     * input m2
+> * Option m3
+>     * input m3
 
 
 The Responses for this question are saved  in the response table like the following:
@@ -327,6 +331,7 @@ ID 2 | date 3 | ... |  *input value* |  |  |...
 ID 3 | date 4 | ... | *input value* |*input value* | *input value* |...
 ... | ... | ... | ... | ... |... | ... |...
 
+**Remark:** Input Lists are deprecated. It is recommended to use Cloze Questions instead.
 
 ### 3.7. Dropdown Questions
 
@@ -386,7 +391,56 @@ Responsive Single Choice Arrays are displayed in a more dynamical format than si
 **Entries in Table:** the number selected by the respondent. 
 
 
-### 3.10. Matrix Questions
+### 3.10 Cloze Questions
+
+#### 3.10.1 Simple Cloze Questions
+
+**Definition:** Cloze Questions consist of multiple different input types within one question. Possible input types are dropdown, free text input, numeric input or date input. Similar to Single Choice Groups and Multiple Choice Groups, Cloze Groups are also possible. These are a sequence of multiple successive cloze questions.
+
+**Format:** Each response option of a cloze question is represented by one column. The values of the entries are depending on the respective input type. Entries without valid input values (due to nothing entered, not the chosen response option or not displayed) are empty.
+
+
+**Column Name:** 
+* for the response option *i* of a simple cloze question: *qK* + *sep* + *optK<sub>i</sub>, i = 1,..,n.*
+* Cloze Groups: for the response option *i* of slot *j*: *qK + sep + slotK<sub>j</sub> + + "."+ optK<sub>ji</sub>, j = 1,..,m, i = 1,...,n.*
+
+
+**Entries in Table:**
+* the entered value
+
+**Example for simple cloze question:**
+
+> **Question *qK*:** Please fill in:  
+> Name of medication: *free text input option 1*  
+> start of medication: *date input 2*  
+> number of doses per week: *numeric input 3*  
+> reason for medication: *dropdown option 4*  
+ 
+Corresponding response table:
+
+Part. ID | Subm. Date | ... | *qK* + *sep* + *opt<sub>1</sub>* | *qK* + *sep* + *opt<sub>2</sub>*  | *qK* + *sep* + *opt<sub>3</sub>*  |*qK* + *sep* + *opt<sub>4</sub>* |...
+------------ | ------------- | ---------------- | ------- | --- | --- |-------| -------
+ID 1 | date 1 | ...  | *input value* |*date* | *numeric value* |  *dropdown key*|  ...
+ID 2 | date 2 | ... |  *input value* |*date* | *numeric value* |  *dropdown key*|  ...
+ID 2 | date 3 | ... |  |  | | |...
+ID 3 | date 4 | ... | *input value* |*date* | | *dropdown key* |...
+... | ... | ... | ... | ... |... | ... |... |...
+
+
+#### 3.10.2 Cloze types in MCG and SCG Questions
+
+**Definition:** Multiple "mixed" input types can also be used within single or multiple choice group questions. 
+
+**Format:** The format in the response table is consistent to the respective question type: for SCG questions the first column contains the selected key, followed by one extra column for each cloze input option. In MCG questions each response option is represented by one column. The entries are either `TRUE` or `FALSE` depending if the specific option is selected or not. For each cloze input field one extra column is added.
+
+**Column Name:** 
+* for the column of cloze input option *i* of SCG/MCG slot *j*: *qK* + *sep* + *slotK<sub>j</sub>* + "." + *optK<sub>ji</sub>, j = 1,..,m, i = 1,...,n.*
+
+
+**Entries in Table:**
+* the entered value
+
+### 3.11. Matrix Questions
 
 **Definition:** In the questionnaire, questions with related topics can be grouped as a matrix by structuring the answer options in rows and columns. Displaying similar questions in a matrix-like layout helps to improve the clarity of the survey questionnaire.
  A row of this matrix can either represent 
@@ -394,7 +448,7 @@ Responsive Single Choice Arrays are displayed in a more dynamical format than si
  * or other types of answer options (dropdown, input, checkbox) which can also be mixed by type in one row.
  
 
-#### 3.10.1. Single Choice and Likert Scale Matrix Row Questions
+#### 3.11.1. Single Choice and Likert Scale Matrix Row Questions
 
 **Format:**  Let *qK* be a matrix question with *m* rows and with the *j*-th row (denoted as slot) of type radio button (which means single choice or Likert scale question) having *n* options. The key of this row is denoted as *slotK<sub>j</sub>*. This row is presented by one column in the export table containing the option key *optK<sub>ji</sub>, i = 1,..,n* selected by the respondent.
 
@@ -427,7 +481,7 @@ ID 3 | date 4 | ... | *optK<sub>11</sub>* | *optK<sub>25</sub>* | *optK<sub>32</
 ... | ... | ... | ... |... |... |... |...
 
 
-#### 3.10.2. Other Types in Matrix Questions
+#### 3.11.2. Other Types in Matrix Questions
 
 **Format:** For types of options like input, checkbox or dropdown each matrix entry is handled as a separate slot with key *slotK<sub>j</sub>* and has its own column in the response table. A matrix with *m* rows and *n* columns has overall *n x m* slots (without radio rows who are comprised to one slot!). The entry in the table is either the input value, `TRUE`/`FALSE` or the selected option key depending on the type of question.
 
@@ -462,7 +516,7 @@ ID i | date j | ... | `TRUE`| `FALSE`| *input value*| *input value*| `FALSE`|...
 
 
 
-### 3.11 Unknown
+### 3.12 Unknown
 
 **Definition:** A question that is not assigned to a certain type is defined to be unknown. The handling with these kind of questions depends on its specific types of answer options.
 
@@ -478,7 +532,7 @@ ID i | date j | ... | `TRUE`| `FALSE`| *input value*| *input value*| `FALSE`|...
 * for columns of slot *j* with dropdown or radio option types : *optK<sub>ji</sub>* selected by the respondent
 * for columns of slot *j* with any other type: the entered value or `TRUE`/`FALSE` for checkbox.
 
-### 3.12 Empty
+### 3.13 Empty
 
 **Definition:** A question containing no content or information is declared as empty and will be ignored.
 
