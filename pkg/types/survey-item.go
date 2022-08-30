@@ -19,7 +19,7 @@ type SurveyItem struct {
 	SelectionMethod *Expression  `bson:"selectionMethod,omitempty"`
 
 	// Question attributes ->
-	Type             string         `bson:"type,omitempty"`
+	Type             string         `bson:"type,omitempty"` // Specify some special types e.g. 'pageBreak','surveyEnd'
 	Components       *ItemComponent `bson:"components,omitempty"`
 	Validations      []Validation   `bson:"validations,omitempty"`
 	ConfidentialMode string         `bson:"confidentialMode,omitempty"`
