@@ -6,9 +6,9 @@ import (
 )
 
 type Expression struct {
-	Name       string          `bson:"name"`
+	Name       string          `bson:"name"` // Name of the operation to be evaluated
 	ReturnType string          `bson:"returnType,omitempty"`
-	Data       []ExpressionArg `bson:"data,omitempty"`
+	Data       []ExpressionArg `bson:"data,omitempty"` // Operation arguments
 }
 
 type ExpressionArg struct {
