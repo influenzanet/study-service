@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.1.1] - 2022-09-28
+
+### Changes
+
+- This release fixes bugs that prevented deletion of confidential data with TIMER based study events and the participant state to be stored after TIMER events.
+
 ## [v1.1.0] - 2022-06-02
 
 ### Added

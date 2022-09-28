@@ -22,7 +22,7 @@ func main() {
 	studyDBService := studydb.NewStudyDBService(conf.StudyDBConfig)
 	globalDBService := globaldb.NewGlobalDBService(conf.GlobalDBConfig)
 
-	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices)
+	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices, conf.Study.GlobalSecret)
 	sTimerService.Run()
 
 	clients := &types.APIClients{}
