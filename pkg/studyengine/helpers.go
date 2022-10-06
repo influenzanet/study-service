@@ -45,7 +45,7 @@ func findResponseObject(surveyItem *types.SurveyItemResponse, responseKey string
 		for _, item := range responseItem.Items {
 			if item.Key == k {
 				found = true
-				responseItem = &item
+				responseItem = item
 				break
 			}
 		}

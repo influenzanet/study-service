@@ -176,48 +176,48 @@ func TestEvalCheckConditionForOldResponses(t *testing.T) {
 		{
 			Key: "S1", ParticipantID: "P1", SubmittedAt: 10, Responses: []types.SurveyItemResponse{
 				{Key: "S1.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "1"}}},
 					},
 				}}},
 		},
 		{
 			Key: "S1", ParticipantID: "P1", SubmittedAt: 13, Responses: []types.SurveyItemResponse{
 				{Key: "S1.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "1"}}},
 					},
 				}}},
 		},
 		{
 			Key: "S1", ParticipantID: "P2", SubmittedAt: 13, Responses: []types.SurveyItemResponse{
 				{Key: "S1.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "1"}}},
 					},
 				}}},
 		},
 		{
 			Key: "S2", ParticipantID: "P1", SubmittedAt: 15, Responses: []types.SurveyItemResponse{
 				{Key: "S2.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "1"}}},
 					},
 				}}},
 		},
 		{
 			Key: "S1", ParticipantID: "P1", SubmittedAt: 17, Responses: []types.SurveyItemResponse{
 				{Key: "S1.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "1"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "1"}}},
 					},
 				}}},
 		},
 		{
 			Key: "S1", ParticipantID: "P1", SubmittedAt: 22, Responses: []types.SurveyItemResponse{
 				{Key: "S1.Q1", Response: &types.ResponseItem{
-					Key: "rg", Items: []types.ResponseItem{
-						{Key: "scg", Items: []types.ResponseItem{{Key: "2"}}},
+					Key: "rg", Items: []*types.ResponseItem{
+						{Key: "scg", Items: []*types.ResponseItem{{Key: "2"}}},
 					},
 				}}},
 		},
@@ -1024,14 +1024,14 @@ func TestEvalHasResponseKey(t *testing.T) {
 				Responses: []types.SurveyItemResponse{
 					{
 						Key: "weekly.Q1", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "something"},
 								{Key: "2"},
 							}},
 					},
 					{
 						Key: "weekly.Q2", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "123.23", Dtype: "date"},
 							}},
 					},
@@ -1110,14 +1110,14 @@ func TestEvalHasResponseKeyWithValue(t *testing.T) {
 				Responses: []types.SurveyItemResponse{
 					{
 						Key: "weekly.Q1", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "something"},
 								{Key: "2"},
 							}},
 					},
 					{
 						Key: "weekly.Q2", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "123.23", Dtype: "date"},
 							}},
 					},
@@ -1200,14 +1200,14 @@ func TestEvalGetResponseValueAsNum(t *testing.T) {
 				Responses: []types.SurveyItemResponse{
 					{
 						Key: "weekly.Q1", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "something"},
 								{Key: "2"},
 							}},
 					},
 					{
 						Key: "weekly.Q2", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "123.23", Dtype: "date"},
 							}},
 					},
@@ -1290,8 +1290,8 @@ func TestEvalCountResponseItems(t *testing.T) {
 				Responses: []types.SurveyItemResponse{
 					{
 						Key: "weekly.Q1", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
-								{Key: "mcg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
+								{Key: "mcg", Items: []*types.ResponseItem{
 									{Key: "1"},
 									{Key: "2"},
 									{Key: "3"},
@@ -1300,8 +1300,8 @@ func TestEvalCountResponseItems(t *testing.T) {
 					},
 					{
 						Key: "weekly.Q2", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
-								{Key: "mcg", Items: []types.ResponseItem{}},
+							Key: "rg", Items: []*types.ResponseItem{
+								{Key: "mcg", Items: []*types.ResponseItem{}},
 							}},
 					},
 				},
@@ -1374,7 +1374,7 @@ func TestEvalGetResponseValueAsStr(t *testing.T) {
 				Responses: []types.SurveyItemResponse{
 					{
 						Key: "weekly.Q1", Response: &types.ResponseItem{
-							Key: "rg", Items: []types.ResponseItem{
+							Key: "rg", Items: []*types.ResponseItem{
 								{Key: "1", Value: "something"},
 								{Key: "2"},
 							}},
@@ -1487,7 +1487,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q2", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q2", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 			}}}}},
 		}
@@ -1510,7 +1510,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "scg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "scg", Items: []*types.ResponseItem{
 				{Key: "0"},
 			}}}}},
 		}
@@ -1533,7 +1533,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "1"},
 				{Key: "3"},
@@ -1558,7 +1558,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{}}}}},
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{}}}}},
 		}
 		ret, err := ExpressionEval(exp, testEvalContext)
 		if err != nil {
@@ -1579,7 +1579,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "1"},
 				{Key: "2"},
@@ -1604,7 +1604,7 @@ func TestEvalResponseHasOnlyKeysOtherThan(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "3"},
 			}}}}},
@@ -1638,7 +1638,7 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q2", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q2", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 			}}}}},
 		}
@@ -1660,7 +1660,7 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "scg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "scg", Items: []*types.ResponseItem{
 				{Key: "0"},
 			}}}}},
 		}
@@ -1683,7 +1683,7 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "3"},
 			}}}}},
@@ -1707,7 +1707,7 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "1"},
 				{Key: "2"},
@@ -1731,7 +1731,7 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 			{DType: "str", Str: "2"},
 		}}
 		testEvalContext.Event.Response.Responses = []types.SurveyItemResponse{
-			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []types.ResponseItem{{Key: "mcg", Items: []types.ResponseItem{
+			{Key: "weekly.G1.Q1", Response: &types.ResponseItem{Key: "rg", Items: []*types.ResponseItem{{Key: "mcg", Items: []*types.ResponseItem{
 				{Key: "0"},
 				{Key: "1"},
 			}}}}},

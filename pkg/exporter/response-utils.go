@@ -644,7 +644,7 @@ func retrieveResponseItem(response *types.SurveyItemResponse, fullKey string) *t
 		found := false
 		for _, item := range result.Items {
 			if item.Key == key {
-				result = &item
+				result = item
 				found = true
 				break
 			}
@@ -670,13 +670,13 @@ func retrieveResponseItemByShortKey(response *types.SurveyItemResponse, shortKey
 
 	for _, item := range result.Items {
 		if item.Key == shortKey {
-			return &item
+			return item
 		}
 	}
 
 	for _, item := range result.Items {
 		res := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
-			Response: &item,
+			Response: item,
 		}, shortKey)
 		if res != nil {
 			return res

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.2.1] - 2022-10-
+
+### Changed
+
+- Changed `PREFILL_SLOT_WITH_VALUE` to allow definition of multiple slot values within one question. To implement this, Response item slice has been changed to pointer type.
+
 ## [v1.2.0] - 2022-10-06
 
 ### Added

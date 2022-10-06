@@ -52,7 +52,7 @@ type ResponseItem struct {
 	Value string `bson:"value,omitempty" json:"value,omitempty"`
 	Dtype string `bson:"dtype,omitempty" json:"dtype,omitempty"`
 	// For response option groups:
-	Items []ResponseItem `bson:"items,omitempty" json:"items,omitempty"`
+	Items []*ResponseItem `bson:"items,omitempty" json:"items,omitempty"`
 }
 
 func (rv ResponseItem) ToAPI() *api.ResponseItem {
@@ -72,9 +72,9 @@ func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 	if rv == nil {
 		return nil
 	}
-	items := make([]ResponseItem, len(rv.Items))
+	items := make([]*ResponseItem, len(rv.Items))
 	for i, si := range rv.Items {
-		items[i] = *ResponseItemFromAPI(si)
+		items[i] = ResponseItemFromAPI(si)
 	}
 	return &ResponseItem{
 		Key:   rv.Key,
