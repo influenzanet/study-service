@@ -92,6 +92,8 @@ func getResponseColumns(question SurveyQuestion, response *types.SurveyItemRespo
 		return processResponseForInputs(question, response, questionOptionSep)
 	case QUESTION_TYPE_EQ5D_SLIDER:
 		return processResponseForInputs(question, response, questionOptionSep)
+	case QUESTION_TYPE_RESPONSIVE_TABLE:
+		return processResponseForResponsiveTable(question, response, questionOptionSep)
 	case QUESTION_TYPE_MATRIX:
 		return processResponseForMatrix(question, response, questionOptionSep)
 	case QUESTION_TYPE_CLOZE:
@@ -447,6 +449,23 @@ func handleInputList(questionKey string, responseSlotDefs []ResponseDef, respons
 		rValue := retrieveResponseItem(response, RESPONSE_ROOT_KEY+"."+rSlot.ID)
 		if rValue != nil {
 			responseCols[slotKey] = rValue.Value
+		}
+	}
+
+	return responseCols
+}
+
+func processResponseForResponsiveTable(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+
+	for _, rSlot := range question.Responses {
+		// Prepare columns:
+		slotKey := question.ID + questionOptionSep + rSlot.ID
+
+		rItem := retrieveResponseItemByShortKey(response, rSlot.ID)
+		responseCols[slotKey] = ""
+		if rItem != nil {
+			responseCols[slotKey] = rItem.Value
 		}
 	}
 

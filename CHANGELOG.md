@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.2.0] - 2022-10-06
+
+### Added
+
+- Exporter supports `responsiveMatrix` response type.
+
+### Changed
+
+- Include participant flags when sending infos for participant messages, so these can be optionally used for message template execution.
+
 ## [v1.1.1] - 2022-09-28
 
 ### Changes
