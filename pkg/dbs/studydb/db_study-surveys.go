@@ -8,8 +8,40 @@ import (
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+func (dbService *StudyDBService) CreateSurveyDefintionIndexForAllStudies(instanceID string) {
+	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
+	if err != nil {
+		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
+		return
+	}
+
+	for _, study := range studies {
+		err = dbService.CreateSurveyDefintionIndexForStudy(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating survey definition indexes: %v", err)
+		}
+	}
+}
+
+func (dbService *StudyDBService) CreateSurveyDefintionIndexForStudy(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefStudySurveys(instanceID, studyKey).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "surveyDefinition.key", Value: 1},
+				{Key: "unpublished", Value: 1},
+				{Key: "published", Value: -1},
+			},
+		},
+	)
+	return err
+}
 
 func (dbService *StudyDBService) SaveSurvey(instanceID string, studyKey string, survey types.Survey) (types.Survey, error) {
 	ctx, cancel := dbService.getContext()
