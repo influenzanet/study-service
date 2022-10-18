@@ -69,57 +69,56 @@ func (rp ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []str
 }
 
 func NewResponseExporter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, []string{})
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, []string{}, []string{})
 }
 
 func NewResponseExporterWithIncludeFilter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	includeItemNames []string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, includeItemNames, []string{})
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, includeItemNames, []string{})
 }
 
 func NewResponseExporterWithExcludeFilter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	excludeItemNames []string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, excludeItemNames)
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, []string{}, excludeItemNames)
 }
 
 func newResponseExporterBase(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	includeItemNames []string,
 	excludeItemNames []string,
 ) (*ResponseExporter, error) {
-	if surveyDef == nil {
-		return nil, errors.New("current survey definition not found")
+	if len(surveyHistory) < 1 {
+		return nil, errors.New("survey definition history not found")
 	}
 
 	rp := ResponseExporter{
-		surveyKey:            surveyDef.Current.SurveyDefinition.Key,
+		surveyKey:            surveyHistory[0].SurveyDefinition.Key,
 		surveyVersions:       []SurveyVersionPreview{},
 		responses:            []ParsedResponse{},
 		shortQuestionKeys:    shortQuestionKeys,
 		questionOptionKeySep: questionOptionSep,
 	}
 
-	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&surveyDef.Current, previewLang, includeItemNames, excludeItemNames))
-	for _, v := range surveyDef.History {
-		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&v, previewLang, includeItemNames, excludeItemNames))
+	for _, v := range surveyHistory {
+		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang, includeItemNames, excludeItemNames))
 	}
 
 	if shortQuestionKeys {

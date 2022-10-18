@@ -9,11 +9,11 @@ import (
 	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func surveyDefToVersionPreview(original *types.SurveyVersion, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
+func surveyDefToVersionPreview(original *types.Survey, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
 	sp := SurveyVersionPreview{
 		VersionID:   original.VersionID,
 		Published:   original.Published,
-		Unpublished: original.UnPublished,
+		Unpublished: original.Unpublished,
 		Questions:   []SurveyQuestion{},
 	}
 
