@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -42,15 +41,19 @@ func main() {
 }
 
 func downloadSurveyDef(instanceID, studyKey, surveyKey string) {
-	surveyDef, err := studyDB.FindSurveyDef(instanceID, studyKey, surveyKey)
+	surveyHistory, err := studyDB.FindSurveyDefHistory(instanceID, studyKey, surveyKey, false)
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
 
-	file, _ := json.MarshalIndent(surveyDef, "", indentWith)
+	historyJSON := types.SurveyVersionsJSON{
+		SurveyVersions: surveyHistory,
+	}
+
+	file, _ := json.MarshalIndent(historyJSON, "", indentWith)
 
 	fileName := outputDir + "/surveyDef.json"
-	err = ioutil.WriteFile(fileName, file, 0644)
+	err = os.WriteFile(fileName, file, 0644)
 	if err != nil {
 		logger.Error.Println(err)
 	}
@@ -72,7 +75,7 @@ func downloadResponses(instanceID, studyKey, surveyKey string) {
 	file, _ := json.MarshalIndent(responses, "", indentWith)
 
 	fileName := outputDir + "/responses.json"
-	_ = ioutil.WriteFile(fileName, file, 0644)
+	_ = os.WriteFile(fileName, file, 0644)
 }
 
 func getStudyDBConfig() types.DBConfig {

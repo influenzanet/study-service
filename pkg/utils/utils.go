@@ -7,7 +7,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
-func GenerateSurveyVersionID(oldVersions []types.SurveyVersion) string {
+func GenerateSurveyVersionID(oldVersions []*types.Survey) string {
 	t := time.Now()
 
 	date := t.Format("06-01")
