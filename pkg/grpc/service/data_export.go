@@ -540,7 +540,7 @@ func (s *studyServiceServer) getResponseExporter(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	surveyDef, err := s.studyDBservice.FindSurveyDef(token.InstanceId, studyKey, surveyKey)
+	surveyHistory, err := s.studyDBservice.FindSurveyDefHistory(token.InstanceId, studyKey, surveyKey, false)
 	if err != nil {
 		logger.Info.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -551,7 +551,7 @@ func (s *studyServiceServer) getResponseExporter(
 	if itemFilter != nil {
 		if itemFilter.Mode == api.ResponseExportQuery_ItemFilter_INCLUDE {
 			responseExporter, err = exporter.NewResponseExporterWithIncludeFilter(
-				&surveyDef,
+				surveyHistory,
 				previewLanguage,
 				shortQuestionKeys,
 				separator,
@@ -559,7 +559,7 @@ func (s *studyServiceServer) getResponseExporter(
 			)
 		} else {
 			responseExporter, err = exporter.NewResponseExporterWithExcludeFilter(
-				&surveyDef,
+				surveyHistory,
 				previewLanguage,
 				shortQuestionKeys,
 				separator,
@@ -568,7 +568,7 @@ func (s *studyServiceServer) getResponseExporter(
 		}
 	} else {
 		responseExporter, err = exporter.NewResponseExporter(
-			&surveyDef,
+			surveyHistory,
 			previewLanguage,
 			shortQuestionKeys,
 			separator,

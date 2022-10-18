@@ -129,8 +129,12 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	}
 
 	newSurvey := types.SurveyFromAPI(req.Survey)
-	if newSurvey.Current.VersionID == "" {
-		newSurvey.Current.VersionID = utils.GenerateSurveyVersionID(newSurvey.History)
+	if newSurvey.VersionID == "" {
+		surveyHistory, err := s.studyDBservice.FindSurveyDefHistory(req.Token.InstanceId, req.StudyKey, req.Survey.SurveyDefinition.Key, true)
+		if err != nil {
+			logger.Debug.Printf("fetching survey history returned: %v", err)
+		}
+		newSurvey.VersionID = utils.GenerateSurveyVersionID(surveyHistory)
 	}
 	createdSurvey, err := s.studyDBservice.SaveSurvey(req.Token.InstanceId, req.StudyKey, newSurvey)
 	if err != nil {
@@ -140,7 +144,7 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	return createdSurvey.ToAPI(), nil
 }
 
-func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.Survey, error) {
+func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.SurveyVersionReferenceRequest) (*api.Survey, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -156,7 +160,13 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 		}
 	}
 
-	survey, err := s.studyDBservice.FindSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	var survey *types.Survey
+	var err error
+	if req.VersionId == "" {
+		survey, err = s.studyDBservice.FindCurentSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey, false)
+	} else {
+		survey, err = s.studyDBservice.FindSurveyDefByVersionID(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.VersionId)
+	}
 	if err != nil {
 		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_SURVEY_DEF, "not found"+req.StudyKey+"-"+req.SurveyKey)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -165,7 +175,7 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 	return survey.ToAPI(), nil
 }
 
-func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api.SurveyReferenceRequest) (*api.ServiceStatus, error) {
+func (s *studyServiceServer) RemoveSurveyVersion(ctx context.Context, req *api.SurveyVersionReferenceRequest) (*api.ServiceStatus, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -182,7 +192,7 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 		}
 	}
 
-	err := s.studyDBservice.RemoveSurveyFromStudy(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	err := s.studyDBservice.DeleteSurveyVersion(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.VersionId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -194,11 +204,40 @@ func (s *studyServiceServer) RemoveSurveyFromStudy(ctx context.Context, req *api
 	}, nil
 }
 
+func (s *studyServiceServer) UnpublishSurvey(ctx context.Context, req *api.SurveyReferenceRequest) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id, []string{
+			types.STUDY_ROLE_MAINTAINER,
+			types.STUDY_ROLE_OWNER,
+		})
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("permission denied for unpublishing %s from study %s  ", req.SurveyKey, req.StudyKey))
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	err := s.studyDBservice.UnpublishSurvey(req.Token.InstanceId, req.StudyKey, req.SurveyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("unpublished %s from study %s  ", req.SurveyKey, req.StudyKey))
+	return &api.ServiceStatus{
+		Status:  api.ServiceStatus_NORMAL,
+		Msg:     "survey unpublished",
+		Version: apiVersion,
+	}, nil
+}
+
 func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.StudyReferenceReq) (*api.SurveyInfoResp, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	surveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, false)
+	surveys, err := s.studyDBservice.FindAllCurrentSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, false, true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -207,7 +246,7 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 		apiS := s.ToAPI()
 		infos[i] = &api.SurveyInfo{
 			StudyKey:        req.StudyKey,
-			SurveyKey:       s.Current.SurveyDefinition.Key,
+			SurveyKey:       s.SurveyDefinition.Key,
 			Name:            apiS.Props.Name,
 			Description:     apiS.Props.Description,
 			TypicalDuration: apiS.Props.TypicalDuration,
@@ -216,6 +255,59 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 
 	resp := api.SurveyInfoResp{
 		Infos: infos,
+	}
+	return &resp, nil
+}
+
+func (s *studyServiceServer) GetSurveyVersionInfos(ctx context.Context, req *api.SurveyReferenceRequest) (*api.SurveyVersions, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.SurveyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{constants.USER_ROLE_ADMIN}) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			logger.Error.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	surveys, err := s.studyDBservice.FindSurveyDefHistory(req.Token.InstanceId, req.StudyKey, req.SurveyKey, true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	versions := make([]*api.Survey, len(surveys))
+	for i, s := range surveys {
+		apiS := s.ToAPI()
+		versions[i] = apiS
+	}
+
+	resp := api.SurveyVersions{
+		SurveyVersions: versions,
+	}
+	return &resp, nil
+}
+
+func (s *studyServiceServer) GetSurveyKeys(ctx context.Context, req *api.GetSurveyKeysRequest) (*api.SurveyKeys, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{constants.USER_ROLE_ADMIN}) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			logger.Error.Println(err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+	surveyKeys, err := s.studyDBservice.GetSurveyKeysInStudy(req.Token.InstanceId, req.StudyKey, req.IncludeUnpublished)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := api.SurveyKeys{
+		Keys: surveyKeys,
 	}
 	return &resp, nil
 }

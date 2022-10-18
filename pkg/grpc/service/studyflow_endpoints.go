@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -270,10 +269,6 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 		SurveyInfos: []*api.SurveyInfo{},
 	}
 	for _, study := range studies {
-		studySurveys, err := s.studyDBservice.FindAllSurveyDefsForStudy(req.InstanceId, study.Key, false)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
 		for _, profileID := range profileIDs {
 			participantID, err := utils.ProfileIDtoParticipantID(profileID, s.StudyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
 			if err != nil {
@@ -290,17 +285,14 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 				cs.ProfileId = profileID
 				resp.Surveys = append(resp.Surveys, cs)
 
-				sDef := types.Survey{}
-				for _, def := range studySurveys {
-					if def.Current.SurveyDefinition.Key == cs.SurveyKey {
-						sDef = def
-						break
-					}
+				sDef, err := s.studyDBservice.FindCurentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
+				if err != nil {
+					logger.Error.Printf("could not retrieve current survey defintions [%s:%s:%s]: %v", req.InstanceId, study.Key, cs.SurveyKey, err)
 				}
 
 				found := false
 				for _, info := range resp.SurveyInfos {
-					if info.SurveyKey == sDef.Current.SurveyDefinition.Key && info.StudyKey == cs.StudyKey {
+					if info.SurveyKey == sDef.SurveyDefinition.Key && info.StudyKey == cs.StudyKey {
 						found = true
 						break
 					}
@@ -309,7 +301,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 					apiS := sDef.ToAPI()
 					resp.SurveyInfos = append(resp.SurveyInfos, &api.SurveyInfo{
 						StudyKey:        cs.StudyKey,
-						SurveyKey:       apiS.Current.SurveyDefinition.Key,
+						SurveyKey:       apiS.SurveyDefinition.Key,
 						Name:            apiS.Props.Name,
 						Description:     apiS.Props.Description,
 						TypicalDuration: apiS.Props.TypicalDuration,
@@ -995,7 +987,7 @@ func (s *studyServiceServer) GetParticipantFile(req *api.GetParticipantFileReq, 
 		return status.Error(codes.Internal, "persmission denied")
 	}
 
-	content, err := ioutil.ReadFile(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
+	content, err := os.ReadFile(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
 	if err != nil {
 		logger.Error.Printf("unexpected error: %v", err)
 		return status.Error(codes.Internal, "file not found")
