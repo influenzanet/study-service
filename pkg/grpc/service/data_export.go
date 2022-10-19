@@ -484,7 +484,6 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 	buf := new(bytes.Buffer)
 	includeMeta := &exporter.IncludeMeta{
 		Postion:        req.IncludeMeta.Position,
-		ItemVersion:    req.IncludeMeta.ItemVersion,
 		InitTimes:      req.IncludeMeta.InitTimes,
 		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
 		DisplayedTimes: req.IncludeMeta.DisplayedTimes,

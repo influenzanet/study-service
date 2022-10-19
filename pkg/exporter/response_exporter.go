@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -145,7 +144,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			Initialised: map[string][]int64{},
 			Displayed:   map[string][]int64{},
 			Responded:   map[string][]int64{},
-			ItemVersion: map[string]string{},
 			Position:    map[string]int32{},
 		},
 	}
@@ -182,13 +180,9 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		rp.AddMetaColName(respColName)
 		parsedResponse.Meta.Responded[respColName] = []int64{}
 
-		itemVColName := question.ID + rp.questionOptionKeySep + "metaItemVersion"
-		rp.AddMetaColName(itemVColName)
-		parsedResponse.Meta.ItemVersion[itemVColName] = ""
-
 		positionColName := question.ID + rp.questionOptionKeySep + "metaPosition"
 		rp.AddMetaColName(positionColName)
-		parsedResponse.Meta.ItemVersion[positionColName] = ""
+		parsedResponse.Meta.Position[positionColName] = 0
 
 		if resp != nil {
 			if resp.Meta.Rendered != nil {
@@ -200,7 +194,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			if resp.Meta.Responded != nil {
 				parsedResponse.Meta.Responded[respColName] = resp.Meta.Responded
 			}
-			parsedResponse.Meta.ItemVersion[itemVColName] = strconv.Itoa(int(resp.Meta.Version))
 			parsedResponse.Meta.Position[positionColName] = resp.Meta.Position
 		}
 	}
@@ -303,16 +296,6 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 					} else {
 						currentResp[colName] = v
 					}
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !includeMeta.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
 				} else if strings.Contains(colName, "metaPosition") {
 					if !includeMeta.Postion {
 						continue
@@ -366,9 +349,6 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 				continue
 			}
 			if !includeMeta.ResponsedTimes && strings.Contains(c, "metaResponse") {
-				continue
-			}
-			if !includeMeta.ItemVersion && strings.Contains(c, "metaItemVersion") {
 				continue
 			}
 			header = append(header, c)
@@ -438,16 +418,6 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 						continue
 					}
 					line = append(line, timestampsToStr(v))
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !includeMeta.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, v)
 				} else if strings.Contains(colName, "metaPosition") {
 					if !includeMeta.Postion {
 						continue
@@ -555,14 +525,6 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 					v, ok := resp.Meta.Responded[colName]
 					if ok {
 						value = timestampsToStr(v)
-					}
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !metaInfos.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if ok {
-						value = v
 					}
 				} else if strings.Contains(colName, "metaPosition") {
 					if !metaInfos.Postion {

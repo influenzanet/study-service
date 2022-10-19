@@ -399,7 +399,7 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	wideCSV := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export_wide.csv"))
 	t.Run("Wide CSV", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesCSV(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesCSV(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -413,7 +413,7 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	longCSV := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export_long.csv"))
 	t.Run("Long CSV", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesLongFormatCSV(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesLongFormatCSV(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -427,7 +427,7 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	json := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export.json"))
 	t.Run("JSON", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesJSON(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesJSON(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}

@@ -88,7 +88,6 @@ func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 type ResponseMeta struct {
 	Position   int32  `bson:"position"`
 	LocaleCode string `bson:"localeCode"`
-	Version    int32  `bson:"version"`
 	// timestamps:
 	Rendered  []int64 `bson:"rendered"`
 	Displayed []int64 `bson:"displayed"`
@@ -99,7 +98,6 @@ func (rm ResponseMeta) ToAPI() *api.ResponseMeta {
 	return &api.ResponseMeta{
 		Position:   rm.Position,
 		LocaleCode: rm.LocaleCode,
-		Version:    rm.Version,
 		Rendered:   rm.Rendered,
 		Displayed:  rm.Displayed,
 		Responded:  rm.Responded,
@@ -114,7 +112,6 @@ func ResponseMetaFromAPI(rm *api.ResponseMeta) ResponseMeta {
 	return ResponseMeta{
 		Position:   rm.Position,
 		LocaleCode: rm.LocaleCode,
-		Version:    rm.Version,
 		Rendered:   rm.Rendered,
 		Displayed:  rm.Displayed,
 		Responded:  rm.Responded,

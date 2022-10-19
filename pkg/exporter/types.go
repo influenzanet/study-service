@@ -138,13 +138,11 @@ type ResponseMeta struct {
 	Initialised map[string][]int64
 	Displayed   map[string][]int64
 	Responded   map[string][]int64
-	ItemVersion map[string]string
 	Position    map[string]int32
 }
 
 type IncludeMeta struct {
 	Postion        bool
-	ItemVersion    bool
 	InitTimes      bool
 	DisplayedTimes bool
 	ResponsedTimes bool
