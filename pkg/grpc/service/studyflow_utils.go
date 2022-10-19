@@ -313,7 +313,7 @@ func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, stud
 
 func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey string, surveyKey string, tempParticipantID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindCurentSurveyDef(instanceID, studyKey, surveyKey, false)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(instanceID, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -355,7 +355,7 @@ func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey 
 
 func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenInfos, studyKey string, surveyKey string, profileID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindCurentSurveyDef(token.InstanceId, studyKey, surveyKey, false)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(token.InstanceId, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

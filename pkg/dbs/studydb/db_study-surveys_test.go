@@ -134,14 +134,14 @@ func TestDbFindSurveyDefinition(t *testing.T) {
 	}
 
 	t.Run("not existing survey", func(t *testing.T) {
-		_, err := testDBService.FindCurentSurveyDef(testInstanceID, studyKey, "wrong", false)
+		_, err := testDBService.FindCurrentSurveyDef(testInstanceID, studyKey, "wrong", false)
 		if err == nil {
 			t.Error("should return error")
 		}
 	})
 
 	t.Run("existing survey", func(t *testing.T) {
-		survey, err := testDBService.FindCurentSurveyDef(testInstanceID, studyKey, testSurveys[0].SurveyDefinition.Key, false)
+		survey, err := testDBService.FindCurrentSurveyDef(testInstanceID, studyKey, testSurveys[0].SurveyDefinition.Key, false)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

@@ -170,7 +170,7 @@ func (s *studyServiceServer) GetSurveyDefForStudy(ctx context.Context, req *api.
 	var survey *types.Survey
 	var err error
 	if req.VersionId == "" {
-		survey, err = s.studyDBservice.FindCurentSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey, false)
+		survey, err = s.studyDBservice.FindCurrentSurveyDef(req.Token.InstanceId, req.StudyKey, req.SurveyKey, false)
 	} else {
 		survey, err = s.studyDBservice.FindSurveyDefByVersionID(req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.VersionId)
 	}

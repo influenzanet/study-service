@@ -285,7 +285,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 				cs.ProfileId = profileID
 				resp.Surveys = append(resp.Surveys, cs)
 
-				sDef, err := s.studyDBservice.FindCurentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
+				sDef, err := s.studyDBservice.FindCurrentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
 				if err != nil {
 					logger.Error.Printf("could not retrieve current survey defintions [%s:%s:%s]: %v", req.InstanceId, study.Key, cs.SurveyKey, err)
 				}

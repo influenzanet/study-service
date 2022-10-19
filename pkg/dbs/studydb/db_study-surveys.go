@@ -91,7 +91,7 @@ func (dbService *StudyDBService) FindAllCurrentSurveyDefsForStudy(instanceID str
 		return surveys, err
 	}
 	for _, key := range surveyKeys {
-		survey, err := dbService.FindCurentSurveyDef(instanceID, studyKey, key, onlyInfos)
+		survey, err := dbService.FindCurrentSurveyDef(instanceID, studyKey, key, onlyInfos)
 		if err != nil {
 			logger.Error.Println(err)
 			continue
@@ -101,7 +101,7 @@ func (dbService *StudyDBService) FindAllCurrentSurveyDefsForStudy(instanceID str
 	return surveys, nil
 }
 
-func (dbService *StudyDBService) FindCurentSurveyDef(instanceID string, studyKey string, surveyKey string, onlyInfos bool) (surveys *types.Survey, err error) {
+func (dbService *StudyDBService) FindCurrentSurveyDef(instanceID string, studyKey string, surveyKey string, onlyInfos bool) (surveys *types.Survey, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
