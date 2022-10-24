@@ -43,12 +43,20 @@ func (dbService *StudyDBService) CreateSurveyDefintionIndexForStudy(instanceID s
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	_, err := dbService.collectionRefStudySurveys(instanceID, studyKey).Indexes().CreateOne(
-		ctx, mongo.IndexModel{
-			Keys: bson.D{
-				{Key: "surveyDefinition.key", Value: 1},
-				{Key: "unpublished", Value: 1},
-				{Key: "published", Value: -1},
+	_, err := dbService.collectionRefStudySurveys(instanceID, studyKey).Indexes().CreateMany(
+		ctx, []mongo.IndexModel{
+			{
+				Keys: bson.D{
+					{Key: "surveyDefinition.key", Value: 1},
+					{Key: "unpublished", Value: 1},
+					{Key: "published", Value: -1},
+				},
+			},
+			{
+				Keys: bson.D{
+					{Key: "surveyDefinition.key", Value: 1},
+					{Key: "published", Value: 1},
+				},
 			},
 		},
 	)
