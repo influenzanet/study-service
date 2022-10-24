@@ -264,6 +264,8 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 	profileIDs := []string{req.ProfilId}
 	profileIDs = append(profileIDs, req.OtherProfileIds...)
 
+	surveyCache := map[string]*types.Survey{}
+
 	resp := api.AssignedSurveys{
 		Surveys:     []*api.AssignedSurvey{},
 		SurveyInfos: []*api.SurveyInfo{},
@@ -285,9 +287,15 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 				cs.ProfileId = profileID
 				resp.Surveys = append(resp.Surveys, cs)
 
-				sDef, err := s.studyDBservice.FindCurrentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
-				if err != nil {
-					logger.Error.Printf("could not retrieve current survey defintions [%s:%s:%s]: %v", req.InstanceId, study.Key, cs.SurveyKey, err)
+				cacheKey := study.Key + cs.SurveyKey
+				sDef, ok := surveyCache[cacheKey]
+				if !ok {
+					sDef, err = s.studyDBservice.FindCurrentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
+					if err != nil {
+						logger.Error.Printf("could not retrieve current survey defintions [%s:%s:%s]: %v", req.InstanceId, study.Key, cs.SurveyKey, err)
+						continue
+					}
+					surveyCache[cacheKey] = sDef
 				}
 
 				found := false
