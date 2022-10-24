@@ -170,10 +170,13 @@ func (dbService *StudyDBService) DeleteSurveyVersion(instanceID string, studyKey
 		"versionID":            versionID,
 	}
 	res, err := dbService.collectionRefStudySurveys(instanceID, studyKey).DeleteOne(ctx, filter)
-	if res.DeletedCount < 1 {
-		err = errors.New("not found")
+	if err != nil {
+		return err
 	}
-	return err
+	if res.DeletedCount < 1 {
+		return errors.New("no item was deleted")
+	}
+	return nil
 }
 
 func (dbService *StudyDBService) FindSurveyDefHistory(instanceID string, studyKey string, surveyKey string, onlyInfos bool) (surveys []*types.Survey, err error) {
