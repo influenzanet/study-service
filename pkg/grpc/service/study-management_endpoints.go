@@ -139,7 +139,9 @@ func (s *studyServiceServer) SaveSurveyToStudy(ctx context.Context, req *api.Add
 	if newSurvey.VersionID == "" {
 		surveyHistory, err := s.studyDBservice.FindSurveyDefHistory(req.Token.InstanceId, req.StudyKey, req.Survey.SurveyDefinition.Key, true)
 		if err != nil {
-			logger.Debug.Printf("fetching survey history returned: %v", err)
+			errMsg := fmt.Sprintf("fetching survey history returned: %v", err)
+			logger.Error.Println(errMsg)
+			return nil, status.Error(codes.Internal, errMsg)
 		}
 		newSurvey.VersionID = utils.GenerateSurveyVersionID(surveyHistory)
 	}
