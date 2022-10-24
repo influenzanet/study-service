@@ -541,7 +541,7 @@ func (s *studyServiceServer) getResponseExporter(
 
 	surveyHistory, err := s.studyDBservice.FindSurveyDefHistory(token.InstanceId, studyKey, surveyKey, false)
 	if err != nil {
-		logger.Info.Println(err)
+		logger.Error.Println(err)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
