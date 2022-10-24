@@ -58,6 +58,11 @@ func (dbService *StudyDBService) CreateSurveyDefintionIndexForStudy(instanceID s
 					{Key: "published", Value: 1},
 				},
 			},
+			{
+				Keys: bson.D{
+					{Key: "unpublished", Value: 1},
+				},
+			},
 		},
 	)
 	return err
