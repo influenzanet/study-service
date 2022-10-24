@@ -250,7 +250,7 @@ func (s *studyServiceServer) GetStudySurveyInfos(ctx context.Context, req *api.S
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	surveys, err := s.studyDBservice.FindAllCurrentSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, false, true)
+	surveys, err := s.studyDBservice.FindAllCurrentSurveyDefsForStudy(req.Token.InstanceId, req.StudyKey, true)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

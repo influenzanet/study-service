@@ -110,8 +110,8 @@ func (dbService *StudyDBService) GetSurveyKeysInStudy(instanceID string, studyKe
 
 }
 
-func (dbService *StudyDBService) FindAllCurrentSurveyDefsForStudy(instanceID string, studyKey string, includeUnpublished bool, onlyInfos bool) (surveys []*types.Survey, err error) {
-	surveyKeys, err := dbService.GetSurveyKeysInStudy(instanceID, studyKey, includeUnpublished)
+func (dbService *StudyDBService) FindAllCurrentSurveyDefsForStudy(instanceID string, studyKey string, onlyInfos bool) (surveys []*types.Survey, err error) {
+	surveyKeys, err := dbService.GetSurveyKeysInStudy(instanceID, studyKey, false)
 	if err != nil {
 		return surveys, err
 	}
@@ -119,7 +119,7 @@ func (dbService *StudyDBService) FindAllCurrentSurveyDefsForStudy(instanceID str
 		survey, err := dbService.FindCurrentSurveyDef(instanceID, studyKey, key, onlyInfos)
 		if err != nil {
 			logger.Error.Println(err)
-			continue
+			return surveys, err
 		}
 		surveys = append(surveys, survey)
 	}

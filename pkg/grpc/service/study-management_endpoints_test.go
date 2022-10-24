@@ -644,7 +644,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		surveys, err := testStudyDBService.FindAllCurrentSurveyDefsForStudy(testInstanceID, testStudyKey, false, true)
+		surveys, err := testStudyDBService.FindAllCurrentSurveyDefsForStudy(testInstanceID, testStudyKey, true)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
