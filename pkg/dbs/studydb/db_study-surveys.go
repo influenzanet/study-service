@@ -12,6 +12,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var (
+	sortByPublishedDesc = bson.D{
+		primitive.E{Key: "published", Value: -1},
+	}
+
+	projectionToRemoveSurveyContentAndRules = bson.D{
+		primitive.E{Key: "surveyDefinition.items", Value: 0},
+		primitive.E{Key: "prefillRules", Value: 0},
+		primitive.E{Key: "contextRules", Value: 0},
+	}
+)
+
 func (dbService *StudyDBService) CreateSurveyDefintionIndexForAllStudies(instanceID string) {
 	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
 	if err != nil {
@@ -112,17 +124,10 @@ func (dbService *StudyDBService) FindCurrentSurveyDef(instanceID string, studyKe
 
 	elem := &types.Survey{}
 	opts := &options.FindOneOptions{
-		Sort: bson.D{
-			primitive.E{Key: "published", Value: -1},
-		},
+		Sort: sortByPublishedDesc,
 	}
 	if onlyInfos {
-		projection := bson.D{
-			primitive.E{Key: "surveyDefinition.items", Value: 0},
-			primitive.E{Key: "prefillRules", Value: 0},
-			primitive.E{Key: "contextRules", Value: 0},
-		}
-		opts.SetProjection(projection)
+		opts.SetProjection(projectionToRemoveSurveyContentAndRules)
 	}
 
 	err = dbService.collectionRefStudySurveys(instanceID, studyKey).FindOne(ctx, filter, opts).Decode(&elem)
@@ -167,15 +172,12 @@ func (dbService *StudyDBService) FindSurveyDefHistory(instanceID string, studyKe
 		filter["surveyDefinition.key"] = surveyKey
 	}
 
-	var opts *options.FindOptions
+	opts := &options.FindOptions{}
 	if onlyInfos {
-		projection := bson.D{
-			primitive.E{Key: "surveyDefinition.items", Value: 0},
-			primitive.E{Key: "prefillRules", Value: 0},
-			primitive.E{Key: "contextRules", Value: 0},
-		}
-		opts = options.Find().SetProjection(projection)
+		opts.SetProjection(projectionToRemoveSurveyContentAndRules)
 	}
+
+	opts.SetSort(sortByPublishedDesc)
 
 	cur, err := dbService.collectionRefStudySurveys(instanceID, studyKey).Find(
 		ctx,
