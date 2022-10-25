@@ -287,7 +287,7 @@ func (s *studyServiceServer) GetAssignedSurveys(ctx context.Context, req *api_ty
 				cs.ProfileId = profileID
 				resp.Surveys = append(resp.Surveys, cs)
 
-				cacheKey := study.Key + cs.SurveyKey
+				cacheKey := req.InstanceId + study.Key + cs.SurveyKey
 				sDef, ok := surveyCache[cacheKey]
 				if !ok {
 					sDef, err = s.studyDBservice.FindCurrentSurveyDef(req.InstanceId, study.Key, cs.SurveyKey, true)
