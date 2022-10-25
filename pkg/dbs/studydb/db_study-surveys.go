@@ -54,8 +54,8 @@ func (dbService *StudyDBService) CreateSurveyDefintionIndexForStudy(instanceID s
 			},
 			{
 				Keys: bson.D{
-					{Key: "surveyDefinition.key", Value: 1},
 					{Key: "published", Value: 1},
+					{Key: "surveyDefinition.key", Value: 1},
 				},
 			},
 			{
