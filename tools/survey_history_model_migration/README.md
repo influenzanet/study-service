@@ -25,6 +25,14 @@ Configuration to the DB is done through the same environment variables, as for u
 
 See `run-example.sh` to run the tool. Alternatively, you can prepare an executable file and run it on the target environment similarly.
 
+### Testing DB conversion mode with "dry run"
+
+```
+-mode=DBtest -instanceID=myInstance -studyKey=myStudy
+```
+
+If running the tool with `mode=DBtest`, it won't perform any changes on the database. Instead it will attempt to connect to the collection given by the arguments, and print information about the expected changes on the `surveys` collection caused by the normal run.
+
 ### JSON file conversion
 
 ```

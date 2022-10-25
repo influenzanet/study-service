@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conversionMode := flag.String("mode", "JSON", "what do you want to convert with the tool (JSON or DB)")
+	conversionMode := flag.String("mode", "JSON", "what do you want to convert with the tool (JSON or DB or DBtest)")
 
 	inputJSON := flag.String("input", "", "path and name of the input file that should be converted")
 	instanceIDPtr := flag.String("instanceID", "", "instanceID of a specific instance to migrate surveys for")
@@ -35,6 +35,17 @@ func main() {
 		}
 		dbConfig := getStudyDBConfig()
 		handleDBMigration(instanceID, studyKey, dbConfig)
+	case "DBtest":
+		instanceID := *instanceIDPtr
+		studyKey := *studyKeyPtr
+		if len(instanceID) < 1 {
+			logger.Error.Fatal("instanceID missing")
+		}
+		if len(studyKey) < 1 {
+			logger.Error.Fatal("studyKey missing")
+		}
+		dbConfig := getStudyDBConfig()
+		testDBMigration(instanceID, studyKey, dbConfig)
 	default:
 		logger.Error.Fatalf("unknown conversion mode: %s", *conversionMode)
 	}
@@ -54,14 +65,14 @@ func handleDBMigration(instanceID string, studyKey string, dbConfig types.DBConf
 
 	err = dbMigrator.SaveOldSurveysIntoBackup(instanceID, studyKey, oldSurveys)
 	if err != nil {
-		logger.Error.Print(err)
+		logger.Error.Fatalf("unexpected error when creating backup: %v", err)
 	}
 
 	for _, oldSurveyHistory := range oldSurveys {
 		newSurveyHistory := oldSurveyHistory.ToNew()
 		err = dbMigrator.SaveNewSurveyHistory(instanceID, studyKey, newSurveyHistory)
 		if err != nil {
-			logger.Error.Printf("%s: %v", oldSurveyHistory.Current.SurveyDefinition.Key, err)
+			logger.Error.Fatalf("stopping due to unexpected error during saving history for %s: %v", oldSurveyHistory.Current.SurveyDefinition.Key, err)
 			continue
 		}
 		err = dbMigrator.DeleteOldSurveyByKey(instanceID, studyKey, oldSurveyHistory.Current.SurveyDefinition.Key)
@@ -70,6 +81,30 @@ func handleDBMigration(instanceID string, studyKey string, dbConfig types.DBConf
 		}
 		logger.Info.Printf("%s migrated", oldSurveyHistory.Current.SurveyDefinition.Key)
 	}
+}
+
+func testDBMigration(instanceID string, studyKey string, dbConfig types.DBConfig) {
+	logger.Info.Printf("Testing survey definition DB model migration for %s:%s", instanceID, studyKey)
+	logger.Info.Println("This run does not modify the database. Run the tool with -mode=DB to apply the changes.")
+	dbMigrator := NewSurveyModelDBMigrator(dbConfig)
+
+	oldSurveys, err := dbMigrator.FindAllOldSurveyDefs(instanceID, studyKey)
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+	if len(oldSurveys) < 1 {
+		logger.Error.Fatalf("no old surveys found in %s:%s", instanceID, studyKey)
+	}
+
+	prevCount := len(oldSurveys)
+	newCount := 0
+	for _, oldSurveyHistory := range oldSurveys {
+		newSurveyHistory := oldSurveyHistory.ToNew()
+		newCount += len(newSurveyHistory)
+		logger.Info.Printf("%s will be converted into %d documents.", oldSurveyHistory.Current.SurveyDefinition.Key, len(newSurveyHistory))
+	}
+	logger.Info.Printf("Number of documents before update: %d", prevCount)
+	logger.Info.Printf("Number of documents after update: %d", newCount)
 }
 
 func readOldSurveyFromJSON(filename string) OldSurvey {
