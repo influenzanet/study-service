@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -28,7 +29,7 @@ func (s OldSurvey) ToNew() []*types.Survey {
 		version := sv.VersionID
 		if len(version) < 1 {
 			version = fmt.Sprintf("v%d", i)
-			logger.Info.Printf("'%s' history object had no versionId, use %s instead", s.Current.SurveyDefinition.Key, version)
+			logger.Info.Printf("'%s' history object unpublished at %s had no versionId, use %s instead", s.Current.SurveyDefinition.Key, time.Unix(sv.UnPublished, 0), version)
 		}
 		surveyVersions = append(surveyVersions,
 			&types.Survey{
