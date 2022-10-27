@@ -229,7 +229,7 @@ func (s *studyServiceServer) UnpublishSurvey(ctx context.Context, req *api.Surve
 			types.STUDY_ROLE_OWNER,
 		})
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("permission denied for unpublishing %s from study %s  ", req.SurveyKey, req.StudyKey))
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_UNPUBLISH_SURVEY, fmt.Sprintf("permission denied for unpublishing %s from study %s  ", req.SurveyKey, req.StudyKey))
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -238,7 +238,7 @@ func (s *studyServiceServer) UnpublishSurvey(ctx context.Context, req *api.Surve
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_REMOVE_SURVEY, fmt.Sprintf("unpublished %s from study %s  ", req.SurveyKey, req.StudyKey))
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_UNPUBLISH_SURVEY, fmt.Sprintf("unpublished %s from study %s  ", req.SurveyKey, req.StudyKey))
 	return &api.ServiceStatus{
 		Status:  api.ServiceStatus_NORMAL,
 		Msg:     "survey unpublished",
