@@ -19,7 +19,7 @@
 
 ### Changed
 
-- Upgrade project dependencies
+- Upgrade project dependencies -> minimum go version increased to v1.17
 
 ## [v1.2.1] - 2022-10-06
 
