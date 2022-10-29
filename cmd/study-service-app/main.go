@@ -22,6 +22,8 @@ func main() {
 	studyDBService := studydb.NewStudyDBService(conf.StudyDBConfig)
 	globalDBService := globaldb.NewGlobalDBService(conf.GlobalDBConfig)
 
+	ensureDBIndexes(globalDBService, studyDBService)
+
 	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices, conf.Study.GlobalSecret)
 	sTimerService.Run()
 
@@ -44,5 +46,17 @@ func main() {
 		conf.ExternalServices,
 	); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func ensureDBIndexes(gdb *globaldb.GlobalDBService, sdb *studydb.StudyDBService) {
+	instances, err := gdb.GetAllInstances()
+	if err != nil {
+		logger.Error.Printf("unexpected error when fetching instances: %v", err)
+	}
+
+	for _, i := range instances {
+		sdb.CreateSurveyDefintionIndexForAllStudies(i.InstanceID)
+		// TODO: ensure other indexes as well
 	}
 }

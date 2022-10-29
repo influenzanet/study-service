@@ -481,10 +481,8 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 	}
 
 	testSurvey := types.Survey{
-		Current: types.SurveyVersion{
-			SurveyDefinition: types.SurveyItem{
-				Key: "t1",
-			},
+		SurveyDefinition: types.SurveyItem{
+			Key: "t1",
 		},
 		ContextRules: &types.SurveyContextDef{
 			Mode: &types.ExpressionArg{Str: "test"},
@@ -590,7 +588,7 @@ func TestGetAssignedSurveyEndpoint(t *testing.T) {
 		if !ok || value != "testValue" {
 			t.Error("wrong flag")
 		}
-		if resp.Survey.Current.SurveyDefinition.Key != "t1" {
+		if resp.Survey.SurveyDefinition.Key != "t1" {
 			t.Error("wrong survey key")
 		}
 	})

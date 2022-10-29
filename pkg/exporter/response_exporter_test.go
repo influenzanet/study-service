@@ -3,24 +3,16 @@ package exporter
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"testing"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-/*
-"likertGroup"
-"eq5d-health-indicator"
-"multipleChoiceGroup"
-"singleChoiceGroup"
-
-"responseGroup"
-*/
-
 func TestResponseExporter(t *testing.T) {
+	logger.SetLevel(logger.LEVEL_ERROR)
 	testLang := "en"
 	questionOptionSep := "-"
 	testSurveyDef := &types.SurveyItem{
@@ -53,7 +45,7 @@ func TestResponseExporter(t *testing.T) {
 			t.Error("error expected")
 			return
 		}
-		if err.Error() != "current survey definition not found" {
+		if err.Error() != "survey definition history not found" {
 			t.Errorf("unexpected error message: %v", err)
 			return
 		}
@@ -77,7 +69,7 @@ func TestResponseExporter(t *testing.T) {
 	// 		t.Error("error expected")
 	// 		return
 	// 	}
-	// 	if err.Error() != "current survey definition not found" {
+	// 	if err.Error() != "survey definition history not found" {
 	// 		t.Errorf("unexpected error message: %v", err)
 	// 		return
 	// 	}
@@ -90,15 +82,13 @@ func TestResponseExporter(t *testing.T) {
 			return
 		}
 		testSurvey := types.Survey{
-			ID: _id,
-			Current: types.SurveyVersion{
-				Published:        10,
-				VersionID:        "1",
-				SurveyDefinition: *testSurveyDef,
-			},
+			ID:               _id,
+			Published:        10,
+			VersionID:        "1",
+			SurveyDefinition: *testSurveyDef,
 		}
 
-		rp, err := NewResponseExporter(&testSurvey, "en", true, questionOptionSep)
+		rp, err := NewResponseExporter([]*types.Survey{&testSurvey}, "en", true, questionOptionSep)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 			return
@@ -120,30 +110,28 @@ func TestResponseExporter(t *testing.T) {
 			t.Errorf("unexpected error message: %v", idErr)
 			return
 		}
-		testSurvey := types.Survey{
-			ID: _id,
-			Current: types.SurveyVersion{
-				Published:        10,
-				VersionID:        "3",
-				SurveyDefinition: *testSurveyDef,
-			},
-			History: []types.SurveyVersion{
-				{
-					Published:        2,
-					UnPublished:      5,
-					VersionID:        "1",
-					SurveyDefinition: *testSurveyDef,
-				},
-				{
-					Published:        5,
-					UnPublished:      10,
-					VersionID:        "2",
-					SurveyDefinition: *testSurveyDef,
-				},
-			},
+		v1 := &types.Survey{
+			Published:        2,
+			Unpublished:      5,
+			VersionID:        "1",
+			SurveyDefinition: *testSurveyDef,
+		}
+		v2 := &types.Survey{
+			Published:        5,
+			Unpublished:      10,
+			VersionID:        "2",
+			SurveyDefinition: *testSurveyDef,
+		}
+		v3 := &types.Survey{
+			ID:               _id,
+			Published:        10,
+			VersionID:        "3",
+			SurveyDefinition: *testSurveyDef,
 		}
 
-		rp, err := NewResponseExporter(&testSurvey, "en", true, questionOptionSep)
+		rp, err := NewResponseExporter([]*types.Survey{
+			v1, v2, v3,
+		}, "en", true, questionOptionSep)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 			return
@@ -156,7 +144,7 @@ func TestResponseExporter(t *testing.T) {
 }
 
 func readTestFileToBytes(t *testing.T, fileName string) []byte {
-	content, err := ioutil.ReadFile(fileName)
+	content, err := os.ReadFile(fileName)
 	if err != nil {
 		t.Errorf("Failed to read test-file: %s - %v", fileName, err)
 	}
@@ -164,10 +152,10 @@ func readTestFileToBytes(t *testing.T, fileName string) []byte {
 }
 
 func TestExportFormats(t *testing.T) {
-	var testSurvey types.Survey
-	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+	var testSurveyHistory types.SurveyVersionsJSON
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurveyHistory)
 
-	parser, err := NewResponseExporter(&testSurvey, "nl", true, "-")
+	parser, err := NewResponseExporter(testSurveyHistory.SurveyVersions, "nl", true, "-")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -200,7 +188,8 @@ func TestExportFormats(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != wideCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
 		}
 	})
@@ -213,7 +202,8 @@ func TestExportFormats(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != longCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
 		}
 	})
@@ -226,17 +216,18 @@ func TestExportFormats(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != json {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
 		}
 	})
 }
 
 func TestExportFormatsExcludeFilter(t *testing.T) {
-	var testSurvey types.Survey
-	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+	var testSurveyHistory types.SurveyVersionsJSON
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurveyHistory)
 
-	parser, err := NewResponseExporterWithExcludeFilter(&testSurvey, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	parser, err := NewResponseExporterWithExcludeFilter(testSurveyHistory.SurveyVersions, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -269,7 +260,8 @@ func TestExportFormatsExcludeFilter(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != wideCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
 		}
 	})
@@ -282,7 +274,8 @@ func TestExportFormatsExcludeFilter(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != longCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
 		}
 	})
@@ -295,17 +288,18 @@ func TestExportFormatsExcludeFilter(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != json {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
 		}
 	})
 }
 
 func TestExportFormatsIncludeFilter(t *testing.T) {
-	var testSurvey types.Survey
-	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+	var testSurveyHistory types.SurveyVersionsJSON
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurveyHistory)
 
-	parser, err := NewResponseExporterWithIncludeFilter(&testSurvey, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
+	parser, err := NewResponseExporterWithIncludeFilter(testSurveyHistory.SurveyVersions, "nl", true, "-", []string{"weekly.HS.Q11", "weekly.HS.contact.Q7"})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -338,7 +332,8 @@ func TestExportFormatsIncludeFilter(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != wideCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
 		}
 	})
@@ -352,6 +347,7 @@ func TestExportFormatsIncludeFilter(t *testing.T) {
 		}
 		if buf.String() != longCSV {
 			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
 		}
 	})
@@ -364,17 +360,18 @@ func TestExportFormatsIncludeFilter(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != json {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
 		}
 	})
 }
 
 func TestExportFormatsWithMetaTimestamps(t *testing.T) {
-	var testSurvey types.Survey
-	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurvey)
+	var testSurveyHistory types.SurveyVersionsJSON
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/testSurveyDef.json"), &testSurveyHistory)
 
-	parser, err := NewResponseExporter(&testSurvey, "nl", true, "-")
+	parser, err := NewResponseExporter(testSurveyHistory.SurveyVersions, "nl", true, "-")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -402,12 +399,13 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	wideCSV := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export_wide.csv"))
 	t.Run("Wide CSV", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesCSV(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesCSV(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != wideCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
 		}
 	})
@@ -415,12 +413,13 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	longCSV := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export_long.csv"))
 	t.Run("Long CSV", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesLongFormatCSV(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesLongFormatCSV(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != longCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
 		}
 	})
@@ -428,22 +427,23 @@ func TestExportFormatsWithMetaTimestamps(t *testing.T) {
 	json := string(readTestFileToBytes(t, "./test_files/metaTimestamps/export.json"))
 	t.Run("JSON", func(t *testing.T) {
 		buf := new(bytes.Buffer)
-		err := parser.GetResponsesJSON(buf, &IncludeMeta{Postion: false, ItemVersion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
+		err := parser.GetResponsesJSON(buf, &IncludeMeta{Postion: false, InitTimes: true, DisplayedTimes: true, ResponsedTimes: true})
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != json {
-			t.Errorf("Unexpected output: %v", buf.String())
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
 			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
 		}
 	})
 }
 
 func TestExportFormatsQuestionTypes(t *testing.T) {
-	var testSurvey types.Survey
-	json.Unmarshal(readTestFileToBytes(t, "./test_files/questionTypes/surveyDef.json"), &testSurvey)
+	var testSurveyHistory types.SurveyVersionsJSON
+	json.Unmarshal(readTestFileToBytes(t, "./test_files/questionTypes/surveyDef.json"), &testSurveyHistory)
 
-	parser, err := NewResponseExporter(&testSurvey, "nl", true, "-")
+	parser, err := NewResponseExporter(testSurveyHistory.SurveyVersions, "nl", true, "-")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err.Error())
 		return
@@ -476,8 +476,9 @@ func TestExportFormatsQuestionTypes(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != wideCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
-			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide.csv")
+			//t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_wide_qt.csv")
 		}
 	})
 
@@ -489,8 +490,9 @@ func TestExportFormatsQuestionTypes(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != longCSV {
-			t.Errorf("Unexpected output: %v", buf.String())
-			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long.csv")
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_long_qt.csv")
 		}
 	})
 
@@ -502,8 +504,9 @@ func TestExportFormatsQuestionTypes(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 		if buf.String() != json {
-			t.Errorf("Unexpected output: %v", buf.String())
-			writeBytesToFile(buf.Bytes(), "./test_files/error/export.json")
+			// t.Errorf("Unexpected output: %v", buf.String())
+			t.Errorf("Unexpected output")
+			writeBytesToFile(buf.Bytes(), "./test_files/error/export_qt.json")
 		}
 	})
 }

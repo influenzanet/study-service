@@ -353,10 +353,8 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 		).Return(nil, nil)
 		testSurvey := api.Survey{
-			Current: &api.SurveyVersion{
-				SurveyDefinition: &api.SurveyItem{
-					Key: "testkey",
-				},
+			SurveyDefinition: &api.SurveyItem{
+				Key: "testkey",
 			},
 		}
 		_, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
@@ -382,10 +380,8 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 		).Return(nil, nil)
 		testSurvey := api.Survey{
-			Current: &api.SurveyVersion{
-				SurveyDefinition: &api.SurveyItem{
-					Key: "testkey",
-				},
+			SurveyDefinition: &api.SurveyItem{
+				Key: "testkey",
 			},
 		}
 		resp, err := s.SaveSurveyToStudy(context.Background(), &api.AddSurveyReq{
@@ -404,7 +400,7 @@ func TestSaveSurveyToStudyEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if resp.Current.SurveyDefinition.Key != "testkey" {
+		if resp.SurveyDefinition.Key != "testkey" {
 			t.Error("unexpected survey key")
 		}
 	})
@@ -443,9 +439,9 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 	}
 
 	testSurveys := []types.Survey{
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
+		{SurveyDefinition: types.SurveyItem{Key: "1"}},
+		{SurveyDefinition: types.SurveyItem{Key: "3"}},
+		{SurveyDefinition: types.SurveyItem{Key: "2"}},
 	}
 	for _, s := range testSurveys {
 		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)
@@ -464,7 +460,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{})
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyVersionReferenceRequest{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -475,7 +471,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
@@ -494,7 +490,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+		_, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
@@ -513,7 +509,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		resp, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyReferenceRequest{
+		resp, err := s.GetSurveyDefForStudy(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
@@ -525,7 +521,7 @@ func TestGetSurveyDefForStudyEndpoint(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if resp.Current.SurveyDefinition.Key != "1" {
+		if resp.SurveyDefinition.Key != "1" {
 			t.Errorf("unexpected survey def: %v", resp)
 		}
 	})
@@ -564,9 +560,9 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	}
 
 	testSurveys := []types.Survey{
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
+		{VersionID: "1", SurveyDefinition: types.SurveyItem{Key: "1"}},
+		{VersionID: "1", SurveyDefinition: types.SurveyItem{Key: "3"}},
+		{VersionID: "1", SurveyDefinition: types.SurveyItem{Key: "2"}},
 	}
 	for _, s := range testSurveys {
 		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)
@@ -577,7 +573,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	}
 
 	t.Run("with missing request", func(t *testing.T) {
-		_, err := s.RemoveSurveyFromStudy(context.Background(), nil)
+		_, err := s.RemoveSurveyVersion(context.Background(), nil)
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -585,7 +581,7 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 	})
 
 	t.Run("with empty request", func(t *testing.T) {
-		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{})
+		_, err := s.RemoveSurveyVersion(context.Background(), &api.SurveyVersionReferenceRequest{})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "missing argument")
 		if !ok {
 			t.Error(msg)
@@ -596,13 +592,14 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
+		_, err := s.RemoveSurveyVersion(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser + "wrong",
 				InstanceId: testInstanceID,
 			},
 			StudyKey:  testStudyKey,
 			SurveyKey: "1",
+			VersionId: "1",
 		})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "")
 		if !ok {
@@ -615,13 +612,14 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
+		_, err := s.RemoveSurveyVersion(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
 			StudyKey:  testStudyKey + "wrong",
 			SurveyKey: "1",
+			VersionId: "1",
 		})
 		ok, msg := shouldHaveGrpcErrorStatus(err, "")
 		if !ok {
@@ -634,18 +632,19 @@ func TestRemoveSurveyFromStudyEndpoint(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).Return(nil, nil)
-		_, err := s.RemoveSurveyFromStudy(context.Background(), &api.SurveyReferenceRequest{
+		_, err := s.RemoveSurveyVersion(context.Background(), &api.SurveyVersionReferenceRequest{
 			Token: &api_types.TokenInfos{
 				Id:         testUser,
 				InstanceId: testInstanceID,
 			},
 			StudyKey:  testStudyKey,
 			SurveyKey: "1",
+			VersionId: "1",
 		})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
-		surveys, err := testStudyDBService.FindAllSurveyDefsForStudy(testInstanceID, testStudyKey, true)
+		surveys, err := testStudyDBService.FindAllCurrentSurveyDefsForStudy(testInstanceID, testStudyKey, true)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -666,9 +665,9 @@ func TestGetStudySurveyInfosEndpoint(t *testing.T) {
 	testStudyKey := "testStudyfor_finding_all_surveys"
 
 	testSurveys := []types.Survey{
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "1"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "3"}}},
-		{Current: types.SurveyVersion{SurveyDefinition: types.SurveyItem{Key: "2"}}},
+		{SurveyDefinition: types.SurveyItem{Key: "1"}},
+		{SurveyDefinition: types.SurveyItem{Key: "3"}},
+		{SurveyDefinition: types.SurveyItem{Key: "2"}},
 	}
 	for _, s := range testSurveys {
 		_, err := testStudyDBService.SaveSurvey(testInstanceID, testStudyKey, s)

@@ -8,11 +8,11 @@ import (
 
 func TestGenerateSurveyVersionID(t *testing.T) {
 	t.Run("test id generation for uniqueness", func(t *testing.T) {
-		oldVersions := []types.SurveyVersion{}
+		oldVersions := []*types.Survey{}
 
 		for i := 0; i < 100; i++ {
 			id := GenerateSurveyVersionID(oldVersions)
-			oldVersions = append(oldVersions, types.SurveyVersion{VersionID: id})
+			oldVersions = append(oldVersions, &types.Survey{VersionID: id})
 		}
 
 		for i, id_1 := range oldVersions {

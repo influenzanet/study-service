@@ -274,11 +274,10 @@ func (s *studyServiceServer) saveReports(instanceID string, studyKey string, rep
 	}
 }
 
-func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef *types.Survey) (*api.SurveyAndContext, error) {
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
 	surveyDef.PrefillRules = []types.Expression{}
-	surveyDef.History = []types.SurveyVersion{}
 
 	resp := &api.SurveyAndContext{
 		Survey: surveyDef.ToAPI(),
@@ -286,7 +285,7 @@ func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, 
 	return resp, nil
 }
 
-func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef *types.Survey) (*api.SurveyAndContext, error) {
 	// Prepare context
 	surveyContext, err := s.resolveContextRules(instanceID, studyKey, participantID, surveyDef.ContextRules)
 	if err != nil {
@@ -301,7 +300,6 @@ func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, stud
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
 	surveyDef.PrefillRules = []types.Expression{}
-	surveyDef.History = []types.SurveyVersion{}
 
 	resp := &api.SurveyAndContext{
 		Survey:  surveyDef.ToAPI(),
@@ -315,7 +313,7 @@ func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, stud
 
 func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey string, surveyKey string, tempParticipantID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindSurveyDef(instanceID, studyKey, surveyKey)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(instanceID, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -357,7 +355,7 @@ func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey 
 
 func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenInfos, studyKey string, surveyKey string, profileID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindSurveyDef(token.InstanceId, studyKey, surveyKey)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(token.InstanceId, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
