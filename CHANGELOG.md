@@ -17,6 +17,10 @@
 
 - [PR14](https://github.com/influenzanet/study-service/pull/14): possibility to encode participant ID with base64 URL encoding. This results in a shorter string compared to the hex encoding.
 
+### Changed
+
+- Upgrade project dependencies
+
 ## [v1.2.1] - 2022-10-06
 
 ### Changed
