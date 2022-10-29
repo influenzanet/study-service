@@ -2,6 +2,17 @@
 
 ## [v2.0.0] - ???
 
+### BREAKING CHANGE
+
+- [PR13](https://github.com/influenzanet/study-service/pull/13): reworked survey defintion data model to have a more scalable solution regarding number of versions. Instead of storing every survey version into one document, with the changes of this release, survey versions are stored into separate documents. The facilitate the interaction with the new version model, the API was also modified.
+  - A migration tool is provided in [/tools/survey_histroy_model_migration](/tools/survey_histroy_model_migration) to convert existing DB collections or JSON files to use the new model.
+  - API Changes:
+    - `GetSurveyDefForStudy` can be used to retrieve a specific survey version.
+    - Replaced `RemoveSurveyFromStudy` with `RemoveSurveyVersion` that can be used to delete a specific survey version.
+    - `GetSurveyVersionInfos` is a new method to retrieve  versions of a survey (without the survey content, to reduce size, use `GetSurveyDefForStudy` to get content for a specific version).
+    - `GetSurveyKeys` is a new method to fetch survey keys for a study.
+    - `UnpublishSurvey` is a new method to mark all existing survey versions "unpublished".
+
 ### Added
 
 - [PR14](https://github.com/influenzanet/study-service/pull/14): possibility to encode participant ID with base64 URL encoding. This results in a shorter string compared to the hex encoding.
