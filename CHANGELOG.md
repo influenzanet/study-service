@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.3.1] - 2022-11-16
+
+### Changed
+
+- Data exporter should now correctly include the context columns when exporting as JSON file.
+
 ## [v1.3.0] - 2022-10-29
 
 ### BREAKING CHANGE

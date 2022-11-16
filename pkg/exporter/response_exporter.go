@@ -251,6 +251,16 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 
 		currentResp := rp.getFixedColumns(resp)
 
+		contextCols := rp.contextColNames
+		for _, colName := range contextCols {
+			v, ok := resp.Context[colName]
+			if !ok {
+				currentResp[colName] = ""
+			} else {
+				currentResp[colName] = v
+			}
+		}
+
 		responseCols := rp.responseColNames
 		for _, colName := range responseCols {
 			r, ok := resp.Responses[colName]
