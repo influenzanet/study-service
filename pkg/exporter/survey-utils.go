@@ -605,7 +605,9 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 			case "dropDownGroup":
 				option.OptionType = OPTION_TYPE_DROPDOWN
 			}
-			responseDef.Options = append(responseDef.Options, option)
+			if option.OptionType != "" {
+				responseDef.Options = append(responseDef.Options, option)
+			}
 		}
 		responseDef.ResponseType = QUESTION_TYPE_CLOZE
 		return []ResponseDef{responseDef}
