@@ -205,6 +205,10 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_CLOZE
 			}
 			responseDef.Options = append(responseDef.Options, option)
+			if option.OptionType == OPTION_TYPE_CLOZE {
+				clozeOptions := extractClozeInputOptions(o, option.ID, lang)
+				responseDef.Options = append(responseDef.Options, clozeOptions...)
+			}
 		}
 		responseDef.ResponseType = QUESTION_TYPE_SINGLE_CHOICE
 		return []ResponseDef{responseDef}
@@ -233,6 +237,10 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 				option.OptionType = OPTION_TYPE_CLOZE
 			}
 			responseDef.Options = append(responseDef.Options, option)
+			if option.OptionType == OPTION_TYPE_CLOZE {
+				clozeOptions := extractClozeInputOptions(o, option.ID, lang)
+				responseDef.Options = append(responseDef.Options, clozeOptions...)
+			}
 		}
 		responseDef.ResponseType = QUESTION_TYPE_MULTIPLE_CHOICE
 		return []ResponseDef{responseDef}
@@ -644,4 +652,34 @@ func getQuestionType(responses []ResponseDef) string {
 	}
 
 	return qType
+}
+
+func extractClozeInputOptions(option types.ItemComponent, clozeKey string, lang string) (clozeoptions []ResponseOption) {
+	clozeInputs := []ResponseOption{}
+	for _, o := range option.Items {
+		label, err := getPreviewText(&o, lang)
+		if err != nil {
+			logger.Debug.Printf("mapToResponseDef: label not found for: %v", o)
+		}
+		option := ResponseOption{
+			ID:    clozeKey + "." + o.Key,
+			Label: label,
+		}
+		switch o.Role {
+		case "input":
+			option.OptionType = OPTION_TYPE_TEXT_INPUT
+		case "dateInput":
+			option.OptionType = OPTION_TYPE_DATE_INPUT
+		case "timeInput":
+			option.OptionType = OPTION_TYPE_NUMBER_INPUT
+		case "numberInput":
+			option.OptionType = OPTION_TYPE_NUMBER_INPUT
+		case "dropDownGroup":
+			option.OptionType = OPTION_TYPE_DROPDOWN
+		}
+		if option.OptionType != "" {
+			clozeInputs = append(clozeInputs, option)
+		}
+	}
+	return clozeInputs
 }
