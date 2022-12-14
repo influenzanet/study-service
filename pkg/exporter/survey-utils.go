@@ -30,7 +30,9 @@ func extractQuestions(root *types.SurveyItem, prefLang string, includeItemNames 
 		if item.Type == "pageBreak" {
 			continue
 		}
-
+		if item.ConfidentialMode != "" {
+			continue
+		}
 		if isItemGroup(&item) {
 			questions = append(questions, extractQuestions(&item, prefLang, includeItemNames, excludeItemNames)...)
 			continue
