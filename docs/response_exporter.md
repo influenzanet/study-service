@@ -238,6 +238,7 @@ ID2 | d3 | ... | *optK<sub>11</sub>*  | *input value* ||| *optK<sub>21</sub>*|*i
 ID3 | d4 | ... | *optK<sub>12</sub>*  | |*input value* | | *optK<sub>21</sub>*|*input value* |...|
 ... | ... | ... | ... | ... |... | ... |...| ... |...|...|
 
+
 ### 3.5. Multiple Choice
 
 **Definition:** The participant can choose any answer from a predefined list of response options displayed as checkboxes. Each response option can involve an optional input field for text, dates, numbers etc.
@@ -346,7 +347,7 @@ ID 3 | date 4 | ... | *input value* |*input value* | *input value* |...
 
 **Entries in Table:** the option key *optK<sub>i</sub>* chosen by the respondent
 
-**Remark:** Likert Group questions are also possible. These are saved and exported just like single choice groups.
+**Remark:** Likert Group questions are also possible. These are saved and exported just like Single Choice Groups without optional input fields.
 
 **Example for saving a Likert-scale question in response table:**
 
@@ -359,13 +360,14 @@ ID 3 | date 4 | ... | *optK<sub>2</sub>* |...
 ID 3 | date 5 | ... | *optK<sub>1</sub>* |...
 ... | ... | ... | ... |...
 
-### 3.8.1 Special Case: Responsive Bipolar Likert Array
+#### 3.8.1 Special Case: Responsive Bipolar Likert Array
 
-Responsive Bipolar Likert Arrays are Likert Group Questions that can be displayed in a special format: the respondent chooses a balance between two poles labeled with their strongest manifestation at this respective direction. Their option keys *optK<sub>ji</sub>* often have bipolar symmetric values (e.g. *{-2,-1,0,1,2}* for *5* radio options for each row). They are saved and exported just like Single Choice Groups.
+Responsive Bipolar Likert Arrays are Likert Group Questions that can be displayed in a special format: the respondent chooses a balance between two poles labeled with their strongest manifestation at this respective direction. Their option keys *optK<sub>ji</sub>* often have bipolar symmetric values (e.g. *{-2,-1,0,1,2}* for *5* radio options for each row). They are saved and exported just like Single Choice Groups without optional input fields.
 
-### 3.8.2 Special Case: Responsive Single Choice Array
+#### 3.8.2 Special Case: Responsive Single Choice Array
 
-Responsive Single Choice Arrays are displayed in a more dynamical format than simple Likert Group questions. For example the layout of radio button labels adjusts automatically to different screen sizes and text formatting for headers of response rows is possible. Responsive Single Choice Arrays are saved and exported just like Likert Group Questions.
+Responsive Single Choice Arrays are displayed in a more dynamical format than simple Single Choice Group questions. For example the layout of radio button labels adjusts automatically to different screen sizes and text formatting for headers of response rows is possible. Responsive Single Choice Arrays are saved and exported just like Single Choice Group Questions without optional input fields.
+
 
 ### 3.9. Slider Scale/eq5d_slider
 
@@ -464,7 +466,38 @@ ID 2 | date 3 | ... | *optK<sub>13</sub>* | *optK<sub>22</sub>* | *optK<sub>31</
 ID 3 | date 4 | ... | *optK<sub>11</sub>* | *optK<sub>25</sub>* | *optK<sub>32</sub>* |*optK<sub>44</sub>*|...
 ... | ... | ... | ... |... |... |... |...
 
-#### 3.11.2. Other Types in Matrix Questions
+
+#### 3.11.2. Responsive Matrix Questions
+
+**Definition:** Similar to responsive single choice arrays, responsive matrix questions can be generated for option types input, number input and dropdown. Possible answer options in case of dropdown or number input are the same for all matrix entries.
+
+**Format:** Let *qK* be a responsive matrix question with *n* rows with row names *row<sub>i</sub>, i = 1,...n* and *m* columns with column names *col<sub>j</sub>, j = 1,...m*. Then each matrix entry is represented by one column in the export table containing the response value entered by the respondent (input value for text and number input type and chosen option for dropdown type). 
+
+**Column Name:** for the column corresponding to matrix entry in the *i*-th row and the *j*-th column: *qK* + *sep* + *row<sub>i</sub>* + *sep* + *col<sub>j</sub>*.
+
+**Entries in Table:** the entered value or chosen dropdown option.
+
+**Example for a Responsive Question Matrix of dropdown type**:
+
+Suppose a specified participant responded to a Responsive Dropdown Matrix Question with 3 dropdown options *dd_opt<sub>1</sub>,dd_opt<sub>2</sub>, dd_opt<sub>3</sub>* in the following way:
+
+Corresp. Item| *col<sub>1</sub>* | *col<sub>2</sub>* | *col<sub>3</sub>*
+------- | ------- |------- | ------- 
+***row<sub>1</sub>*** | *dd_opt<sub>2</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>1</sub>*
+***row<sub>2</sub>***|  *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>3</sub>*
+***row<sub>3</sub>***|  *ddd_opt<sub>3</sub>* | *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>*
+
+So, the answers of this matrix are represented by *3x3=9* columns in the corresponding export table containing the following entries:
+
+Part. ID | Subm. Date | ... | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>1</sub>* | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>2</sub>* | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>3</sub>*| *qK* + *sep* + *row<sub>2</sub>* + *sep* + *col<sub>1</sub>* | ...| *qK* + *sep* + *row<sub>3</sub>* + *sep* + *col<sub>3</sub>*
+------------ | ------------- | ---------------- | ------- |--- |--- |--- |--- |---
+...| ... | ... | ...| ...| ... |...|...|...
+ID | date | ... | *dd_opt<sub>2</sub>*| *dd_opt<sub>2</sub>*| *dd_opt<sub>1</sub>*| *dd_opt<sub>1</sub>*| ...| *dd_opt<sub>2</sub>*|
+... | ... | ... |... | ...| ...|...|...|...
+
+
+
+#### 3.11.3. Mixed Types in Matrix Questions
 
 **Format:** For types of options like input, checkbox or dropdown each matrix entry is handled as a separate slot with key *slotK<sub>j</sub>* and has its own column in the response table. A matrix with *m* rows and *n* columns has overall *n x m* slots (without radio rows who are comprised to one slot!). The entry in the table is either the input value, `TRUE`/`FALSE` or the selected option key depending on the type of question.
 
