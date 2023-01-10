@@ -70,21 +70,21 @@ Response columns are dynamic columns depending on the kind of questions asked in
 
 Questions have different types. The question type defines how questions are displayed in the questionnaire and what kind of answers the respondent can provide. The following question types are available in CASE:
 
-1. Text
-2. Number
-3. Date
-4. Single Choice
-5. Multiple Choice
-6. Input List
-7. Dropdown
-8. Likert/Responsive Arrays
-9. Slider/eq5d_slider
-10. Cloze
-11. Matrix
-12. Unknown
-13. Empty
+[1. Text](#31-free-input-field) <br/>
+[2. Number](#32-number-input) <br/>
+[3. Date](#33-date-questions) <br/>
+[4. Single Choice](#34-single-choice) <br/>
+[5. Multiple Choice](#35-multiple-choice) <br/>
+[6. Input List *(deprecated)*](#36-input-list-deprecated) <br/>
+[7. Dropdown](#37-dropdown-questions) <br/>
+[8. Likert and Responsive Arrays](#38-likert-scale-questions) <br/>
+[9. Slider/eq5d_slider](#39-slider-scaleeq5d_slider) <br/>
+[10. Cloze](#310-cloze-questions) <br/>
+[11. Matrix](#311-matrix-questions) <br/>
+[12. Unknown](#312-unknown) <br/>
+[13. Empty](#313-empty) <br/>
 
-In the following we will describe:
+In the following we describe:
 
 * the definition and features of each question type
 * the process of mapping the response data to the CSV export table for each question type.
