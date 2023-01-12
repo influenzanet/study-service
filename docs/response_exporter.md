@@ -75,7 +75,7 @@ Questions have different types. The question type defines how questions are disp
 [5. Multiple Choice](#35-multiple-choice) <br/>
 [6. Input List *(deprecated)*](#36-input-list-deprecated) <br/>
 [7. Dropdown](#37-dropdown-questions) <br/>
-[8. Likert and Responsive Arrays](#38-likert-scale-questions) <br/>
+[8. Likert Scale and Responsive Arrays](#38-likert-scale-questions) <br/>
 [9. Slider/eq5d_slider](#39-slider-scaleeq5d_slider) <br/>
 [10. Cloze](#310-cloze-questions) <br/>
 [11. Matrix](#311-matrix-questions) <br/>
@@ -293,7 +293,7 @@ ID 3 | date 4 | ... | `FALSE` |  | `TRUE` | *input value* |...
 
 We take the structure and definitions of the example for single choice group questions from Section 3.4.1 above and assume it now to be a multiple choice group question consisting of *m* slots each having 3 check box options plus input fields for each option. With the definitions above a possible response table for a Multiple Choice group question could look like this:
 
-Part. ID | Sub. Date | ... |*qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>11</sub>*| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>11</sub>* +*sep*+ "open" |qK*+*sep*+*slotK<sub>1</sub>*+"."+*optK<sub>12</sub>| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>12</sub>* +*sep*+ "open"  | *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>13</sub>*| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>13</sub>* +*sep*+ "open"  |*qK*+ *sep*+ *slotK<sub>2</sub>* +"."+ *optK<sub>21</sub>*|...|*qK*+ *sep*+ *slotK<sub>m</sub>* +"."+ *optK<sub>m3</sub>* +*sep*+ "open"
+Part. ID | Sub. Date | ... |*qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>11</sub>*| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>11</sub>* +*sep*+ "open" |qK*+*sep*+*slotK<sub>1</sub>*+"."+*optK<sub>12</sub>*| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>12</sub>* +*sep*+ "open"  | *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>13</sub>*| *qK*+ *sep*+ *slotK<sub>1</sub>* +"."+ *optK<sub>13</sub>* +*sep*+ "open"  |*qK*+ *sep*+ *slotK<sub>2</sub>* +"."+ *optK<sub>21</sub>*|...|*qK*+ *sep*+ *slotK<sub>m</sub>* +"."+ *optK<sub>m3</sub>* +*sep*+ "open"
 ------------ | ------------- | ---------------- | ------- | --- | -------| -------| -------| -------| -------| -------| -------
 ID1 | d1 | ... | `TRUE` | *input value* |`FALSE`||`TRUE`|*input value* | `FALSE`|...|*input value*
 ID2 | d2 | ... |`FALSE` | |`TRUE` | *input value*  |`TRUE`|*input value*|`FALSE`|...||
@@ -397,10 +397,10 @@ Responsive Single Choice Arrays are displayed in a more dynamical format than si
 **Example for simple cloze question:**
 
 > **Question *qK*:** Please fill in:
-> Name of medication: *free text input option 1*
-> start of medication: *date input 2*
-> number of doses per week: *numeric input 3*
-> reason for medication: *dropdown option 4*
+> Name of medication: *free text input *opt<sub>1</sub>**
+> start of medication: *date input *opt<sub>2</sub>**
+> number of doses per week: *numeric input *opt<sub>3</sub>**
+> reason for medication: *dropdown *opt<sub>4</sub>**
 
 Corresponding response table:
 
@@ -412,11 +412,11 @@ ID 2 | date 3 | ... |  |  | | |...
 ID 3 | date 4 | ... | *input value* |*date* | | *dropdown key* |...
 ... | ... | ... | ... | ... |... | ... |... |...
 
-#### 3.10.2 Cloze types in MCG and SCG Questions
+#### 3.10.2 Cloze types in Multiple Choice and Single Choice Group Questions
 
 **Definition:** Multiple "mixed" input types can also be used within single or multiple choice group questions.
 
-**Format:** The format in the response table is consistent to the respective question type: for SCG questions the first column contains the selected key, followed by one extra column for each cloze input option. In MCG questions each response option is represented by one column. The entries are either `TRUE` or `FALSE` depending if the specific option is selected or not. For each cloze input field one extra column is added.
+**Format:** The format in the response table is consistent to the respective question type: for Single Choice Group (SCG) questions the first column contains the selected key, followed by one extra column for each cloze input option. In Multiple Choice Group (MCG) questions each response option is represented by one column. The entries are either `TRUE` or `FALSE` depending if the specific option is selected or not. For each cloze input field one extra column is added.
 
 **Column Name:**
 
@@ -436,9 +436,9 @@ ID 3 | date 4 | ... | *input value* |*date* | | *dropdown key* |...
 
 #### 3.11.1. Single Choice and Likert Scale Matrix Row Questions
 
-**Format:**  Let *qK* be a matrix question with *m* rows and with the *j*-th row (denoted as slot) of type radio button (which means single choice or Likert scale question) having *n* options. The key of this row is denoted as *slotK<sub>j</sub>*. This row is presented by one column in the export table containing the option key *optK<sub>ji</sub>, i = 1,..,n* selected by the respondent.
+**Format:**  Let *qK* be a matrix question with *m* rows and with the *j*-th row (denoted as slot) of type radio button (which means single choice or Likert scale question) having *n* options. The key of this row is denoted as *rowK<sub>j</sub>*. This row is presented by one column in the export table containing the option key *optK<sub>ji</sub>, i = 1,..,n* selected by the respondent.
 
-**Column Name:** for the column of matrix row *j*: *qK* + *sep* + *slotK<sub>j</sub>.*
+**Column Name:** for the column of matrix row *j*: *qK* + *sep* + *rowK<sub>j</sub>.*
 
 **Entries in Table:** for the column of matrix row j: the option key *optK<sub>ji</sub>* chosen by the respondent
 
@@ -456,7 +456,7 @@ Statement 4 | *optK<sub>41</sub>* | *optK<sub>42</sub>* | *optK<sub>43</sub>* | 
 
 The chosen responses of each respondent at the specific date are then saved in the response table like the following:
 
-Part. ID | Submission Date | ... | *qK* + *sep* + *slotK<sub>1</sub>* | *qK* + *sep* + *slotK<sub>2</sub>*  | *qK* + *sep* + *slotK<sub>3</sub>*  |*qK* + *sep* + *slotK<sub>4</sub>* |...
+Part. ID | Submission Date | ... | *qK* + *sep* + *rowK<sub>1</sub>* | *qK* + *sep* + *rowK<sub>2</sub>*  | *qK* + *sep* + *rowK<sub>3</sub>*  |*qK* + *sep* + *rowK<sub>4</sub>* |...
 ------------ | ------------- | ---------------- | ------- |--- |--- |--- |---
 ID 1 | date 1 | ... | *optK<sub>11</sub>* | *optK<sub>21</sub>* | *optK<sub>35</sub>* | *optK<sub>44</sub>* |...
 ID 2 | date 2 | ... | *optK<sub>14</sub>* | *optK<sub>23</sub>*| *optK<sub>33</sub>* | *optK<sub>43</sub>*| ...
@@ -467,11 +467,11 @@ ID 3 | date 4 | ... | *optK<sub>11</sub>* | *optK<sub>25</sub>* | *optK<sub>32</
 
 #### 3.11.2. Responsive Matrix Questions
 
-**Definition:** Similar to responsive single choice arrays, responsive matrix questions can be generated for option types input, number input and dropdown. Possible answer options in case of dropdown or number input are the same for all matrix entries.
+**Definition:** Similar to responsive single choice arrays, responsive matrix questions can be generated for option types input, number input and dropdown. Selectable answer options in case of dropdown or number input must be the same for all matrix entries.
 
-**Format:** Let *qK* be a responsive matrix question with *n* rows with row names *row<sub>i</sub>, i = 1,...n* and *m* columns with column names *col<sub>j</sub>, j = 1,...m*. Then each matrix entry is represented by one column in the export table containing the response value entered by the respondent (input value for text and number input type and chosen option for dropdown type). 
+**Format:** Let *qK* be a responsive matrix question with *n* rows with row keys *rowK<sub>i</sub>, i = 1,...n* and *m* columns with column keys *colK<sub>j</sub>, j = 1,...m*. Then each matrix entry is represented by one column in the export table containing the response value entered by the respondent (input value for text and number input type and chosen option for dropdown type). 
 
-**Column Name:** for the column corresponding to matrix entry in the *i*-th row and the *j*-th column: *qK* + *sep* + *row<sub>i</sub>* + *sep* + *col<sub>j</sub>*.
+**Column Name:** for the column corresponding to matrix entry in the *i*-th row and the *j*-th column: *qK* + *sep* + *rowK<sub>i</sub>* + *sep* + *colK<sub>j</sub>*.
 
 **Entries in Table:** the entered value or chosen dropdown option.
 
@@ -479,15 +479,15 @@ ID 3 | date 4 | ... | *optK<sub>11</sub>* | *optK<sub>25</sub>* | *optK<sub>32</
 
 Suppose a specified participant responded to a Responsive Dropdown Matrix Question with 3 dropdown options *dd_opt<sub>1</sub>,dd_opt<sub>2</sub>, dd_opt<sub>3</sub>* in the following way:
 
-Corresp. Item| *col<sub>1</sub>* | *col<sub>2</sub>* | *col<sub>3</sub>*
+Corresp. Item| *colK<sub>1</sub>* | *colK<sub>2</sub>* | *colK<sub>3</sub>*
 ------- | ------- |------- | ------- 
-***row<sub>1</sub>*** | *dd_opt<sub>2</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>1</sub>*
-***row<sub>2</sub>***|  *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>3</sub>*
-***row<sub>3</sub>***|  *ddd_opt<sub>3</sub>* | *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>*
+***rowK<sub>1</sub>*** | *dd_opt<sub>2</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>1</sub>*
+***rowK<sub>2</sub>***|  *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>* | *dd_opt<sub>3</sub>*
+***rowK<sub>3</sub>***|  *ddd_opt<sub>3</sub>* | *dd_opt<sub>1</sub>* | *dd_opt<sub>2</sub>*
 
 So, the answers of this matrix are represented by *3x3=9* columns in the corresponding export table containing the following entries:
 
-Part. ID | Subm. Date | ... | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>1</sub>* | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>2</sub>* | *qK* + *sep* + *row<sub>1</sub>* + *sep* + *col<sub>3</sub>*| *qK* + *sep* + *row<sub>2</sub>* + *sep* + *col<sub>1</sub>* | ...| *qK* + *sep* + *row<sub>3</sub>* + *sep* + *col<sub>3</sub>*
+Part. ID | Subm. Date | ... | *qK* + *sep* + *rowK<sub>1</sub>* + *sep* + *colK<sub>1</sub>* | *qK* + *sep* + *rowK<sub>1</sub>* + *sep* + *colK<sub>2</sub>* | *qK* + *sep* + *rowK<sub>1</sub>* + *sep* + *colK<sub>3</sub>*| *qK* + *sep* + *rowK<sub>2</sub>* + *sep* + *colK<sub>1</sub>* | ...| *qK* + *sep* + *rowK<sub>3</sub>* + *sep* + *colK<sub>3</sub>*
 ------------ | ------------- | ---------------- | ------- |--- |--- |--- |--- |---
 ...| ... | ... | ...| ...| ... |...|...|...
 ID | date | ... | *dd_opt<sub>2</sub>*| *dd_opt<sub>2</sub>*| *dd_opt<sub>1</sub>*| *dd_opt<sub>1</sub>*| ...| *dd_opt<sub>2</sub>*|
