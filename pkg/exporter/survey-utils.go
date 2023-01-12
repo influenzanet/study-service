@@ -669,15 +669,15 @@ func extractClozeInputOptions(option types.ItemComponent, clozeKey string, lang 
 		}
 		switch o.Role {
 		case "input":
-			option.OptionType = OPTION_TYPE_TEXT_INPUT
+			option.OptionType = OPTION_TYPE_EMBEDDED_CLOZE_TEXT_INPUT
 		case "dateInput":
-			option.OptionType = OPTION_TYPE_DATE_INPUT
+			option.OptionType = OPTION_TYPE_EMBEDDED_CLOZE_DATE_INPUT
 		case "timeInput":
-			option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			option.OptionType = OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT
 		case "numberInput":
-			option.OptionType = OPTION_TYPE_NUMBER_INPUT
+			option.OptionType = OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT
 		case "dropDownGroup":
-			option.OptionType = OPTION_TYPE_DROPDOWN
+			option.OptionType = OPTION_TYPE_EMBEDDED_CLOZE_DROPDOWN
 		}
 		if option.OptionType != "" {
 			clozeInputs = append(clozeInputs, option)
