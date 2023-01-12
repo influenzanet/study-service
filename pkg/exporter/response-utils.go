@@ -299,8 +299,11 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 		if len(rGroup.Items) > 0 {
 			for _, option := range responseSlotDef.Options {
 				responseCols[questionKey+questionOptionSep+option.ID] = FALSE_VALUE
-				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 					responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
+				}
+				if isEmbeddedCloze(option.OptionType) {
+					responseCols[questionKey+questionOptionSep+option.ID] = ""
 				}
 			}
 
@@ -339,7 +342,7 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 	} else {
 		for _, option := range responseSlotDef.Options {
 			responseCols[questionKey+questionOptionSep+option.ID] = ""
-			if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+			if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 				responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 			}
 		}
@@ -360,8 +363,11 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 			if len(rGroup.Items) > 0 {
 				for _, option := range rSlot.Options {
 					responseCols[slotKeyPrefix+option.ID] = FALSE_VALUE
-					if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+					if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 						responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
+					}
+					if isEmbeddedCloze(option.OptionType) {
+						responseCols[questionKey+questionOptionSep+option.ID] = ""
 					}
 				}
 
@@ -400,7 +406,7 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 		} else {
 			for _, option := range rSlot.Options {
 				responseCols[slotKeyPrefix+option.ID] = ""
-				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 					responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 				}
 			}
@@ -699,4 +705,9 @@ func responseColToString(responseCol interface{}) string {
 		str = string(jsonBytes)
 	}
 	return str
+}
+
+func isEmbeddedCloze(optionType string) bool {
+	return optionType == OPTION_TYPE_EMBEDDED_CLOZE_DATE_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_DROPDOWN ||
+		optionType == OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_TEXT_INPUT
 }
