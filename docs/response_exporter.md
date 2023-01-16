@@ -412,19 +412,23 @@ ID 2 | date 3 | ... |  |  | | |...
 ID 3 | date 4 | ... | *input value* |*date* | | *dropdown key* |...
 ... | ... | ... | ... | ... |... | ... |... |...
 
-#### 3.10.2 Cloze types in Multiple Choice and Single Choice Group Questions
+#### 3.10.2 Cloze types in Multiple Choice and Single Choice Questions
 
 **Definition:** Multiple "mixed" input types can also be used within single or multiple choice group questions.
 
-**Format:** The format in the response table is consistent to the respective question type: for Single Choice Group (SCG) questions the first column contains the selected key, followed by one extra column for each cloze input option. In Multiple Choice Group (MCG) questions each response option is represented by one column. The entries are either `TRUE` or `FALSE` depending if the specific option is selected or not. For each cloze input field one extra column is added.
+**Format:** For Single Choice (SC) questions the first column contains the selected key, followed by one extra column for each cloze input option. In Multiple Choice (MC) questions each response checkbox option is represented by one column. The entries are either `TRUE` or `FALSE` depending if the specific option is selected or not. For each cloze input field one extra column is added.
 
 **Column Name:**
 
-* for the column of cloze input option *i* of SCG/MCG slot *j*: *qK* + *sep* + *slotK<sub>j</sub>* + "." + *optK<sub>ji</sub>, j = 1,..,m, i = 1,...,n.*
+* for SC answer column: *qK*
+* for the column of MC option *j*: *qK + sep + slotK<sub>j</sub>, j = 1,...,m.*
+* for the column of cloze input option *i* of SC/MC slot *j*: *qK* + *sep* + *slotK<sub>j</sub>* + "." + *optK<sub>ji</sub>, j = 1,..,m, i = 1,...,n.*
 
 **Entries in Table:**
 
-* the entered value
+* for SC answer column: the option key *slotK<sub>j</sub>* chosen by the respondent
+* for the column of MC option *j*: `TRUE` if the respondent selected the checkbox, `FALSE` if not.
+* for cloze input options: the entered value or selected dropdown key
 
 ### 3.11. Matrix Questions
 
@@ -473,7 +477,7 @@ ID 3 | date 4 | ... | *optK<sub>11</sub>* | *optK<sub>25</sub>* | *optK<sub>32</
 
 **Column Name:** for the column corresponding to matrix entry in the *i*-th row and the *j*-th column: *qK* + *sep* + *rowK<sub>i</sub>* + *sep* + *colK<sub>j</sub>*.
 
-**Entries in Table:** the entered value or chosen dropdown option.
+**Entries in Table:** the entered value or selected dropdown key.
 
 **Example for a Responsive Question Matrix of dropdown type**:
 
@@ -494,10 +498,9 @@ ID | date | ... | *dd_opt<sub>2</sub>*| *dd_opt<sub>2</sub>*| *dd_opt<sub>1</sub
 ... | ... | ... |... | ...| ...|...|...|...
 
 
-
 #### 3.11.3. Mixed Types in Matrix Questions
 
-**Format:** For types of options like input, checkbox or dropdown each matrix entry is handled as a separate slot with key *slotK<sub>j</sub>* and has its own column in the response table. A matrix with *m* rows and *n* columns has overall *n x m* slots (without radio rows who are comprised to one slot!). The entry in the table is either the input value, `TRUE`/`FALSE` or the selected option key depending on the type of question.
+**Format:** For multiple mixed types of options like input, checkbox or dropdown each matrix entry is handled as a separate slot with key *slotK<sub>j</sub>* and has its own column in the response table. A matrix with *m* rows and *n* columns has overall *n x m* slots (without radio rows who are comprised to one slot!). The entry in the table is either the input value, `TRUE`/`FALSE` or the selected option key depending on the type of question.
 
 **Column Name:** for the column corresponding to matrix slot *j*: *qK* + *sep* + *slotK<sub>j</sub>.*
 
