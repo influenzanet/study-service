@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -33,6 +34,30 @@ func findVersionBasedOnTimestamp(submittedAt int64, versions []SurveyVersionPrev
 				return v, nil
 			}
 		}
+	}
+	//take version with nearest published time > submittedAt
+	nearestTime := time.Now().Unix()
+	var tempV SurveyVersionPreview
+	for _, v := range versions {
+		if v.Published >= submittedAt && v.Published-submittedAt <= nearestTime {
+			nearestTime = v.Published - submittedAt
+			tempV = v
+		}
+	}
+	if tempV.Published != 0 {
+		logger.Warning.Printf("Version not found, taking more recent version.")
+		return tempV, nil
+	}
+	//take version with nearest published time < submittedAt
+	for _, v := range versions {
+		if v.Published <= submittedAt && submittedAt-v.Published <= nearestTime {
+			nearestTime = submittedAt - v.Published
+			tempV = v
+		}
+	}
+	if tempV.Published != 0 {
+		logger.Warning.Printf("Version not found, no recent version found, taking older version")
+		return tempV, nil
 	}
 	return sv, fmt.Errorf("no survey version found: %d", submittedAt)
 }
