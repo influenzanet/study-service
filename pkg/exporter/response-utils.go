@@ -24,40 +24,34 @@ func findSurveyVersion(versionID string, submittedAt int64, versions []SurveyVer
 }
 
 func findVersionBasedOnTimestamp(submittedAt int64, versions []SurveyVersionPreview) (sv SurveyVersionPreview, err error) {
-	for _, v := range versions {
-		if v.Unpublished == 0 {
-			if v.Published <= submittedAt {
-				return v, nil
-			}
-		} else {
-			if v.Published <= submittedAt && v.Unpublished > submittedAt {
-				return v, nil
-			}
-		}
-	}
-	//take version with nearest published time > submittedAt
 	nearestTime := time.Now().Unix()
-	var tempV SurveyVersionPreview
-	for _, v := range versions {
-		if v.Published >= submittedAt && v.Published-submittedAt <= nearestTime {
-			nearestTime = v.Published - submittedAt
-			tempV = v
-		}
-	}
-	if tempV.Published != 0 {
-		logger.Warning.Printf("Version not found, taking more recent version.")
-		return tempV, nil
-	}
-	//take version with nearest published time < submittedAt
+	var preVersion SurveyVersionPreview
+	//search version with nearest published time < submittedAt
 	for _, v := range versions {
 		if v.Published <= submittedAt && submittedAt-v.Published <= nearestTime {
 			nearestTime = submittedAt - v.Published
-			tempV = v
+			preVersion = v
 		}
 	}
-	if tempV.Published != 0 {
+	if preVersion.Unpublished == 0 || preVersion.Unpublished >= submittedAt {
+		return preVersion, nil
+	}
+	//search version with nearest published time > submittedAt
+	nearestTime = time.Now().Unix()
+	var postVersion SurveyVersionPreview
+	for _, v := range versions {
+		if v.Published >= submittedAt && v.Published-submittedAt <= nearestTime {
+			nearestTime = v.Published - submittedAt
+			postVersion = v
+		}
+	}
+	if postVersion.Published != 0 {
+		logger.Warning.Printf("Version not found, taking more recent version.")
+		return postVersion, nil
+	}
+	if preVersion.Published != 0 {
 		logger.Warning.Printf("Version not found, no recent version found, taking older version")
-		return tempV, nil
+		return preVersion, nil
 	}
 	return sv, fmt.Errorf("no survey version found: %d", submittedAt)
 }
