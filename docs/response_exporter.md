@@ -25,7 +25,7 @@ The first columns of the export table are fixed and independent of the used ques
 
 **Column Name:**  ```version```
 
-**Entries in Table:** the version of questionnaire used in the survey
+**Entries in Table:** the version ID of the used survey. The version used for each survey response is thereby mapped to survey version definition. If survey version definition with same version ID as response version is not found (due to removed survey versions), the matching survey definition is selected by published time. Then both version IDs are written in the column entry with the version ID of the response in first place followed by version ID of thde used survey definition in brackets. 
 
 ### 1.4. Opening Date
 
