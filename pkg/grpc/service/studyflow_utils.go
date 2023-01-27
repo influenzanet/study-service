@@ -71,11 +71,9 @@ func (s *studyServiceServer) getAndPerformStudyRules(instanceID string, studyKey
 	return newState, nil
 }
 
-func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey string, participantID string, rules *types.SurveyContextDef) (sCtx types.SurveyContext, err error) {
-	pState, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
-	if err != nil {
-		return sCtx, errors.New("no participant with this id in this study")
-	}
+func (s *studyServiceServer) resolveContextRules(instanceID string, studyKey string, pState types.ParticipantState, rules *types.SurveyContextDef) (sCtx types.SurveyContext, err error) {
+	participantID := pState.ParticipantID
+
 	// participant flags:
 	sCtx.ParticipantFlags = pState.Flags
 
@@ -285,9 +283,46 @@ func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, 
 	return resp, nil
 }
 
+func isSurveyAssignedAndActive(pState types.ParticipantState, surveyKey string) bool {
+	now := time.Now().Unix()
+
+	for _, as := range pState.AssignedSurveys {
+		if as.SurveyKey != surveyKey {
+			continue
+		}
+
+		if as.ValidFrom > 0 && now < as.ValidFrom {
+			continue
+		}
+
+		if as.ValidUntil > 0 && now > as.ValidUntil {
+			continue
+		}
+
+		// --> survey is currently active
+		return true
+	}
+
+	return false
+}
+
 func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef *types.Survey) (*api.SurveyAndContext, error) {
+	pState, err := s.studyDBservice.FindParticipantState(instanceID, studyKey, participantID)
+	if err != nil {
+		return nil, errors.New("no participant with this id in this study")
+	}
+
+	// If survey requires assigned state, ensure it's assigned
+	if surveyDef.AvailableFor == types.SURVEY_AVAILABLE_FOR_PARTICIPANTS_IF_ASSIGNED {
+		if !isSurveyAssignedAndActive(pState, surveyDef.SurveyDefinition.Key) {
+			msg := fmt.Sprintf("Participant %s trying to access survey (%s) when it's not assigned/active", participantID, surveyDef.SurveyDefinition.Key)
+			logger.Warning.Println(msg)
+			return nil, errors.New(msg)
+		}
+	}
+
 	// Prepare context
-	surveyContext, err := s.resolveContextRules(instanceID, studyKey, participantID, surveyDef.ContextRules)
+	surveyContext, err := s.resolveContextRules(instanceID, studyKey, pState, surveyDef.ContextRules)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -327,7 +362,7 @@ func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey 
 
 	if tempParticipantID == "" {
 		// Without temporary participant
-		if surveyDef.AvailableFor == types.SURVEY_AVAILABLE_FOR_TEMPORARY_PARTICIPANTS {
+		if surveyDef.AvailableFor != types.SURVEY_AVAILABLE_FOR_PUBLIC {
 			// FOR ACTIVE OR TEMPORARY PARTICIPANTS: temporary participant id must be present
 			logger.Error.Printf("Trying to access survey that requires at least temporary participant. %s > %s > %s", instanceID, studyKey, surveyKey)
 			return nil, status.Error(codes.InvalidArgument, "must send a temporary participant id or login first")
