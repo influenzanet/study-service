@@ -1,5 +1,37 @@
 # Changelog
 
+
+## [unreleased] - ???
+
+
+- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes): 
+
+
+### Added
+
+- Implement new option types `OPTION_TYPE_EMDEBBED_CLOZE_XXX` for cloze options within single choice and multiple choice questions:
+  - `OPTION_TYPE_EMDEBBED_CLOZE_TEXT_INPUT` for text,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_DATE_INPUT` for dates,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_NUMBER_INPUT` for numbers,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_DROPDOWN` for dropdown.
+- Add embedded cloze input options of single choice and multiple choice questions to JSON file of survey info.
+- Slots for embedded cloze option types within single choice and multiple choice questions are now always generated in data exorter regardless of the presence of answers in response.
+
+### Changed
+
+- Ignore confidential questions in data exporter
+- Update exporter documentation:
+  - add info about column `session`
+  - add links to sections
+  - add info about responsive matrix question types
+  - enhance clarity and readability of text
+  - update info about column `version`
+- Update Mapping of survey response to survey defintion. Mapping is performed by the following steps:
+  - search for same version IDs, if not found
+  - search for nearest version with published date < response submission date, with either response submission date < unpublished date or version is still published, if not found,
+  - search for nearest version with published date > response submission date, if not found
+  - take nearest version with published date < response submission date.
+
 ## [v1.3.1] - 2022-11-16
 
 ### Changed

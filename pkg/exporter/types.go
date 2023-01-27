@@ -29,14 +29,18 @@ const (
 )
 
 const (
-	OPTION_TYPE_DROPDOWN_OPTION = "option"
-	OPTION_TYPE_RADIO           = "radio"
-	OPTION_TYPE_CHECKBOX        = "checkbox"
-	OPTION_TYPE_TEXT_INPUT      = "text"
-	OPTION_TYPE_DATE_INPUT      = "date"
-	OPTION_TYPE_NUMBER_INPUT    = "number"
-	OPTION_TYPE_CLOZE           = "cloze"
-	OPTION_TYPE_DROPDOWN        = "dropdown"
+	OPTION_TYPE_DROPDOWN_OPTION             = "option"
+	OPTION_TYPE_RADIO                       = "radio"
+	OPTION_TYPE_CHECKBOX                    = "checkbox"
+	OPTION_TYPE_TEXT_INPUT                  = "text"
+	OPTION_TYPE_DATE_INPUT                  = "date"
+	OPTION_TYPE_NUMBER_INPUT                = "number"
+	OPTION_TYPE_CLOZE                       = "cloze"
+	OPTION_TYPE_DROPDOWN                    = "dropdown"
+	OPTION_TYPE_EMBEDDED_CLOZE_TEXT_INPUT   = "embedded_cloze_text"
+	OPTION_TYPE_EMBEDDED_CLOZE_DATE_INPUT   = "embedded_cloze_date"
+	OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT = "embedded_cloze_number"
+	OPTION_TYPE_EMBEDDED_CLOZE_DROPDOWN     = "embedded_cloze_dropdown"
 )
 
 const (

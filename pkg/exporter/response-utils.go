@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -23,16 +24,34 @@ func findSurveyVersion(versionID string, submittedAt int64, versions []SurveyVer
 }
 
 func findVersionBasedOnTimestamp(submittedAt int64, versions []SurveyVersionPreview) (sv SurveyVersionPreview, err error) {
+	nearestTime := time.Now().Unix()
+	var preVersion SurveyVersionPreview
+	//search version with nearest published time < submittedAt
 	for _, v := range versions {
-		if v.Unpublished == 0 {
-			if v.Published <= submittedAt {
-				return v, nil
-			}
-		} else {
-			if v.Published <= submittedAt && v.Unpublished > submittedAt {
-				return v, nil
-			}
+		if v.Published <= submittedAt && submittedAt-v.Published <= nearestTime {
+			nearestTime = submittedAt - v.Published
+			preVersion = v
 		}
+	}
+	if preVersion.Unpublished == 0 || preVersion.Unpublished >= submittedAt {
+		return preVersion, nil
+	}
+	//search version with nearest published time > submittedAt
+	nearestTime = time.Now().Unix()
+	var postVersion SurveyVersionPreview
+	for _, v := range versions {
+		if v.Published >= submittedAt && v.Published-submittedAt <= nearestTime {
+			nearestTime = v.Published - submittedAt
+			postVersion = v
+		}
+	}
+	if postVersion.Published != 0 {
+		logger.Warning.Printf("Version not found, taking more recent version.")
+		return postVersion, nil
+	}
+	if preVersion.Published != 0 {
+		logger.Warning.Printf("Version not found, no recent version found, taking older version")
+		return preVersion, nil
 	}
 	return sv, fmt.Errorf("no survey version found: %d", submittedAt)
 }
@@ -299,8 +318,11 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 		if len(rGroup.Items) > 0 {
 			for _, option := range responseSlotDef.Options {
 				responseCols[questionKey+questionOptionSep+option.ID] = FALSE_VALUE
-				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 					responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
+				}
+				if isEmbeddedCloze(option.OptionType) {
+					responseCols[questionKey+questionOptionSep+option.ID] = ""
 				}
 			}
 
@@ -339,7 +361,7 @@ func handleSimpleMultipleChoiceGroup(questionKey string, responseSlotDef Respons
 	} else {
 		for _, option := range responseSlotDef.Options {
 			responseCols[questionKey+questionOptionSep+option.ID] = ""
-			if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+			if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 				responseCols[questionKey+questionOptionSep+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 			}
 		}
@@ -360,8 +382,11 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 			if len(rGroup.Items) > 0 {
 				for _, option := range rSlot.Options {
 					responseCols[slotKeyPrefix+option.ID] = FALSE_VALUE
-					if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+					if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 						responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
+					}
+					if isEmbeddedCloze(option.OptionType) {
+						responseCols[questionKey+questionOptionSep+option.ID] = ""
 					}
 				}
 
@@ -400,7 +425,7 @@ func handleMultipleChoiceGroupList(questionKey string, responseSlotDefs []Respon
 		} else {
 			for _, option := range rSlot.Options {
 				responseCols[slotKeyPrefix+option.ID] = ""
-				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE {
+				if option.OptionType != OPTION_TYPE_CHECKBOX && option.OptionType != OPTION_TYPE_CLOZE && !isEmbeddedCloze(option.OptionType) {
 					responseCols[slotKeyPrefix+option.ID+questionOptionSep+OPEN_FIELD_COL_SUFFIX] = ""
 				}
 			}
@@ -699,4 +724,9 @@ func responseColToString(responseCol interface{}) string {
 		str = string(jsonBytes)
 	}
 	return str
+}
+
+func isEmbeddedCloze(optionType string) bool {
+	return optionType == OPTION_TYPE_EMBEDDED_CLOZE_DATE_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_DROPDOWN ||
+		optionType == OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_TEXT_INPUT
 }
