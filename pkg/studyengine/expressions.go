@@ -127,6 +127,9 @@ func (ctx EvalContext) expressionArgResolver(arg types.ExpressionArg) (interface
 	case "num":
 		return arg.Num, nil
 	case "exp":
+		if arg.Exp == nil {
+			return nil, errors.New("missing argument - expected expression, but was empty")
+		}
 		return ExpressionEval(*arg.Exp, ctx)
 	case "str":
 		return arg.Str, nil

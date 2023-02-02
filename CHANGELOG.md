@@ -1,11 +1,8 @@
 # Changelog
 
-
 ## [unreleased] - ???
 
-
-- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes): 
-
+- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes):
 
 ### Added
 
@@ -19,6 +16,7 @@
 
 ### Changed
 
+- ExpArg resolver, when trying to resolve an expression type, checking for nil values to prevent a crash in case the study rules contain wrong arguments.
 - Ignore confidential questions in data exporter
 - Update exporter documentation:
   - add info about column `session`
