@@ -881,6 +881,8 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 		return newState, err
 	}
 
+	logger.Debug.Printf("%s replied: %v", serviceName, response)
+
 	// if relevant, update participant state:
 	pState, hasKey := response["pState"]
 	if hasKey {

@@ -1226,6 +1226,8 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 		return val, err
 	}
 
+	logger.Debug.Printf("%s replied: %v", serviceName, response)
+
 	// if relevant, update participant state:
 	value := response["value"]
 	if exp.ReturnType == "float" {
