@@ -112,6 +112,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
+	case "parseValueAsNum":
+		val, err = evalCtx.parseValueAsNum(expression)
 	case "externalEventEval":
 		val, err = evalCtx.externalEventEval(expression)
 	default:
@@ -1013,7 +1015,7 @@ func (ctx EvalContext) gt(exp types.Expression) (val bool, err error) {
 		}
 		return arg1Val > arg2Val, nil
 	default:
-		return val, fmt.Errorf("I don't know about type %T", arg1Val)
+		return val, fmt.Errorf("unexpected type %T", arg1Val)
 	}
 }
 
@@ -1194,6 +1196,29 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 	}
 
 	t = float64(referenceTime + delta)
+	return
+}
+
+func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("should have one argument")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	if reflect.TypeOf(arg1).Kind() == reflect.Float64 {
+		return arg1.(float64), nil
+	}
+
+	if reflect.TypeOf(arg1).Kind() != reflect.String {
+		return val, errors.New("argument 1 should be resolved as type string")
+	}
+
+	val, err = strconv.ParseFloat(arg1.(string), 64)
+
 	return
 }
 

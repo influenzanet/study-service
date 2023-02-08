@@ -2789,6 +2789,131 @@ func TestEvalHasMessageTypeAssigned(t *testing.T) {
 	})
 }
 
+func TestEvalParseValueAsNum(t *testing.T) {
+	testPState := types.ParticipantState{
+		Flags: map[string]string{
+			"testKey": "3",
+		},
+	}
+
+	t.Run("attempt to parse incorrect string", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "wrong"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("attempt to parse correct string", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "str", Str: "15"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		res, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if res != 15.0 {
+			t.Errorf("unexpected value: %v", res)
+			return
+		}
+	})
+
+	t.Run("already a number", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "num", Num: 65},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		res, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if res != 65.0 {
+			t.Errorf("unexpected value: %v", res)
+			return
+		}
+	})
+
+	t.Run("expression that returns error", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{Name: "wrong", Data: []types.ExpressionArg{}}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Errorf("should return an error: %v", err)
+			return
+		}
+	})
+
+	t.Run("expression that returns number", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+				{DType: "num", Num: -10},
+			}}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
+	t.Run("expression that returns boolean", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{Name: "gt", Data: []types.ExpressionArg{
+				{DType: "num", Num: -10},
+				{DType: "num", Num: 10},
+			}}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return an error")
+			return
+		}
+	})
+
+	t.Run("expression that returns string", func(t *testing.T) {
+		exp := types.Expression{Name: "parseValueAsNum", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{Name: "getParticipantFlagValue", Data: []types.ExpressionArg{
+				{DType: "str", Str: "testKey"},
+			}}},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: testPState,
+		}
+		res, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if res != 3.0 {
+			t.Errorf("unexpected value: %v", res)
+			return
+		}
+	})
+}
+
 func TestEvalGetMessageNextTime(t *testing.T) {
 	t.Run("participant has no messages", func(t *testing.T) {
 		exp := types.Expression{Name: "getMessageNextTime", Data: []types.ExpressionArg{

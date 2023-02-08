@@ -6,6 +6,7 @@
 
 ### Added
 
+- New study expression `parseValueAsNum`: accepts one argument and attempts to parse this value as float64. If value is already number, the value is returned. If argument is an expression, it will be first resolved. Strings will be attempted to be parsed. Boolean value and strings that cannot be parsed as a number return an error.
 - Implement new option types `OPTION_TYPE_EMDEBBED_CLOZE_XXX` for cloze options within single choice and multiple choice questions:
   - `OPTION_TYPE_EMDEBBED_CLOZE_TEXT_INPUT` for text,
   - `OPTION_TYPE_EMDEBBED_CLOZE_DATE_INPUT` for dates,
