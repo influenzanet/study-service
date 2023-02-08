@@ -33,8 +33,10 @@ func findVersionBasedOnTimestamp(submittedAt int64, versions []SurveyVersionPrev
 			preVersion = v
 		}
 	}
-	if preVersion.Unpublished == 0 || preVersion.Unpublished >= submittedAt {
-		return preVersion, nil
+	if preVersion.Published != 0 {
+		if preVersion.Unpublished == 0 || preVersion.Unpublished >= submittedAt {
+			return preVersion, nil
+		}
 	}
 	//search version with nearest published time > submittedAt
 	nearestTime = time.Now().Unix()
