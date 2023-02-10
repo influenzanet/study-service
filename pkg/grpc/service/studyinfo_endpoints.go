@@ -151,7 +151,9 @@ func (s *studyServiceServer) GetReportsForUser(ctx context.Context, req *api.Get
 				Key:           req.ReportKeyFilter,
 				Since:         req.From,
 				Until:         req.Until,
+				Limit:         req.Limit,
 			}
+
 			reports, err := s.studyDBservice.FindReports(req.Token.InstanceId, study.Key, query)
 			if err != nil {
 				logger.Debug.Printf("couldn't find reports: %v", err)
