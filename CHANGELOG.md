@@ -2,7 +2,7 @@
 
 ## [v1.4.0] - 2023-02-12
 
-- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes):
+- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes)
 
 ### Added
 
