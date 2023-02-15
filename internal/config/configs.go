@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 
@@ -91,18 +90,18 @@ func getStudyConfig() types.StudyConfig {
 
 	freq, err := strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_FREQUENCY"))
 	if err != nil {
-		log.Fatal("STUDY_TIMER_EVENT_FREQUENCY: " + err.Error())
+		logger.Error.Fatal("STUDY_TIMER_EVENT_FREQUENCY: " + err.Error())
 	}
 	studyConf.TimerEventFrequency = int64(freq)
 
 	studyConf.TimerEventCheckIntervalMin, err = strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN"))
 	if err != nil {
-		log.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN: " + err.Error())
+		logger.Error.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN: " + err.Error())
 	}
 
 	studyConf.TimerEventCheckIntervalVar, err = strconv.Atoi(os.Getenv("STUDY_TIMER_EVENT_CHECK_INTERVAL_VAR"))
 	if err != nil {
-		log.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL: " + err.Error())
+		logger.Error.Fatal("STUDY_TIMER_EVENT_CHECK_INTERVAL: " + err.Error())
 	}
 	return studyConf
 }
@@ -113,23 +112,23 @@ func getStudyDBConfig() types.DBConfig {
 	password := os.Getenv("STUDY_DB_PASSWORD")
 	prefix := os.Getenv("STUDY_DB_CONNECTION_PREFIX") // Used in test mode
 	if connStr == "" || username == "" || password == "" {
-		log.Fatal("Couldn't read DB credentials.")
+		logger.Error.Fatal("Couldn't read DB credentials.")
 	}
 	URI := fmt.Sprintf(`mongodb%s://%s:%s@%s`, prefix, username, password, connStr)
 
 	var err error
 	Timeout, err := strconv.Atoi(os.Getenv("DB_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_TIMEOUT: " + err.Error())
+		logger.Error.Fatal("DB_TIMEOUT: " + err.Error())
 	}
 	IdleConnTimeout, err := strconv.Atoi(os.Getenv("DB_IDLE_CONN_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
+		logger.Error.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
 	}
 	mps, err := strconv.Atoi(os.Getenv("DB_MAX_POOL_SIZE"))
 	MaxPoolSize := uint64(mps)
 	if err != nil {
-		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
+		logger.Error.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
 
 	DBNamePrefix := os.Getenv("DB_DB_NAME_PREFIX")
@@ -149,23 +148,23 @@ func getGlobalDBConfig() types.DBConfig {
 	password := os.Getenv("GLOBAL_DB_PASSWORD")
 	prefix := os.Getenv("GLOBAL_DB_CONNECTION_PREFIX") // Used in test mode
 	if connStr == "" || username == "" || password == "" {
-		log.Fatal("Couldn't read DB credentials.")
+		logger.Error.Fatal("Couldn't read DB credentials.")
 	}
 	URI := fmt.Sprintf(`mongodb%s://%s:%s@%s`, prefix, username, password, connStr)
 
 	var err error
 	Timeout, err := strconv.Atoi(os.Getenv("DB_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_TIMEOUT: " + err.Error())
+		logger.Error.Fatal("DB_TIMEOUT: " + err.Error())
 	}
 	IdleConnTimeout, err := strconv.Atoi(os.Getenv("DB_IDLE_CONN_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
+		logger.Error.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
 	}
 	mps, err := strconv.Atoi(os.Getenv("DB_MAX_POOL_SIZE"))
 	MaxPoolSize := uint64(mps)
 	if err != nil {
-		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
+		logger.Error.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
 
 	DBNamePrefix := os.Getenv("DB_DB_NAME_PREFIX")
