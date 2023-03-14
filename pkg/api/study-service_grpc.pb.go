@@ -31,6 +31,7 @@ type StudyServiceApiClient interface {
 	GetAssignedSurvey(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*SurveyAndContext, error)
 	SubmitResponse(ctx context.Context, in *SubmitResponseReq, opts ...grpc.CallOption) (*AssignedSurveys, error)
 	LeaveStudy(ctx context.Context, in *LeaveStudyMsg, opts ...grpc.CallOption) (*AssignedSurveys, error)
+	ProfileDeleted(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*ServiceStatus, error)
 	DeleteParticipantData(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*ServiceStatus, error)
 	UploadParticipantFile(ctx context.Context, opts ...grpc.CallOption) (StudyServiceApi_UploadParticipantFileClient, error)
 	DeleteParticipantFiles(ctx context.Context, in *DeleteParticipantFilesReq, opts ...grpc.CallOption) (*ServiceStatus, error)
@@ -144,6 +145,15 @@ func (c *studyServiceApiClient) SubmitResponse(ctx context.Context, in *SubmitRe
 func (c *studyServiceApiClient) LeaveStudy(ctx context.Context, in *LeaveStudyMsg, opts ...grpc.CallOption) (*AssignedSurveys, error) {
 	out := new(AssignedSurveys)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/LeaveStudy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) ProfileDeleted(ctx context.Context, in *api_types.TokenInfos, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/ProfileDeleted", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -825,6 +835,7 @@ type StudyServiceApiServer interface {
 	GetAssignedSurvey(context.Context, *SurveyReferenceRequest) (*SurveyAndContext, error)
 	SubmitResponse(context.Context, *SubmitResponseReq) (*AssignedSurveys, error)
 	LeaveStudy(context.Context, *LeaveStudyMsg) (*AssignedSurveys, error)
+	ProfileDeleted(context.Context, *api_types.TokenInfos) (*ServiceStatus, error)
 	DeleteParticipantData(context.Context, *api_types.TokenInfos) (*ServiceStatus, error)
 	UploadParticipantFile(StudyServiceApi_UploadParticipantFileServer) error
 	DeleteParticipantFiles(context.Context, *DeleteParticipantFilesReq) (*ServiceStatus, error)
@@ -904,6 +915,9 @@ func (UnimplementedStudyServiceApiServer) SubmitResponse(context.Context, *Submi
 }
 func (UnimplementedStudyServiceApiServer) LeaveStudy(context.Context, *LeaveStudyMsg) (*AssignedSurveys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LeaveStudy not implemented")
+}
+func (UnimplementedStudyServiceApiServer) ProfileDeleted(context.Context, *api_types.TokenInfos) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProfileDeleted not implemented")
 }
 func (UnimplementedStudyServiceApiServer) DeleteParticipantData(context.Context, *api_types.TokenInfos) (*ServiceStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteParticipantData not implemented")
@@ -1166,6 +1180,24 @@ func _StudyServiceApi_LeaveStudy_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(StudyServiceApiServer).LeaveStudy(ctx, req.(*LeaveStudyMsg))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StudyServiceApi_ProfileDeleted_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(api_types.TokenInfos)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).ProfileDeleted(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/ProfileDeleted",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).ProfileDeleted(ctx, req.(*api_types.TokenInfos))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2099,6 +2131,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LeaveStudy",
 			Handler:    _StudyServiceApi_LeaveStudy_Handler,
+		},
+		{
+			MethodName: "ProfileDeleted",
+			Handler:    _StudyServiceApi_ProfileDeleted_Handler,
 		},
 		{
 			MethodName: "DeleteParticipantData",

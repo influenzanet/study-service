@@ -540,6 +540,67 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	return &resp, nil
 }
 
+func (s *studyServiceServer) ProfileDeleted(ctx context.Context, req *api_types.TokenInfos) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	instanceID := req.InstanceId
+	profileID := req.ProfilId
+
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "", true)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	for _, study := range studies {
+		// ParticipantID
+		participantID, participantID2, err := s.profileIDToParticipantID(instanceID, study.Key, profileID, false)
+		if err != nil {
+			logger.Error.Printf("Unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		pState, err := s.studyDBservice.FindParticipantState(instanceID, study.Key, participantID)
+		if err != nil {
+			logger.Debug.Printf("Could not retrieve participant state for %s in study %s", profileID, study.Key)
+			continue
+		}
+
+		// perform study rules/actions
+		currentEvent := types.StudyEvent{
+			Type:                                  "LEAVE",
+			InstanceID:                            instanceID,
+			StudyKey:                              study.Key,
+			ParticipantIDForConfidentialResponses: participantID2,
+		}
+		actionResult, err := s.getAndPerformStudyRules(instanceID, study.Key, pState, currentEvent)
+		if err != nil {
+			logger.Error.Printf("unexpected error_ %v", err)
+			continue
+		}
+
+		actionResult.PState.StudyStatus = types.PARTICIPANT_STUDY_STATUS_ACCOUNT_DELETED
+
+		_, err = s.studyDBservice.SaveParticipantState(instanceID, study.Key, actionResult.PState)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+
+		s.saveReports(instanceID, study.Key, actionResult.ReportsToCreate, "LEAVE")
+
+		// Remove confidential data:
+		_, err = s.studyDBservice.DeleteConfidentialResponses(instanceID, study.Key, participantID2, "")
+		if err != nil {
+			logger.Error.Printf("unexpected error: %v", err)
+		}
+
+		logger.Info.Printf("Profile deletion event executed in study '%s' for: %s", study.Key, participantID)
+	}
+
+	return &api.ServiceStatus{Status: api.ServiceStatus_NORMAL}, nil
+}
+
 func (s *studyServiceServer) LeaveStudy(ctx context.Context, req *api.LeaveStudyMsg) (*api.AssignedSurveys, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")

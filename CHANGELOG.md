@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.5.0] - 2023-03-14
+
+### Added
+
+- New api endpoint `ProfileDeleted`, that can be used to notify a study about the event that a user profile has been deleted. This will trigger the 'LEAVE' study event, mark the participant study status as 'accountDeleted' and remove all confidential data for all the studies the participant is enrolled in.
+
+### Changed
+
+- Improvement in logging
+
 ## [v1.4.0] - 2023-02-12
 
 - [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes)
