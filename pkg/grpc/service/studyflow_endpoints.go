@@ -49,10 +49,13 @@ func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudy
 		return nil, status.Error(codes.Internal, "participant already exists for this study")
 	}
 
+	// To improve privace, we reduce resolution of the timestamp to the day
+	noon := time.Now().Truncate(24 * time.Hour).Add(12 * time.Hour).Unix()
+
 	// Init state and perform rules
 	pState := types.ParticipantState{
 		ParticipantID: participantID,
-		EnteredAt:     time.Now().Unix(),
+		EnteredAt:     noon,
 		StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
 	}
 
