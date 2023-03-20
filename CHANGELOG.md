@@ -1,6 +1,6 @@
 # Changelog
 
-## [v1.5.0] - 2023-03-14
+## [v1.5.0] - 2023-03-20
 
 ### Added
 
@@ -8,6 +8,11 @@
 
 ### Changed
 
+- External event handlers and external expression eval:
+  - added the possibility to define a custom timeout for the external call
+  - external service can be configured to use mutual TLS authentication
+  - expressions can use a second argument to define the API route (if defined, the route will be appended to the base URL)
+- When participant is created during the `ENTER` study event, the `enteredAt` timestamp is now set to the middle of the day to improve privacy.
 - Improvement in logging
 
 ## [v1.4.0] - 2023-02-12

@@ -1223,8 +1223,8 @@ func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err e
 }
 
 func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{}, err error) {
-	if len(exp.Data) != 1 {
-		return val, errors.New("should have one argument")
+	if len(exp.Data) < 1 {
+		return val, errors.New("should have at least one argument")
 	}
 
 	serviceName, err := ctx.mustGetStrValue(exp.Data[0])
@@ -1238,6 +1238,17 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 		return val, err
 	}
 
+	if len(exp.Data) > 1 {
+		arg1, err := ctx.expressionArgResolver(exp.Data[1])
+		if err != nil {
+			return val, err
+		}
+
+		route := arg1.(string)
+		route = strings.TrimPrefix(route, "/")
+		serviceConfig.URL = fmt.Sprintf("%s/%s", serviceConfig.URL, route)
+	}
+
 	payload := ExternalEventPayload{
 		ParticipantState: ctx.ParticipantState,
 		EventType:        ctx.Event.Type,
@@ -1245,7 +1256,13 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 		InstanceID:       ctx.Event.InstanceID,
 		Response:         ctx.Event.Response,
 	}
-	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
+
+	clientConf := ClientConfig{
+		APIKey:     serviceConfig.APIKey,
+		Timeout:    time.Duration(serviceConfig.Timeout) * time.Second,
+		mTLSConfig: serviceConfig.MutualTLSConfig,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, payload, clientConf)
 	if err != nil {
 		logger.Error.Println(err)
 		return val, err
