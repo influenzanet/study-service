@@ -11,16 +11,24 @@ const (
 	SURVEY_AVAILABLE_FOR_ACTIVE_PARTICIPANTS    = "active_participants"
 )
 
+type SurveyVersionsJSON struct {
+	SurveyVersions []*Survey `json:"surveyVersions"`
+}
+
 type Survey struct {
 	ID                           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	Props                        SurveyProps        `bson:"props,omitempty"`
-	Current                      SurveyVersion      `bson:"current"`
-	History                      []SurveyVersion    `bson:"history,omitempty"`
 	PrefillRules                 []Expression       `bson:"prefillRules,omitempty"`
 	ContextRules                 *SurveyContextDef  `bson:"contextRules,omitempty"`
 	MaxItemsPerPage              *MaxItemsPerPage   `bson:"maxItemsPerPage,omitempty"`
 	AvailableFor                 string             `bson:"availableFor,omitempty"`
 	RequireLoginBeforeSubmission bool               `bson:"requireLoginBeforeSubmission"`
+
+	Published        int64             `bson:"published"`
+	Unpublished      int64             `bson:"unpublished"`
+	SurveyDefinition SurveyItem        `bson:"surveyDefinition"`
+	VersionID        string            `bson:"versionID"`
+	Metadata         map[string]string `bson:"metadata,omitempty"`
 }
 
 type SurveyProps struct {
@@ -29,33 +37,25 @@ type SurveyProps struct {
 	TypicalDuration []LocalisedObject `bson:"typicalDuration"`
 }
 
-type SurveyVersion struct {
-	Published        int64      `bson:"published"`
-	UnPublished      int64      `bson:"unpublished"`
-	SurveyDefinition SurveyItem `bson:"surveyDefinition"`
-	VersionID        string     `bson:"versionID"`
-}
-
 type MaxItemsPerPage struct {
 	Large int32 `bson:"large"`
 	Small int32 `bson:"small"`
 }
 
 func (s Survey) ToAPI() *api.Survey {
-	history := make([]*api.SurveyVersion, len(s.History))
-	for i, si := range s.History {
-		history[i] = si.ToAPI()
-	}
 	prefills := make([]*api.Expression, len(s.PrefillRules))
 	for i, r := range s.PrefillRules {
 		prefills[i] = r.ToAPI()
 	}
 	as := &api.Survey{
-		Id:           s.ID.Hex(),
-		Props:        s.Props.ToAPI(),
-		Current:      s.Current.ToAPI(),
-		History:      history,
-		PrefillRules: prefills,
+		Id:               s.ID.Hex(),
+		Props:            s.Props.ToAPI(),
+		PrefillRules:     prefills,
+		Published:        s.Published,
+		Unpublished:      s.Unpublished,
+		SurveyDefinition: s.SurveyDefinition.ToAPI(),
+		VersionId:        s.VersionID,
+		Metadata:         s.Metadata,
 	}
 	if s.ContextRules != nil {
 		as.ContextRules = s.ContextRules.ToAPI()
@@ -74,10 +74,6 @@ func SurveyFromAPI(s *api.Survey) Survey {
 	}
 	_id, _ := primitive.ObjectIDFromHex(s.Id)
 
-	history := make([]SurveyVersion, len(s.History))
-	for i, si := range s.History {
-		history[i] = SurveyVersionFromAPI(si)
-	}
 	prefills := make([]Expression, len(s.PrefillRules))
 	for i, r := range s.PrefillRules {
 		prefills[i] = *ExpressionFromAPI(r)
@@ -85,34 +81,16 @@ func SurveyFromAPI(s *api.Survey) Survey {
 	return Survey{
 		ID:                           _id,
 		Props:                        Survey_PropsFromAPI(s.Props),
-		Current:                      SurveyVersionFromAPI(s.Current),
-		History:                      history,
 		PrefillRules:                 prefills,
 		ContextRules:                 SurveyContextDefFromAPI(s.ContextRules),
 		MaxItemsPerPage:              MaxItemsPerPageFromAPI(s.MaxItemsPerPage),
 		AvailableFor:                 s.AvailableFor,
 		RequireLoginBeforeSubmission: s.RequireLoginBeforeSubmission,
-	}
-}
-
-func (sv SurveyVersion) ToAPI() *api.SurveyVersion {
-	return &api.SurveyVersion{
-		Published:        sv.Published,
-		Unpublished:      sv.UnPublished,
-		SurveyDefinition: sv.SurveyDefinition.ToAPI(),
-		VersionId:        sv.VersionID,
-	}
-}
-
-func SurveyVersionFromAPI(sv *api.SurveyVersion) SurveyVersion {
-	if sv == nil {
-		return SurveyVersion{}
-	}
-	return SurveyVersion{
-		Published:        sv.Published,
-		UnPublished:      sv.Unpublished,
-		SurveyDefinition: SurveyItemFromAPI(sv.SurveyDefinition),
-		VersionID:        sv.VersionId,
+		Published:                    s.Published,
+		Unpublished:                  s.Unpublished,
+		SurveyDefinition:             SurveyItemFromAPI(s.SurveyDefinition),
+		VersionID:                    s.VersionId,
+		Metadata:                     s.Metadata,
 	}
 }
 

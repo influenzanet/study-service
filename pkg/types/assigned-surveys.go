@@ -14,7 +14,7 @@ type AssignedSurvey struct {
 	SurveyKey  string `bson:"surveyKey"`  // reference to the survey object
 	ValidFrom  int64  `bson:"validFrom"`  // survey should be only visible after this timestamp
 	ValidUntil int64  `bson:"validUntil"` // survey should be submitted before this timestamp
-	Category   string `bson:"category"`   // how to display the survey
+	Category   string `bson:"category"`   // how to display the survey (see ASSIGNED_SURVEY_CATEGORY_* constants)
 }
 
 func (as AssignedSurvey) ToAPI() *api.AssignedSurvey {

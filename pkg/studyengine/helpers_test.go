@@ -67,8 +67,8 @@ func TestFindResponseObject(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rgwrong",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 					}},
 				},
@@ -85,8 +85,8 @@ func TestFindResponseObject(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "2"},
 					}},
 				},
@@ -102,8 +102,8 @@ func TestFindResponseObject(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1", Value: "testvalue"},
 					}},
 				},

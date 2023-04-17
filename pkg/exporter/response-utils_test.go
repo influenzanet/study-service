@@ -98,9 +98,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "scg",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1", Value: "hello"},
 						},
 					},
@@ -155,9 +155,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "scg1",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "4", Value: "hello"},
 						},
 					},
@@ -185,9 +185,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "mcg",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1"},
 							{Key: "4", Value: "hello"},
 						},
@@ -243,9 +243,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "mcg1",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "4", Value: "hello"},
 						},
 					},
@@ -267,7 +267,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp", Value: "hello"},
 				},
 			},
@@ -308,7 +308,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp1", Value: "hello"},
 				},
 			},
@@ -332,7 +332,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp", Value: "1327", Dtype: "number"},
 				},
 			},
@@ -371,7 +371,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp", Value: "1327", Dtype: "date"},
 				},
 			},
@@ -414,9 +414,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "ddg",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -465,9 +465,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "ddg1",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -494,9 +494,9 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "likert",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1"},
 						},
 					},
@@ -531,14 +531,14 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "likert1",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "1"},
 						},
 					},
 					{Key: "likert2",
-						Items: []types.ResponseItem{
+						Items: []*types.ResponseItem{
 							{Key: "3"},
 						},
 					},
@@ -585,7 +585,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp", Value: "1327"},
 				},
 			},
@@ -624,7 +624,7 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "inp", Value: "1327"},
 				},
 			},
@@ -672,13 +672,13 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "mat", Items: []types.ResponseItem{
-						{Key: "row1", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "mat", Items: []*types.ResponseItem{
+						{Key: "row1", Items: []*types.ResponseItem{
 							{Key: "1"},
 						}},
-						{Key: "row2", Items: []types.ResponseItem{
-							{Key: "col2", Items: []types.ResponseItem{
+						{Key: "row2", Items: []*types.ResponseItem{
+							{Key: "col2", Items: []*types.ResponseItem{
 								{Key: "1"},
 							}},
 						}},
@@ -696,7 +696,7 @@ func TestGetResponseColumns(t *testing.T) {
 	})
 
 	t.Run("QUESTION_TYPE_UNKNOWN with response", func(t *testing.T) {
-		response := types.ResponseItem{Key: "unk1", Items: []types.ResponseItem{
+		response := types.ResponseItem{Key: "unk1", Items: []*types.ResponseItem{
 			{Key: "1", Value: "hello"},
 		}}
 
@@ -714,8 +714,8 @@ func TestGetResponseColumns(t *testing.T) {
 			Key: "test",
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					response,
+				Items: []*types.ResponseItem{
+					&response,
 				},
 			},
 		}, questionOptionSep)
@@ -746,7 +746,7 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "input"},
 				},
 			},
@@ -760,8 +760,8 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -781,8 +781,8 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -802,8 +802,8 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -819,8 +819,8 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -836,8 +836,8 @@ func TestRetrieveResponseItem(t *testing.T) {
 		r := retrieveResponseItem(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -862,7 +862,7 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
 					{Key: "input"},
 				},
 			},
@@ -876,8 +876,8 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -897,8 +897,8 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},
@@ -918,8 +918,8 @@ func TestRetrieveResponseItemByShortKey(t *testing.T) {
 		r := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
 			Response: &types.ResponseItem{
 				Key: "rg",
-				Items: []types.ResponseItem{
-					{Key: "scg", Items: []types.ResponseItem{
+				Items: []*types.ResponseItem{
+					{Key: "scg", Items: []*types.ResponseItem{
 						{Key: "1"},
 						{Key: "2"},
 					}},

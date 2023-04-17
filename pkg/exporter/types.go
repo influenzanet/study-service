@@ -14,6 +14,7 @@ const (
 	QUESTION_TYPE_LIKERT_GROUP                    = "likert_group"
 	QUESTION_TYPE_EQ5D_SLIDER                     = "eq5d_slider"
 	QUESTION_TYPE_NUMERIC_SLIDER                  = "slider"
+	QUESTION_TYPE_RESPONSIVE_TABLE                = "responsive_table"
 	QUESTION_TYPE_MATRIX                          = "matrix"
 	QUESTION_TYPE_MATRIX_RADIO_ROW                = "matrix_radio_row"
 	QUESTION_TYPE_MATRIX_DROPDOWN                 = "matrix_dropdown"
@@ -137,13 +138,11 @@ type ResponseMeta struct {
 	Initialised map[string][]int64
 	Displayed   map[string][]int64
 	Responded   map[string][]int64
-	ItemVersion map[string]string
 	Position    map[string]int32
 }
 
 type IncludeMeta struct {
 	Postion        bool
-	ItemVersion    bool
 	InitTimes      bool
 	DisplayedTimes bool
 	ResponsedTimes bool

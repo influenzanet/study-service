@@ -13,15 +13,19 @@ type StudyTimerService struct {
 	globalDBService             *globaldb.GlobalDBService
 	studyDBService              *studydb.StudyDBService
 	studyEngineExternalServices []types.ExternalService
+	studyGlobalSecret           string
 	TimerEventFrequency         int64 // how often the timer event should be performed (only from one instance of the service) - seconds
 	TimerEventCheckIntervalMin  int   // approx. how often this serice should check if to perform the timer event - seconds
 	TimerEventCheckIntervalVar  int   // range of the uniform random distribution - varying the check interval to avoid a steady collisions
 }
 
-func NewStudyTimerService(config types.StudyConfig, studyDBServ *studydb.StudyDBService, globalDBServ *globaldb.GlobalDBService, studyEngineExternalServices []types.ExternalService) *StudyTimerService {
+func NewStudyTimerService(config types.StudyConfig, studyDBServ *studydb.StudyDBService, globalDBServ *globaldb.GlobalDBService, studyEngineExternalServices []types.ExternalService,
+	StudyGlobalSecret string,
+) *StudyTimerService {
 	return &StudyTimerService{
 		globalDBService:             globalDBServ,
 		studyDBService:              studyDBServ,
+		studyGlobalSecret:           StudyGlobalSecret,
 		TimerEventFrequency:         config.TimerEventFrequency,
 		TimerEventCheckIntervalMin:  config.TimerEventCheckIntervalMin,
 		TimerEventCheckIntervalVar:  config.TimerEventCheckIntervalVar,

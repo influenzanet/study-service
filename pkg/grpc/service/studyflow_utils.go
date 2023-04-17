@@ -160,35 +160,66 @@ func (s *studyServiceServer) resolvePrefillRules(instanceID string, studyKey str
 			slotKey := rule.Data[1].Str
 			targetValue := rule.Data[2]
 
-			slotKeyParts := strings.Split(slotKey, ".")
+			prefillItem := types.SurveyItemResponse{
+				Key: itemKey,
+			}
 
-			respItem := &types.ResponseItem{}
-			for ind := range slotKeyParts {
-				currentInd := len(slotKeyParts) - 1 - ind
-				currentRespItem := &types.ResponseItem{}
-				currentRespItem.Key = slotKeyParts[currentInd]
-				if ind == 0 {
-					if targetValue.DType == "num" {
-						currentRespItem.Dtype = "number"
-						currentRespItem.Value = fmt.Sprintf("%f", targetValue.Num)
-					} else {
-						currentRespItem.Value = targetValue.Str
-					}
-					respItem = currentRespItem
-				} else {
-					currentRespItem.Items = []types.ResponseItem{
-						*respItem,
-					}
-					respItem = currentRespItem
+			// Find item if already exits
+			pItemIndex := -1
+			for i, p := range prefills.Responses {
+				if p.Key == itemKey {
+					prefillItem = p
+					pItemIndex = i
+					break
 				}
 			}
 
-			prefillItem := types.SurveyItemResponse{
-				Key:      itemKey,
-				Response: respItem,
+			slotKeyParts := strings.Split(slotKey, ".")
+			if len(slotKeyParts) < 1 {
+				logger.Error.Printf("prefill rule has invalid slot key: %v", rule)
+				return
 			}
 
-			prefills.Responses = append(prefills.Responses, prefillItem)
+			respItem := prefillItem.Response
+			if respItem == nil {
+				respItem = &types.ResponseItem{Key: slotKeyParts[0], Items: []*types.ResponseItem{}}
+			}
+
+			var currentRespItem *types.ResponseItem
+			for _, rKey := range slotKeyParts {
+				if currentRespItem == nil {
+					currentRespItem = respItem
+					continue
+				}
+
+				found := false
+				for _, item := range currentRespItem.Items {
+					if item.Key == rKey {
+						found = true
+						currentRespItem = item
+						break
+					}
+				}
+				if !found {
+					newItem := types.ResponseItem{Key: rKey, Items: []*types.ResponseItem{}}
+					currentRespItem.Items = append(currentRespItem.Items, &newItem)
+					currentRespItem = currentRespItem.Items[len(currentRespItem.Items)-1]
+				}
+			}
+
+			if targetValue.DType == "num" {
+				currentRespItem.Dtype = "number"
+				currentRespItem.Value = fmt.Sprintf("%f", targetValue.Num)
+			} else {
+				currentRespItem.Value = targetValue.Str
+			}
+			prefillItem.Response = respItem
+
+			if pItemIndex > -1 {
+				prefills.Responses[pItemIndex] = prefillItem
+			} else {
+				prefills.Responses = append(prefills.Responses, prefillItem)
+			}
 		case "GET_LAST_SURVEY_ITEM":
 			if len(rule.Data) < 2 {
 				return prefills, errors.New("GET_LAST_SURVEY_ITEM must have at least two arguments")
@@ -243,11 +274,10 @@ func (s *studyServiceServer) saveReports(instanceID string, studyKey string, rep
 	}
 }
 
-func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, studyKey string, surveyDef *types.Survey) (*api.SurveyAndContext, error) {
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
 	surveyDef.PrefillRules = []types.Expression{}
-	surveyDef.History = []types.SurveyVersion{}
 
 	resp := &api.SurveyAndContext{
 		Survey: surveyDef.ToAPI(),
@@ -255,7 +285,7 @@ func (s *studyServiceServer) prepareSurveyWithoutParticipant(instanceID string, 
 	return resp, nil
 }
 
-func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef types.Survey) (*api.SurveyAndContext, error) {
+func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, studyKey string, participantID string, surveyDef *types.Survey) (*api.SurveyAndContext, error) {
 	// Prepare context
 	surveyContext, err := s.resolveContextRules(instanceID, studyKey, participantID, surveyDef.ContextRules)
 	if err != nil {
@@ -270,7 +300,6 @@ func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, stud
 	// empty irrelevant fields for this purpose
 	surveyDef.ContextRules = nil
 	surveyDef.PrefillRules = []types.Expression{}
-	surveyDef.History = []types.SurveyVersion{}
 
 	resp := &api.SurveyAndContext{
 		Survey:  surveyDef.ToAPI(),
@@ -284,7 +313,7 @@ func (s *studyServiceServer) prepareSurveyForParticipant(instanceID string, stud
 
 func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey string, surveyKey string, tempParticipantID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindSurveyDef(instanceID, studyKey, surveyKey)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(instanceID, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -326,7 +355,7 @@ func (s *studyServiceServer) _getSurveyWithoutLogin(instanceID string, studyKey 
 
 func (s *studyServiceServer) _getSurveyWithLoggedInUser(token *api_types.TokenInfos, studyKey string, surveyKey string, profileID string) (*api.SurveyAndContext, error) {
 	// Get survey definition:
-	surveyDef, err := s.studyDBservice.FindSurveyDef(token.InstanceId, studyKey, surveyKey)
+	surveyDef, err := s.studyDBservice.FindCurrentSurveyDef(token.InstanceId, studyKey, surveyKey, false)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

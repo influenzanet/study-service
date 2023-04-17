@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -69,57 +68,56 @@ func (rp ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []str
 }
 
 func NewResponseExporter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, []string{})
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, []string{}, []string{})
 }
 
 func NewResponseExporterWithIncludeFilter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	includeItemNames []string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, includeItemNames, []string{})
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, includeItemNames, []string{})
 }
 
 func NewResponseExporterWithExcludeFilter(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	excludeItemNames []string,
 ) (*ResponseExporter, error) {
-	return newResponseExporterBase(surveyDef, previewLang, shortQuestionKeys, questionOptionSep, []string{}, excludeItemNames)
+	return newResponseExporterBase(surveyHistory, previewLang, shortQuestionKeys, questionOptionSep, []string{}, excludeItemNames)
 }
 
 func newResponseExporterBase(
-	surveyDef *types.Survey,
+	surveyHistory []*types.Survey,
 	previewLang string,
 	shortQuestionKeys bool,
 	questionOptionSep string,
 	includeItemNames []string,
 	excludeItemNames []string,
 ) (*ResponseExporter, error) {
-	if surveyDef == nil {
-		return nil, errors.New("current survey definition not found")
+	if len(surveyHistory) < 1 {
+		return nil, errors.New("survey definition history not found")
 	}
 
 	rp := ResponseExporter{
-		surveyKey:            surveyDef.Current.SurveyDefinition.Key,
+		surveyKey:            surveyHistory[0].SurveyDefinition.Key,
 		surveyVersions:       []SurveyVersionPreview{},
 		responses:            []ParsedResponse{},
 		shortQuestionKeys:    shortQuestionKeys,
 		questionOptionKeySep: questionOptionSep,
 	}
 
-	rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&surveyDef.Current, previewLang, includeItemNames, excludeItemNames))
-	for _, v := range surveyDef.History {
-		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(&v, previewLang, includeItemNames, excludeItemNames))
+	for _, v := range surveyHistory {
+		rp.surveyVersions = append(rp.surveyVersions, surveyDefToVersionPreview(v, previewLang, includeItemNames, excludeItemNames))
 	}
 
 	if shortQuestionKeys {
@@ -146,7 +144,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			Initialised: map[string][]int64{},
 			Displayed:   map[string][]int64{},
 			Responded:   map[string][]int64{},
-			ItemVersion: map[string]string{},
 			Position:    map[string]int32{},
 		},
 	}
@@ -183,13 +180,9 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		rp.AddMetaColName(respColName)
 		parsedResponse.Meta.Responded[respColName] = []int64{}
 
-		itemVColName := question.ID + rp.questionOptionKeySep + "metaItemVersion"
-		rp.AddMetaColName(itemVColName)
-		parsedResponse.Meta.ItemVersion[itemVColName] = ""
-
 		positionColName := question.ID + rp.questionOptionKeySep + "metaPosition"
 		rp.AddMetaColName(positionColName)
-		parsedResponse.Meta.ItemVersion[positionColName] = ""
+		parsedResponse.Meta.Position[positionColName] = 0
 
 		if resp != nil {
 			if resp.Meta.Rendered != nil {
@@ -201,7 +194,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			if resp.Meta.Responded != nil {
 				parsedResponse.Meta.Responded[respColName] = resp.Meta.Responded
 			}
-			parsedResponse.Meta.ItemVersion[itemVColName] = strconv.Itoa(int(resp.Meta.Version))
 			parsedResponse.Meta.Position[positionColName] = resp.Meta.Position
 		}
 	}
@@ -304,16 +296,6 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 					} else {
 						currentResp[colName] = v
 					}
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !includeMeta.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
 				} else if strings.Contains(colName, "metaPosition") {
 					if !includeMeta.Postion {
 						continue
@@ -367,9 +349,6 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 				continue
 			}
 			if !includeMeta.ResponsedTimes && strings.Contains(c, "metaResponse") {
-				continue
-			}
-			if !includeMeta.ItemVersion && strings.Contains(c, "metaItemVersion") {
 				continue
 			}
 			header = append(header, c)
@@ -439,16 +418,6 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 						continue
 					}
 					line = append(line, timestampsToStr(v))
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !includeMeta.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, v)
 				} else if strings.Contains(colName, "metaPosition") {
 					if !includeMeta.Postion {
 						continue
@@ -556,14 +525,6 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 					v, ok := resp.Meta.Responded[colName]
 					if ok {
 						value = timestampsToStr(v)
-					}
-				} else if strings.Contains(colName, "metaItemVersion") {
-					if !metaInfos.ItemVersion {
-						continue
-					}
-					v, ok := resp.Meta.ItemVersion[colName]
-					if ok {
-						value = v
 					}
 				} else if strings.Contains(colName, "metaPosition") {
 					if !metaInfos.Postion {

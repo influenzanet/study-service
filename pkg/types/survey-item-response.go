@@ -52,7 +52,7 @@ type ResponseItem struct {
 	Value string `bson:"value,omitempty" json:"value,omitempty"`
 	Dtype string `bson:"dtype,omitempty" json:"dtype,omitempty"`
 	// For response option groups:
-	Items []ResponseItem `bson:"items,omitempty" json:"items,omitempty"`
+	Items []*ResponseItem `bson:"items,omitempty" json:"items,omitempty"`
 }
 
 func (rv ResponseItem) ToAPI() *api.ResponseItem {
@@ -72,9 +72,9 @@ func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 	if rv == nil {
 		return nil
 	}
-	items := make([]ResponseItem, len(rv.Items))
+	items := make([]*ResponseItem, len(rv.Items))
 	for i, si := range rv.Items {
-		items[i] = *ResponseItemFromAPI(si)
+		items[i] = ResponseItemFromAPI(si)
 	}
 	return &ResponseItem{
 		Key:   rv.Key,
@@ -88,7 +88,6 @@ func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 type ResponseMeta struct {
 	Position   int32  `bson:"position"`
 	LocaleCode string `bson:"localeCode"`
-	Version    int32  `bson:"version"`
 	// timestamps:
 	Rendered  []int64 `bson:"rendered"`
 	Displayed []int64 `bson:"displayed"`
@@ -99,7 +98,6 @@ func (rm ResponseMeta) ToAPI() *api.ResponseMeta {
 	return &api.ResponseMeta{
 		Position:   rm.Position,
 		LocaleCode: rm.LocaleCode,
-		Version:    rm.Version,
 		Rendered:   rm.Rendered,
 		Displayed:  rm.Displayed,
 		Responded:  rm.Responded,
@@ -114,7 +112,6 @@ func ResponseMetaFromAPI(rm *api.ResponseMeta) ResponseMeta {
 	return ResponseMeta{
 		Position:   rm.Position,
 		LocaleCode: rm.LocaleCode,
-		Version:    rm.Version,
 		Rendered:   rm.Rendered,
 		Displayed:  rm.Displayed,
 		Responded:  rm.Responded,

@@ -5,7 +5,7 @@ import api "github.com/influenzanet/study-service/pkg/api"
 // Validation
 type Validation struct {
 	Key  string     `bson:"key"`
-	Type string     `bson:"type"`
+	Type string     `bson:"type"` // kind of validation : 'soft' or 'hard'
 	Rule Expression `bson:"expression"`
 }
 

@@ -92,6 +92,8 @@ func getResponseColumns(question SurveyQuestion, response *types.SurveyItemRespo
 		return processResponseForInputs(question, response, questionOptionSep)
 	case QUESTION_TYPE_EQ5D_SLIDER:
 		return processResponseForInputs(question, response, questionOptionSep)
+	case QUESTION_TYPE_RESPONSIVE_TABLE:
+		return processResponseForResponsiveTable(question, response, questionOptionSep)
 	case QUESTION_TYPE_MATRIX:
 		return processResponseForMatrix(question, response, questionOptionSep)
 	case QUESTION_TYPE_CLOZE:
@@ -453,6 +455,23 @@ func handleInputList(questionKey string, responseSlotDefs []ResponseDef, respons
 	return responseCols
 }
 
+func processResponseForResponsiveTable(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
+	responseCols := map[string]interface{}{}
+
+	for _, rSlot := range question.Responses {
+		// Prepare columns:
+		slotKey := question.ID + questionOptionSep + rSlot.ID
+
+		rItem := retrieveResponseItemByShortKey(response, rSlot.ID)
+		responseCols[slotKey] = ""
+		if rItem != nil {
+			responseCols[slotKey] = rItem.Value
+		}
+	}
+
+	return responseCols
+}
+
 func processResponseForMatrix(question SurveyQuestion, response *types.SurveyItemResponse, questionOptionSep string) map[string]interface{} {
 	responseCols := map[string]interface{}{}
 
@@ -625,7 +644,7 @@ func retrieveResponseItem(response *types.SurveyItemResponse, fullKey string) *t
 		found := false
 		for _, item := range result.Items {
 			if item.Key == key {
-				result = &item
+				result = item
 				found = true
 				break
 			}
@@ -651,13 +670,13 @@ func retrieveResponseItemByShortKey(response *types.SurveyItemResponse, shortKey
 
 	for _, item := range result.Items {
 		if item.Key == shortKey {
-			return &item
+			return item
 		}
 	}
 
 	for _, item := range result.Items {
 		res := retrieveResponseItemByShortKey(&types.SurveyItemResponse{
-			Response: &item,
+			Response: item,
 		}, shortKey)
 		if res != nil {
 			return res

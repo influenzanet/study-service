@@ -8,6 +8,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 )
 
 func (s *StudyTimerService) StudyTimerEvent() {
@@ -28,32 +29,32 @@ func (s *StudyTimerService) StudyTimerEvent() {
 			logger.Info.Printf("performing timer event for study: %s - %s", instance.InstanceID, study.Key)
 
 			s.UpdateStudyStats(instance.InstanceID, study.Key)
-			s.UpdateParticipantStates(instance.InstanceID, study.Key)
+			s.UpdateParticipantStates(instance.InstanceID, study)
 		}
 	}
 }
 
-func (s *StudyTimerService) UpdateParticipantStates(instanceID string, studyKey string) {
-	rules, err := s.studyDBService.GetStudyRules(instanceID, studyKey)
+func (s *StudyTimerService) UpdateParticipantStates(instanceID string, study types.Study) {
+	rules, err := s.studyDBService.GetStudyRules(instanceID, study.Key)
 	if err != nil {
-		logger.Error.Printf("ERROR in UpdateParticipantStates.GetStudyRules (%s, %s): %v", instanceID, studyKey, err)
+		logger.Error.Printf("ERROR in UpdateParticipantStates.GetStudyRules (%s, %s): %v", instanceID, study.Key, err)
 		return
 	}
 
 	studyEvent := types.StudyEvent{
 		Type:       "TIMER",
 		InstanceID: instanceID,
-		StudyKey:   studyKey,
+		StudyKey:   study.Key,
 	}
 
 	if !s.hasRuleForEventType(rules, studyEvent) {
-		logger.Info.Printf("UpdateParticipantStates (%s, %s): has no timer related rules, skipped.", instanceID, studyKey)
+		logger.Info.Printf("UpdateParticipantStates (%s, %s): has no timer related rules, skipped.", instanceID, study.Key)
 		return
 	}
 
 	ctx := context.Background()
-	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(ctx, instanceID, studyKey, types.STUDY_STATUS_ACTIVE, s.getAndUpdateParticipantState, rules, studyEvent); err != nil {
-		logger.Error.Printf("ERROR in UpdateParticipantStates.FindAndExecuteOnParticipantsStates (%s, %s): %v", instanceID, studyKey, err)
+	if err := s.studyDBService.FindAndExecuteOnParticipantsStates(ctx, instanceID, study.Key, types.STUDY_STATUS_ACTIVE, s.getAndUpdateParticipantState, rules, studyEvent, study); err != nil {
+		logger.Error.Printf("ERROR in UpdateParticipantStates.FindAndExecuteOnParticipantsStates (%s, %s): %v", instanceID, study.Key, err)
 	}
 }
 
@@ -64,7 +65,7 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	studyKey string,
 	args ...interface{},
 ) (err error) {
-	if len(args) != 2 {
+	if len(args) != 3 {
 		err = errors.New("unexpected number of args")
 		logger.Error.Printf("ERROR in getAndUpdateParticipantState: %v", err)
 		return
@@ -73,6 +74,14 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 	studyEvent := args[1].(types.StudyEvent)
 	studyEvent.StudyKey = studyKey
 	studyEvent.InstanceID = instanceID
+	study := args[2].(types.Study)
+
+	participantID2, err := utils.ProfileIDtoParticipantID(pState.ParticipantID, s.studyGlobalSecret, study.SecretKey, study.Configs.IdMappingMethod)
+	if err != nil {
+		logger.Error.Printf("unexpected error when computing confidential participant id: %v", err)
+		return
+	}
+	studyEvent.ParticipantIDForConfidentialResponses = participantID2
 
 	actionState := studyengine.ActionData{
 		PState:          pState,
@@ -89,8 +98,12 @@ func (s *StudyTimerService) getAndUpdateParticipantState(
 			continue
 		}
 	}
+
 	// save state back to DB
-	_, err = studyDBServ.SaveParticipantState(instanceID, studyKey, pState)
+	_, err = studyDBServ.SaveParticipantState(instanceID, studyKey, actionState.PState)
+	if err != nil {
+		logger.Error.Printf("unexpected error when saving participant state: %v", err)
+	}
 
 	for _, report := range actionState.ReportsToCreate {
 		report.ResponseID = "TIMER"

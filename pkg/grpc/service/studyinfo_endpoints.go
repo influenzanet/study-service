@@ -276,8 +276,9 @@ func (s *studyServiceServer) GetParticipantMessages(ctx context.Context, req *ap
 			continue
 		}
 		resp.Messages = append(resp.Messages, &api.StudyMessage{
-			Id:   message.ID,
-			Type: message.Type,
+			Id:      message.ID,
+			Type:    message.Type,
+			Payload: pState.Flags,
 		})
 	}
 	return resp, nil

@@ -45,7 +45,7 @@ func findResponseObject(surveyItem *types.SurveyItemResponse, responseKey string
 		for _, item := range responseItem.Items {
 			if item.Key == k {
 				found = true
-				responseItem = &item
+				responseItem = item
 				break
 			}
 		}
@@ -94,14 +94,14 @@ func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[s
 
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Error.Printf("unexpected error: %v", err)
+		logger.Debug.Printf("unexpected error: %v", err)
 		return nil, err
 	}
 
 	var res map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		logger.Error.Printf("unexpected error: %v", err)
+		logger.Debug.Printf("unexpected error: %v", err)
 		return nil, err
 	}
 	return res, nil

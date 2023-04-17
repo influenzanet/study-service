@@ -9,11 +9,11 @@ import (
 	"github.com/influenzanet/study-service/pkg/utils"
 )
 
-func surveyDefToVersionPreview(original *types.SurveyVersion, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
+func surveyDefToVersionPreview(original *types.Survey, prefLang string, includeItemNames []string, excludeItemNames []string) SurveyVersionPreview {
 	sp := SurveyVersionPreview{
 		VersionID:   original.VersionID,
 		Published:   original.Published,
-		Unpublished: original.UnPublished,
+		Unpublished: original.Unpublished,
 		Questions:   []SurveyQuestion{},
 	}
 
@@ -101,6 +101,9 @@ func getTitleComponent(question *types.SurveyItem) *types.ItemComponent {
 }
 
 func getPreviewText(item *types.ItemComponent, lang string) (string, error) {
+	if lang == "ignored" {
+		return "", nil
+	}
 	if item == nil {
 		return "", errors.New("getPreviewText: item nil")
 	}
@@ -519,6 +522,61 @@ func mapToResponseDef(rItem *types.ItemComponent, parentKey string, lang string)
 						option.OptionType = OPTION_TYPE_RADIO
 						currentResponseDef.Options = append(currentResponseDef.Options, option)
 					}
+				}
+				responses = append(responses, currentResponseDef)
+			}
+		}
+		return responses
+	case "responsiveMatrix":
+		responses := []ResponseDef{}
+
+		var columns *types.ItemComponent
+		for _, item := range rItem.Items {
+			if item.Role == "columns" {
+				columns = &item
+				break
+			}
+			continue
+		}
+		if columns == nil {
+			logger.Debug.Printf("mapToResponseDef: responsiveMatrix - columns not found in %v", rItem)
+			return responses
+		}
+
+		var rows *types.ItemComponent
+		for _, item := range rItem.Items {
+			if item.Role == "rows" {
+				rows = &item
+				break
+			}
+			continue
+		}
+		if rows == nil {
+			logger.Debug.Printf("mapToResponseDef: responsiveMatrix - rows not found in %v", rItem)
+			return responses
+		}
+
+		for _, row := range rows.Items {
+			if row.Role == "category" {
+				// ignore category rows
+				continue
+			}
+			rowLabel, err := getPreviewText(&row, lang)
+			if err != nil {
+				logger.Debug.Printf("mapToResponseDef: row label not found for: %v, %v", row, err)
+			}
+
+			for _, col := range columns.Items {
+				slotKey := row.Key + "-" + col.Key
+
+				colLabel, err := getPreviewText(&col, lang)
+				if err != nil {
+					logger.Debug.Printf("mapToResponseDef: column label not found for: %v, %v", col, err)
+				}
+				currentResponseDef := ResponseDef{
+					ID:           slotKey,
+					ResponseType: QUESTION_TYPE_RESPONSIVE_TABLE,
+					Label:        rowLabel + " || " + colLabel,
 				}
 				responses = append(responses, currentResponseDef)
 			}

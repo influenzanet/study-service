@@ -6,20 +6,20 @@ import (
 )
 
 type SurveyItem struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Key         string             `bson:"key"`
-	Follows     []string           `bson:"follows,omitempty"`
-	Condition   *Expression        `bson:"condition,omitempty"`
-	Priority    float32            `bson:"priority,omitempty"`
-	Version     int32              `bson:"version,omitempty"`
-	VersionTags []string           `bson:"versionTags,omitempty"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Key       string             `bson:"key"`
+	Follows   []string           `bson:"follows,omitempty"`
+	Condition *Expression        `bson:"condition,omitempty"`
+	Priority  float32            `bson:"priority,omitempty"`
+
+	Metadata map[string]string `bson:"metadata,omitempty"`
 
 	// Question group attributes ->
 	Items           []SurveyItem `bson:"items,omitempty"`
 	SelectionMethod *Expression  `bson:"selectionMethod,omitempty"`
 
 	// Question attributes ->
-	Type             string         `bson:"type,omitempty"`
+	Type             string         `bson:"type,omitempty"` // Specify some special types e.g. 'pageBreak','surveyEnd'
 	Components       *ItemComponent `bson:"components,omitempty"`
 	Validations      []Validation   `bson:"validations,omitempty"`
 	ConfidentialMode string         `bson:"confidentialMode,omitempty"`
@@ -46,8 +46,7 @@ func (s SurveyItem) ToAPI() *api.SurveyItem {
 		Follows:          s.Follows,
 		Condition:        s.Condition.ToAPI(),
 		Priority:         s.Priority,
-		Version:          s.Version,
-		VersionTags:      s.VersionTags,
+		Metadata:         s.Metadata,
 		Items:            items,
 		SelectionMethod:  s.SelectionMethod.ToAPI(),
 		Type:             s.Type,
@@ -79,8 +78,7 @@ func SurveyItemFromAPI(s *api.SurveyItem) SurveyItem {
 		Follows:          s.Follows,
 		Condition:        ExpressionFromAPI(s.Condition),
 		Priority:         s.Priority,
-		Version:          s.Version,
-		VersionTags:      s.VersionTags,
+		Metadata:         s.Metadata,
 		Items:            items,
 		SelectionMethod:  ExpressionFromAPI(s.SelectionMethod),
 		Type:             s.Type,
