@@ -373,7 +373,8 @@ func (s *studyServiceServer) DeleteResearcherMessages(ctx context.Context, req *
 	}, nil
 }
 
-func (s *studyServiceServer) GetStudiesWithPendingMessages(ctx context.Context, req *api.GetStudiesWithPendingParticipantMessagesReq) (*api.Studies, error) {
+func (s *studyServiceServer) GetStudiesWithPendingParticipantMessages(ctx context.Context,
+	req *api.GetStudiesWithPendingParticipantMessagesReq) (*api.Studies, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
