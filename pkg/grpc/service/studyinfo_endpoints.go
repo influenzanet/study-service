@@ -372,3 +372,28 @@ func (s *studyServiceServer) DeleteResearcherMessages(ctx context.Context, req *
 		Msg:    "deleted",
 	}, nil
 }
+
+func (s *studyServiceServer) GetStudiesWithPendingMessages(ctx context.Context, req *api.GetStudiesWithPendingParticipantMessagesReq) (*api.Studies, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	studies, err := s.studyDBservice.GetStudiesByStatus(req.InstanceId, "active", false)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.Studies{
+		Studies: []*api.Study{},
+	}
+	for _, study := range studies {
+		hasMessage, err := s.studyDBservice.CheckParticipantsForPendingMessages(req.InstanceId, study.Key)
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if hasMessage {
+			resp.Studies = append(resp.Studies, study.ToAPI())
+		}
+	}
+	return resp, nil
+}

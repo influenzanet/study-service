@@ -205,7 +205,7 @@ func (dbService *StudyDBService) CheckParticipantsForPendingMessages(instanceID 
 	defer cancel()
 
 	filter := bson.M{"studyStatus": types.PARTICIPANT_STUDY_STATUS_ACTIVE}
-	filter["messages.scheduledFor"] = bson.M{"$lt": time.Now().Unix()} //funktioniert das??? da messages array
+	filter["messages.scheduledFor"] = bson.M{"$lt": time.Now().Unix()}
 
 	elem := &types.ParticipantState{}
 

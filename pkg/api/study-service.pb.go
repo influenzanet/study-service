@@ -1238,6 +1238,15 @@ func (x *StudyResponseStatistics) GetSurveyResponseCounts() map[string]int64 {
 	return nil
 }
 
+
+type GetStudiesWithPendingParticipantMessagesReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	InstanceId string `protobuf:"bytes,1,opt,name=instance_id,json=instanceId,proto3" json:"instance_id,omitempty"`
+}
+
 type ProfilesWithConditionReq struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
