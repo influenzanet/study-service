@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
 	"testing"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/study-service/pkg/api"
 	"github.com/influenzanet/study-service/pkg/types"
@@ -1269,7 +1269,7 @@ func TestResolvePrefillRules(t *testing.T) {
 			return
 		}
 		if prefill.Responses[0].Key != "s1.1" || prefill.Responses[1].Key != "s2.2" {
-			log.Println(prefill)
+			logger.Debug.Println(prefill)
 			t.Error("unexpected responses")
 		}
 	})
