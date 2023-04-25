@@ -1,5 +1,16 @@
 # Changelog
 
+## ????
+
+### Added
+
+- `ensureDBindexes`: ensures that MongoDB indexes are created on the fields
+  - `surveyDefinition` in the survey collection for all studies,
+  - `scheduledFor` of `messages` object array in the participant collection for all studies.
+- New gRPC endpoints:
+  - `GetStudiesWithPendingParticipantMessages`: get all studies that have pending messages for a participant.
+- Include improved logger, using configurable log levels.
+
 ## [v1.5.0] - 2023-03-20
 
 ### Added
