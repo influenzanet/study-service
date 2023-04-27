@@ -804,3 +804,25 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 		Msg:    "study deleted",
 	}, nil
 }
+
+func (s *studyServiceServer) GetParticipantState(ctx context.Context, req *api.ReportHistoryQuery) (*api.ParticipantState, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" { //TODO: define ParticipantStateQuery
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{
+		constants.USER_ROLE_RESEARCHER,
+		constants.USER_ROLE_ADMIN,
+	}) { //TODO: check if researcher is study member
+		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_STUDY, "permission denied for: "+req.StudyKey)
+		return nil, status.Error(codes.Unauthenticated, "not authorized")
+	}
+
+	participantState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.ParticipantId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, req.StudyKey)
+	return participantState.ToAPI(), nil
+}
