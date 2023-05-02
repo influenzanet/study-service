@@ -805,7 +805,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	}, nil
 }
 
-func (s *studyServiceServer) GetParticipantState(ctx context.Context, req *api.ReportHistoryQuery) (*api.ParticipantState, error) {
+func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *api.GetParticipantStateByIDQuery) (*api.ParticipantState, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" { //TODO: define ParticipantStateQuery
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
@@ -813,9 +813,16 @@ func (s *studyServiceServer) GetParticipantState(ctx context.Context, req *api.R
 	if !token_checks.CheckIfAnyRolesInToken(req.Token, []string{
 		constants.USER_ROLE_RESEARCHER,
 		constants.USER_ROLE_ADMIN,
-	}) { //TODO: check if researcher is study member
-		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_STUDY, "permission denied for: "+req.StudyKey)
-		return nil, status.Error(codes.Unauthenticated, "not authorized")
+	}) {
+		study, err := s.studyDBservice.GetStudyByStudyKey(req.Token.InstanceId, req.StudyKey)
+		if err != nil {
+			logger.Debug.Printf("unexpected error: %v", err)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if !utils.CheckIfMember(req.Token.Id, study.Members, []string{}) {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_STUDY, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Unauthenticated, "not authorized")
+		}
 	}
 
 	participantState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.ParticipantId)
