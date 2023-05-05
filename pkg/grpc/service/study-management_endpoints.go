@@ -805,7 +805,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	}, nil
 }
 
-func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *api.GetParticipantStateByIDQuery) (*api.ParticipantState, error) {
+func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *api.ParticipantStateByIDQuery) (*api.ParticipantState, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" { //TODO: define ParticipantStateQuery
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}

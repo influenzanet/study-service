@@ -63,6 +63,7 @@ type StudyServiceApiClient interface {
 	RemoveStudyMember(ctx context.Context, in *StudyMemberReq, opts ...grpc.CallOption) (*Study, error)
 	GetResearcherNotificationSubscriptions(ctx context.Context, in *GetResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
 	UpdateResearcherNotificationSubscriptions(ctx context.Context, in *UpdateResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
+	GetStudiesWithPendingParticipantMessages(ctx context.Context, in *GetStudiesWithPendingParticipantMessagesReq, opts ...grpc.CallOption) (*Studies, error)
 	SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyStatus(ctx context.Context, in *StudyStatusReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyProps(ctx context.Context, in *StudyPropsReq, opts ...grpc.CallOption) (*Study, error)
@@ -79,6 +80,7 @@ type StudyServiceApiClient interface {
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 	StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error)
+	GetParticipantStateByID(ctx context.Context, in *ParticipantStateByIDQuery, opts ...grpc.CallOption) (*ParticipantState, error)
 	StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error)
 	StreamParticipantFileInfos(ctx context.Context, in *FileInfoQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantFileInfosClient, error)
 	GetConfidentialResponses(ctx context.Context, in *ConfidentialResponsesQuery, opts ...grpc.CallOption) (*ConfidentialResponses, error)
@@ -433,6 +435,15 @@ func (c *studyServiceApiClient) UpdateResearcherNotificationSubscriptions(ctx co
 	return out, nil
 }
 
+func (c *studyServiceApiClient) GetStudiesWithPendingParticipantMessages(ctx context.Context, in *GetStudiesWithPendingParticipantMessagesReq, opts ...grpc.CallOption) (*Studies, error) {
+	out := new(Studies)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetStudiesWithPendingParticipantMessages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error) {
 	out := new(Study)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/SaveStudyRules", in, out, opts...)
@@ -612,6 +623,15 @@ func (x *studyServiceApiStreamParticipantStatesClient) Recv() (*ParticipantState
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *studyServiceApiClient) GetParticipantStateByID(ctx context.Context, in *ParticipantStateByIDQuery, opts ...grpc.CallOption) (*ParticipantState, error) {
+	out := new(ParticipantState)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetParticipantStateByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *studyServiceApiClient) StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error) {
@@ -867,6 +887,7 @@ type StudyServiceApiServer interface {
 	RemoveStudyMember(context.Context, *StudyMemberReq) (*Study, error)
 	GetResearcherNotificationSubscriptions(context.Context, *GetResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
 	UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
+	GetStudiesWithPendingParticipantMessages(context.Context, *GetStudiesWithPendingParticipantMessagesReq) (*Studies, error)
 	SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error)
 	SaveStudyStatus(context.Context, *StudyStatusReq) (*Study, error)
 	SaveStudyProps(context.Context, *StudyPropsReq) (*Study, error)
@@ -883,6 +904,7 @@ type StudyServiceApiServer interface {
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 	StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error
+	GetParticipantStateByID(context.Context, *ParticipantStateByIDQuery) (*ParticipantState, error)
 	StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error
 	StreamParticipantFileInfos(*FileInfoQuery, StudyServiceApi_StreamParticipantFileInfosServer) error
 	GetConfidentialResponses(context.Context, *ConfidentialResponsesQuery) (*ConfidentialResponses, error)
@@ -994,6 +1016,9 @@ func (UnimplementedStudyServiceApiServer) GetResearcherNotificationSubscriptions
 func (UnimplementedStudyServiceApiServer) UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResearcherNotificationSubscriptions not implemented")
 }
+func (UnimplementedStudyServiceApiServer) GetStudiesWithPendingParticipantMessages(context.Context, *GetStudiesWithPendingParticipantMessagesReq) (*Studies, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStudiesWithPendingParticipantMessages not implemented")
+}
 func (UnimplementedStudyServiceApiServer) SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStudyRules not implemented")
 }
@@ -1038,6 +1063,9 @@ func (UnimplementedStudyServiceApiServer) StreamStudyResponses(*SurveyResponseQu
 }
 func (UnimplementedStudyServiceApiServer) StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamParticipantStates not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetParticipantStateByID(context.Context, *ParticipantStateByIDQuery) (*ParticipantState, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetParticipantStateByID not implemented")
 }
 func (UnimplementedStudyServiceApiServer) StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamReportHistory not implemented")
@@ -1663,6 +1691,24 @@ func _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler(srv inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_GetStudiesWithPendingParticipantMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStudiesWithPendingParticipantMessagesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetStudiesWithPendingParticipantMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetStudiesWithPendingParticipantMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetStudiesWithPendingParticipantMessages(ctx, req.(*GetStudiesWithPendingParticipantMessagesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_SaveStudyRules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StudyRulesReq)
 	if err := dec(in); err != nil {
@@ -1937,6 +1983,24 @@ type studyServiceApiStreamParticipantStatesServer struct {
 
 func (x *studyServiceApiStreamParticipantStatesServer) Send(m *ParticipantState) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _StudyServiceApi_GetParticipantStateByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ParticipantStateByIDQuery)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetParticipantStateByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetParticipantStateByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetParticipantStateByID(ctx, req.(*ParticipantStateByIDQuery))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _StudyServiceApi_StreamReportHistory_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -2229,6 +2293,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler,
 		},
 		{
+			MethodName: "GetStudiesWithPendingParticipantMessages",
+			Handler:    _StudyServiceApi_GetStudiesWithPendingParticipantMessages_Handler,
+		},
+		{
 			MethodName: "SaveStudyRules",
 			Handler:    _StudyServiceApi_SaveStudyRules_Handler,
 		},
@@ -2279,6 +2347,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStudyResponseStatistics",
 			Handler:    _StudyServiceApi_GetStudyResponseStatistics_Handler,
+		},
+		{
+			MethodName: "GetParticipantStateByID",
+			Handler:    _StudyServiceApi_GetParticipantStateByID_Handler,
 		},
 		{
 			MethodName: "GetConfidentialResponses",
