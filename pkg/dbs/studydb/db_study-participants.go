@@ -179,6 +179,7 @@ func (dbService *StudyDBService) CreateMessageScheduledForIndex(instanceID strin
 		ctx, mongo.IndexModel{
 			Keys: bson.D{
 				{Key: "messages.scheduledFor", Value: 1},
+				{Key: "studyStatus", Value: 1},
 			},
 		},
 	)
