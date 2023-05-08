@@ -196,7 +196,7 @@ func (dbService *StudyDBService) CreateMessageScheduledForIndexForAllStudies(ins
 	for _, study := range studies {
 		err = dbService.CreateMessageScheduledForIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating survey definition indexes: %v", err)
+			logger.Error.Printf("unexpected error when creating message schedule indexes: %v", err)
 		}
 	}
 }
