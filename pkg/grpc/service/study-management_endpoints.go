@@ -825,6 +825,42 @@ func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *a
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, req.StudyKey)
+	//TODO change log event
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, "GET PARTICIPANT STATE", req.StudyKey)
 	return participantState.ToAPI(), nil
+}
+
+func (s *studyServiceServer) GetParticipantStatesByEnteredAt(ctx context.Context, req *api.ParticipantStateByIDQuery) (*api.ParticipantStates, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+	from := int64(0)
+	until := int64(0)
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	participantStates, err := s.studyDBservice.FindParticipantsByEnteredAt(req.Token.InstanceId, req.StudyKey, from, until)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	resp := &api.ParticipantStates{
+		ParticipantStates: []*api.ParticipantState{},
+	}
+	for _, participantState := range participantStates {
+		state := participantState.ToAPI()
+		resp.ParticipantStates = append(resp.ParticipantStates, state)
+	}
+
+	//TODO change Log event
+	//s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, req.StudyKey)
+	return resp, nil
 }

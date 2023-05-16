@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// findParticipantsByStudyStatusDB retrieve all participant states from a study by status (e.g. active)
+// findParticipantsByStudyStatusDB retrieves all participant states from a study by status (e.g. active)
 func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
@@ -27,6 +27,56 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 			primitive.E{Key: "participantID", Value: 1}, // {"secretKey", 1},
 		}
 		opts.Projection = projection
+	}
+
+	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
+		ctx,
+		filter,
+		&opts,
+	)
+
+	if err != nil {
+		return pStates, err
+	}
+	defer cur.Close(ctx)
+
+	pStates = []types.ParticipantState{}
+	for cur.Next(ctx) {
+		var result types.ParticipantState
+		err := cur.Decode(&result)
+		if err != nil {
+			return pStates, err
+		}
+
+		pStates = append(pStates, result)
+	}
+	if err := cur.Err(); err != nil {
+		return pStates, err
+	}
+
+	return pStates, nil
+}
+
+// findParticipantsByEnteredAtDB retrieves all participant states that entered a study between timestamp from and timestamp until
+func (dbService *StudyDBService) FindParticipantsByEnteredAt(instanceID string, studyKey string, from int64, until int64) (pStates []types.ParticipantState, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{}
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"enteredAt": bson.M{"$gt": from}},
+			bson.M{"enteredAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["enteredAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["enteredAt"] = bson.M{"$lt": until}
+	}
+
+	batchSize := int32(32)
+	opts := options.FindOptions{
+		BatchSize: &batchSize,
 	}
 
 	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
