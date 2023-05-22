@@ -3,12 +3,12 @@ package studydb
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"testing"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -28,23 +28,23 @@ func setupTestDBService() {
 	password := os.Getenv("STUDY_DB_PASSWORD")
 	prefix := os.Getenv("STUDY_DB_CONNECTION_PREFIX") // Used in test mode
 	if connStr == "" || username == "" || password == "" {
-		log.Fatal("Couldn't read DB credentials.")
+		logger.Error.Fatal("Couldn't read DB credentials.")
 	}
 	URI := fmt.Sprintf(`mongodb%s://%s:%s@%s`, prefix, username, password, connStr)
 
 	var err error
 	Timeout, err := strconv.Atoi(os.Getenv("DB_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_TIMEOUT: " + err.Error())
+		logger.Error.Fatal("DB_TIMEOUT: " + err.Error())
 	}
 	IdleConnTimeout, err := strconv.Atoi(os.Getenv("DB_IDLE_CONN_TIMEOUT"))
 	if err != nil {
-		log.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
+		logger.Error.Fatal("DB_IDLE_CONN_TIMEOUT" + err.Error())
 	}
 	mps, err := strconv.Atoi(os.Getenv("DB_MAX_POOL_SIZE"))
 	MaxPoolSize := uint64(mps)
 	if err != nil {
-		log.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
+		logger.Error.Fatal("DB_MAX_POOL_SIZE: " + err.Error())
 	}
 	testDBService = NewStudyDBService(
 		types.DBConfig{
@@ -58,13 +58,13 @@ func setupTestDBService() {
 }
 
 func dropTestDB() {
-	log.Println("Drop test database: studydb package")
+	logger.Info.Println("Drop test database: studydb package")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err := testDBService.DBClient.Database(testDBNamePrefix + testInstanceID + "_studyDB").Drop(ctx)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error.Fatal(err)
 	}
 }
 

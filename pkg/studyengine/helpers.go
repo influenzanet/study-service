@@ -2,10 +2,13 @@ package studyengine
 
 import (
 	"bytes"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -74,14 +77,28 @@ type ExternalEventPayload struct {
 	Response         types.SurveyResponse   `json:"surveyResponses"`
 }
 
-func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[string]interface{}, error) {
+type ClientConfig struct {
+	APIKey     string
+	mTLSConfig *types.MutualTLSConfig
+	Timeout    time.Duration
+}
+
+func runHTTPcall(url string, payload ExternalEventPayload, config ClientConfig) (map[string]interface{}, error) {
 	json_data, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
 
+	transport, err := getTransportWithMTLSConfig(config.mTLSConfig)
+	if err != nil {
+		logger.Error.Printf("unexpected error: %v", err)
+	}
+
 	client := &http.Client{
-		Timeout: time.Second * 30,
+		Timeout: config.Timeout,
+	}
+	if transport != nil {
+		client.Transport = transport
 	}
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(json_data))
@@ -89,7 +106,9 @@ func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[s
 		logger.Error.Printf("unexpected error: %v", err)
 		return nil, err
 	}
-	req.Header.Set("Api-Key", APIkey)
+	if config.APIKey != "" {
+		req.Header.Set("Api-Key", config.APIKey)
+	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
@@ -105,4 +124,34 @@ func runHTTPcall(url string, APIkey string, payload ExternalEventPayload) (map[s
 		return nil, err
 	}
 	return res, nil
+}
+
+func getTransportWithMTLSConfig(mTLSConfig *types.MutualTLSConfig) (*http.Transport, error) {
+	if mTLSConfig == nil {
+		return nil, nil
+	}
+
+	// Load client certificate and key
+	cert, err := tls.LoadX509KeyPair(mTLSConfig.CertFile, mTLSConfig.KeyFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// Load CA certificate
+	caCert, err := os.ReadFile(mTLSConfig.CAFile)
+	if err != nil {
+		panic(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Create TLS client configuration
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      caCertPool,
+	}
+
+	return &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}, nil
 }

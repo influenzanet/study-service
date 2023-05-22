@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/internal/config"
@@ -45,7 +44,7 @@ func main() {
 		conf.PersistentStoreConfig,
 		conf.ExternalServices,
 	); err != nil {
-		log.Fatal(err)
+		logger.Error.Fatal(err)
 	}
 }
 

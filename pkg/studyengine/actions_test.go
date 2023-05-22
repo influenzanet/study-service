@@ -580,6 +580,22 @@ func TestReportActions(t *testing.T) {
 		}
 	})
 
+	t.Run("UPDATE_REPORT_DATA test for expression argument missing", func(t *testing.T) {
+		action := types.Expression{
+			Name: "UPDATE_REPORT_DATA",
+			Data: []types.ExpressionArg{
+				{DType: "str", Str: "key2"},
+				{DType: "str", Str: "d1"},
+				{DType: "exp"},
+			},
+		}
+		_, err := ActionEval(action, actionData, event, testActionConfig)
+		if err == nil {
+			t.Error("should return an error about missing expression argument")
+			return
+		}
+	})
+
 	t.Run("UPDATE_REPORT_DATA update existing report existing attribute", func(t *testing.T) {
 		action := types.Expression{
 			Name: "UPDATE_REPORT_DATA",

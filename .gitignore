@@ -4,3 +4,4 @@ run.sh
 tools/db_exporter/exports
 test.env
 pkg/exporter/test_files/error
+*.DS_Store

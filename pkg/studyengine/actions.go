@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/coneno/logger"
@@ -842,8 +843,8 @@ func removeAllConfidentialResponses(action types.Expression, oldState ActionData
 func externalEventHandler(action types.Expression, oldState ActionData, event types.StudyEvent, configs ActionConfigs) (newState ActionData, err error) {
 	newState = oldState
 
-	if len(action.Data) != 1 {
-		msg := "externalEventHandler must have exactly 1 argument"
+	if len(action.Data) < 1 {
+		msg := "externalEventHandler must have at least 1 argument"
 		logger.Error.Printf(msg)
 		return newState, errors.New(msg)
 	}
@@ -868,6 +869,17 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 		return newState, err
 	}
 
+	if len(action.Data) > 1 {
+		arg1, err := EvalContext.expressionArgResolver(action.Data[1])
+		if err != nil {
+			return newState, err
+		}
+
+		route := arg1.(string)
+		route = strings.TrimPrefix(route, "/")
+		serviceConfig.URL = fmt.Sprintf("%s/%s", serviceConfig.URL, route)
+	}
+
 	payload := ExternalEventPayload{
 		ParticipantState: newState.PState,
 		EventType:        event.Type,
@@ -875,11 +887,18 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 		InstanceID:       event.InstanceID,
 		Response:         event.Response,
 	}
-	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
+	clientConf := ClientConfig{
+		APIKey:     serviceConfig.APIKey,
+		Timeout:    time.Duration(serviceConfig.Timeout) * time.Second,
+		mTLSConfig: serviceConfig.MutualTLSConfig,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, payload, clientConf)
 	if err != nil {
 		logger.Error.Printf("error when handling response for '%s': %v", serviceName, err)
 		return newState, err
 	}
+
+	logger.Debug.Printf("%s replied: %v", serviceName, response)
 
 	// if relevant, update participant state:
 	pState, hasKey := response["pState"]

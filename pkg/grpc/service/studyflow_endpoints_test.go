@@ -923,6 +923,11 @@ func TestResolveContextRules(t *testing.T) {
 		t.Errorf("unexpected error: %s", err.Error())
 		return
 	}
+
+	testParticipant := types.ParticipantState{
+		ParticipantID: pid1,
+	}
+
 	surveyResps := []types.SurveyResponse{
 		// mix participants and order for submittedAt
 		{Key: "s2", ParticipantID: pid1, SubmittedAt: time.Now().Add(-32 * time.Hour * 24).Unix()},
@@ -952,7 +957,7 @@ func TestResolveContextRules(t *testing.T) {
 	}
 
 	t.Run("resolve with nil", func(t *testing.T) {
-		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, nil)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, testParticipant, nil)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -965,7 +970,7 @@ func TestResolveContextRules(t *testing.T) {
 		testRules := types.SurveyContextDef{
 			Mode: &types.ExpressionArg{Str: "test"},
 		}
-		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, testParticipant, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -983,7 +988,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, testParticipant, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -1000,7 +1005,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, testParticipant, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}
@@ -1018,7 +1023,7 @@ func TestResolveContextRules(t *testing.T) {
 				}},
 			},
 		}
-		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, pid1, &testRules)
+		sCtx, err := s.resolveContextRules(testInstanceID, testStudyKey, testParticipant, &testRules)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err.Error())
 		}

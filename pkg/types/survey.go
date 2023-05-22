@@ -6,9 +6,10 @@ import (
 )
 
 const (
-	SURVEY_AVAILABLE_FOR_PUBLIC                 = "public"
-	SURVEY_AVAILABLE_FOR_TEMPORARY_PARTICIPANTS = "temporary_participants"
-	SURVEY_AVAILABLE_FOR_ACTIVE_PARTICIPANTS    = "active_participants"
+	SURVEY_AVAILABLE_FOR_PUBLIC                   = "public"
+	SURVEY_AVAILABLE_FOR_TEMPORARY_PARTICIPANTS   = "temporary_participants"
+	SURVEY_AVAILABLE_FOR_ACTIVE_PARTICIPANTS      = "active_participants"
+	SURVEY_AVAILABLE_FOR_PARTICIPANTS_IF_ASSIGNED = "participants_if_assigned"
 )
 
 type SurveyVersionsJSON struct {

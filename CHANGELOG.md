@@ -1,5 +1,57 @@
 # Changelog
 
+## [v1.5.0] - 2023-03-20
+
+### Added
+
+- New api endpoint `ProfileDeleted`, that can be used to notify a study about the event that a user profile has been deleted. This will trigger the 'LEAVE' study event, mark the participant study status as 'accountDeleted' and remove all confidential data for all the studies the participant is enrolled in.
+
+### Changed
+
+- External event handlers and external expression eval:
+  - added the possibility to define a custom timeout for the external call
+  - external service can be configured to use mutual TLS authentication
+  - expressions can use a second argument to define the API route (if defined, the route will be appended to the base URL)
+- When participant is created during the `ENTER` study event, the `enteredAt` timestamp is now set to the middle of the day to improve privacy.
+- Improvement in logging
+
+## [v1.4.0] - 2023-02-12
+
+- [PR15](https://github.com/influenzanet/study-service/compare/master...exporter-changes)
+
+### Added
+
+- New study expression `parseValueAsNum`: accepts one argument and attempts to parse the value of this resolved argument as float64. If value is already number, the value is returned. If argument is an expression, it will be first evaluated. Strings will be attempted to be parsed. Boolean value and strings that cannot be parsed as a number return an error.
+- Implement new option types `OPTION_TYPE_EMDEBBED_CLOZE_XXX` for cloze options within single choice and multiple choice questions:
+  - `OPTION_TYPE_EMDEBBED_CLOZE_TEXT_INPUT` for text,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_DATE_INPUT` for dates,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_NUMBER_INPUT` for numbers,
+  - `OPTION_TYPE_EMDEBBED_CLOZE_DROPDOWN` for dropdown.
+- Add embedded cloze input options of single choice and multiple choice questions to JSON file of survey info.
+- Slots for embedded cloze option types within single choice and multiple choice questions are now always generated in data exorter regardless of the presence of answers in response.
+
+### Changed
+
+- ExpArg resolver, when trying to resolve an expression type, checking for nil values to prevent a crash in case the study rules contain wrong arguments.
+- Ignore confidential questions in data exporter (they have separate export path)
+- Update exporter documentation:
+  - add info about column `session`
+  - add links to sections
+  - add info about responsive matrix question types
+  - enhance clarity and readability of text
+  - update info about column `version`
+- Update Mapping of survey response to survey defintion. Mapping is performed by the following steps:
+  - search for same version IDs, if not found
+  - search for nearest version with published date < response submission date, with either response submission date < unpublished date or version is still published, if not found,
+  - search for nearest version with published date > response submission date, if not found
+  - take nearest version with published date < response submission date.
+
+## [v1.3.1] - 2022-11-16
+
+### Changed
+
+- Data exporter should now correctly include the context columns when exporting as JSON file.
+
 ## [v1.3.0] - 2022-10-29
 
 ### BREAKING CHANGE

@@ -1,10 +1,10 @@
 package studydb
 
 import (
-	"log"
 	"testing"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -123,7 +123,7 @@ func TestDbFindSurveyResponseForParticipant(t *testing.T) {
 		if len(responses) != 2 {
 			t.Errorf("unexpected number of responses found: %d", len(responses))
 			for _, r := range responses {
-				log.Println(r)
+				logger.Error.Println(r)
 			}
 			return
 		}

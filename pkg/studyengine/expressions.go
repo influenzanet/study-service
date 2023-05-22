@@ -112,6 +112,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
+	case "parseValueAsNum":
+		val, err = evalCtx.parseValueAsNum(expression)
 	case "externalEventEval":
 		val, err = evalCtx.externalEventEval(expression)
 	default:
@@ -127,6 +129,9 @@ func (ctx EvalContext) expressionArgResolver(arg types.ExpressionArg) (interface
 	case "num":
 		return arg.Num, nil
 	case "exp":
+		if arg.Exp == nil {
+			return nil, errors.New("missing argument - expected expression, but was empty")
+		}
 		return ExpressionEval(*arg.Exp, ctx)
 	case "str":
 		return arg.Str, nil
@@ -1010,7 +1015,7 @@ func (ctx EvalContext) gt(exp types.Expression) (val bool, err error) {
 		}
 		return arg1Val > arg2Val, nil
 	default:
-		return val, fmt.Errorf("I don't know about type %T", arg1Val)
+		return val, fmt.Errorf("unexpected type %T", arg1Val)
 	}
 }
 
@@ -1194,9 +1199,32 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 	return
 }
 
-func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{}, err error) {
+func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err error) {
 	if len(exp.Data) != 1 {
 		return val, errors.New("should have one argument")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+
+	if reflect.TypeOf(arg1).Kind() == reflect.Float64 {
+		return arg1.(float64), nil
+	}
+
+	if reflect.TypeOf(arg1).Kind() != reflect.String {
+		return val, errors.New("argument 1 should be resolved as type string")
+	}
+
+	val, err = strconv.ParseFloat(arg1.(string), 64)
+
+	return
+}
+
+func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{}, err error) {
+	if len(exp.Data) < 1 {
+		return val, errors.New("should have at least one argument")
 	}
 
 	serviceName, err := ctx.mustGetStrValue(exp.Data[0])
@@ -1210,6 +1238,17 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 		return val, err
 	}
 
+	if len(exp.Data) > 1 {
+		arg1, err := ctx.expressionArgResolver(exp.Data[1])
+		if err != nil {
+			return val, err
+		}
+
+		route := arg1.(string)
+		route = strings.TrimPrefix(route, "/")
+		serviceConfig.URL = fmt.Sprintf("%s/%s", serviceConfig.URL, route)
+	}
+
 	payload := ExternalEventPayload{
 		ParticipantState: ctx.ParticipantState,
 		EventType:        ctx.Event.Type,
@@ -1217,11 +1256,19 @@ func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{},
 		InstanceID:       ctx.Event.InstanceID,
 		Response:         ctx.Event.Response,
 	}
-	response, err := runHTTPcall(serviceConfig.URL, serviceConfig.APIKey, payload)
+
+	clientConf := ClientConfig{
+		APIKey:     serviceConfig.APIKey,
+		Timeout:    time.Duration(serviceConfig.Timeout) * time.Second,
+		mTLSConfig: serviceConfig.MutualTLSConfig,
+	}
+	response, err := runHTTPcall(serviceConfig.URL, payload, clientConf)
 	if err != nil {
 		logger.Error.Println(err)
 		return val, err
 	}
+
+	logger.Debug.Printf("%s replied: %v", serviceName, response)
 
 	// if relevant, update participant state:
 	value := response["value"]

@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 )
 
@@ -152,6 +153,13 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 	if err != nil {
 		return err
 	}
+	if currentVersion.VersionID != rawResp.VersionID && currentVersion.VersionID != "" {
+		parsedResponse.Version = rawResp.VersionID + " (" + currentVersion.VersionID + ")"
+		if rawResp.VersionID == "" {
+			parsedResponse.Version = currentVersion.VersionID
+			logger.Warning.Printf("VersionID of used survey is empty, only mapped versionID is displayed.")
+		}
+	}
 
 	if rp.shortQuestionKeys {
 		for i, r := range rawResp.Responses {
@@ -250,6 +258,16 @@ func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *Inclu
 	for _, resp := range rp.responses {
 
 		currentResp := rp.getFixedColumns(resp)
+
+		contextCols := rp.contextColNames
+		for _, colName := range contextCols {
+			v, ok := resp.Context[colName]
+			if !ok {
+				currentResp[colName] = ""
+			} else {
+				currentResp[colName] = v
+			}
+		}
 
 		responseCols := rp.responseColNames
 		for _, colName := range responseCols {
