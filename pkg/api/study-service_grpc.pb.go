@@ -80,6 +80,7 @@ type StudyServiceApiClient interface {
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
 	StreamParticipantStates(ctx context.Context, in *ParticipantStateQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantStatesClient, error)
+	GetParticipantStatesWithPagination(ctx context.Context, in *GetPStatesWithPaginationQuery, opts ...grpc.CallOption) (*ParticipantStatesWithPagination, error)
 	GetParticipantStateByID(ctx context.Context, in *ParticipantStateByIDQuery, opts ...grpc.CallOption) (*ParticipantState, error)
 	StreamReportHistory(ctx context.Context, in *ReportHistoryQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamReportHistoryClient, error)
 	StreamParticipantFileInfos(ctx context.Context, in *FileInfoQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamParticipantFileInfosClient, error)
@@ -625,6 +626,15 @@ func (x *studyServiceApiStreamParticipantStatesClient) Recv() (*ParticipantState
 	return m, nil
 }
 
+func (c *studyServiceApiClient) GetParticipantStatesWithPagination(ctx context.Context, in *GetPStatesWithPaginationQuery, opts ...grpc.CallOption) (*ParticipantStatesWithPagination, error) {
+	out := new(ParticipantStatesWithPagination)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetParticipantStatesWithPagination", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) GetParticipantStateByID(ctx context.Context, in *ParticipantStateByIDQuery, opts ...grpc.CallOption) (*ParticipantState, error) {
 	out := new(ParticipantState)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetParticipantStateByID", in, out, opts...)
@@ -904,6 +914,7 @@ type StudyServiceApiServer interface {
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
 	StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error
+	GetParticipantStatesWithPagination(context.Context, *GetPStatesWithPaginationQuery) (*ParticipantStatesWithPagination, error)
 	GetParticipantStateByID(context.Context, *ParticipantStateByIDQuery) (*ParticipantState, error)
 	StreamReportHistory(*ReportHistoryQuery, StudyServiceApi_StreamReportHistoryServer) error
 	StreamParticipantFileInfos(*FileInfoQuery, StudyServiceApi_StreamParticipantFileInfosServer) error
@@ -1063,6 +1074,9 @@ func (UnimplementedStudyServiceApiServer) StreamStudyResponses(*SurveyResponseQu
 }
 func (UnimplementedStudyServiceApiServer) StreamParticipantStates(*ParticipantStateQuery, StudyServiceApi_StreamParticipantStatesServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamParticipantStates not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetParticipantStatesWithPagination(context.Context, *GetPStatesWithPaginationQuery) (*ParticipantStatesWithPagination, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetParticipantStatesWithPagination not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetParticipantStateByID(context.Context, *ParticipantStateByIDQuery) (*ParticipantState, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetParticipantStateByID not implemented")
@@ -1985,6 +1999,24 @@ func (x *studyServiceApiStreamParticipantStatesServer) Send(m *ParticipantState)
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_GetParticipantStatesWithPagination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPStatesWithPaginationQuery)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetParticipantStatesWithPagination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetParticipantStatesWithPagination",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetParticipantStatesWithPagination(ctx, req.(*GetPStatesWithPaginationQuery))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_GetParticipantStateByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ParticipantStateByIDQuery)
 	if err := dec(in); err != nil {
@@ -2347,6 +2379,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStudyResponseStatistics",
 			Handler:    _StudyServiceApi_GetStudyResponseStatistics_Handler,
+		},
+		{
+			MethodName: "GetParticipantStatesWithPagination",
+			Handler:    _StudyServiceApi_GetParticipantStatesWithPagination_Handler,
 		},
 		{
 			MethodName: "GetParticipantStateByID",
