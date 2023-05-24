@@ -830,12 +830,10 @@ func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *a
 	return participantState.ToAPI(), nil
 }
 
-func (s *studyServiceServer) GetParticipantStatesByEnteredAt(ctx context.Context, req *api.ParticipantStateByIDQuery) (*api.ParticipantStates, error) {
+func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Context, req *api.GetPStatesWithPaginationQuery) (*api.ParticipantStatesWithPagination, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
 	}
-	from := int64(0)
-	until := int64(0)
 
 	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
 		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
@@ -847,17 +845,22 @@ func (s *studyServiceServer) GetParticipantStatesByEnteredAt(ctx context.Context
 		}
 	}
 
-	participantStates, err := s.studyDBservice.FindParticipantsByEnteredAt(req.Token.InstanceId, req.StudyKey, from, until)
+	participantStates, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.PageSize, req.Page)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	resp := &api.ParticipantStates{
-		ParticipantStates: []*api.ParticipantState{},
-	}
+	ps := []*api.ParticipantState{}
 	for _, participantState := range participantStates {
 		state := participantState.ToAPI()
-		resp.ParticipantStates = append(resp.ParticipantStates, state)
+		ps = append(ps, state)
+	}
+
+	resp := &api.ParticipantStatesWithPagination{
+		ItemCount: 0,
+		PageCount: 0,
+		Page:      0,
+		Items:     ps,
 	}
 
 	//TODO change Log event

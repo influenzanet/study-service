@@ -57,21 +57,16 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 	return pStates, nil
 }
 
-// findParticipantsByEnteredAtDB retrieves all participant states that entered a study between timestamp from and timestamp until
-func (dbService *StudyDBService) FindParticipantsByEnteredAt(instanceID string, studyKey string, from int64, until int64) (pStates []types.ParticipantState, err error) {
+// findParticipantsByQuery retrieves participants that fulfill criteria of queryString with pagination... TODO: description here
+func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, limit int32, start int32) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
 	filter := bson.M{}
-	if from > 0 && until > 0 {
-		filter["$and"] = bson.A{
-			bson.M{"enteredAt": bson.M{"$gt": from}},
-			bson.M{"enteredAt": bson.M{"$lt": until}},
-		}
-	} else if from > 0 {
-		filter["enteredAt"] = bson.M{"$gt": from}
-	} else if until > 0 {
-		filter["enteredAt"] = bson.M{"$lt": until}
+	err = bson.UnmarshalExtJSON([]byte(queryString), true, &filter)
+	if err != nil {
+		logger.Error.Println("Failed to parse query string:", err)
+		return pStates, err
 	}
 
 	batchSize := int32(32)
