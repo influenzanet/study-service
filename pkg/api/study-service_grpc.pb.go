@@ -63,6 +63,7 @@ type StudyServiceApiClient interface {
 	RemoveStudyMember(ctx context.Context, in *StudyMemberReq, opts ...grpc.CallOption) (*Study, error)
 	GetResearcherNotificationSubscriptions(ctx context.Context, in *GetResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
 	UpdateResearcherNotificationSubscriptions(ctx context.Context, in *UpdateResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error)
+	GetStudiesWithPendingParticipantMessages(ctx context.Context, in *GetStudiesWithPendingParticipantMessagesReq, opts ...grpc.CallOption) (*Studies, error)
 	SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyStatus(ctx context.Context, in *StudyStatusReq, opts ...grpc.CallOption) (*Study, error)
 	SaveStudyProps(ctx context.Context, in *StudyPropsReq, opts ...grpc.CallOption) (*Study, error)
@@ -427,6 +428,15 @@ func (c *studyServiceApiClient) GetResearcherNotificationSubscriptions(ctx conte
 func (c *studyServiceApiClient) UpdateResearcherNotificationSubscriptions(ctx context.Context, in *UpdateResearcherNotificationSubscriptionsReq, opts ...grpc.CallOption) (*NotificationSubscriptions, error) {
 	out := new(NotificationSubscriptions)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/UpdateResearcherNotificationSubscriptions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) GetStudiesWithPendingParticipantMessages(ctx context.Context, in *GetStudiesWithPendingParticipantMessagesReq, opts ...grpc.CallOption) (*Studies, error) {
+	out := new(Studies)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetStudiesWithPendingParticipantMessages", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -867,6 +877,7 @@ type StudyServiceApiServer interface {
 	RemoveStudyMember(context.Context, *StudyMemberReq) (*Study, error)
 	GetResearcherNotificationSubscriptions(context.Context, *GetResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
 	UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error)
+	GetStudiesWithPendingParticipantMessages(context.Context, *GetStudiesWithPendingParticipantMessagesReq) (*Studies, error)
 	SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error)
 	SaveStudyStatus(context.Context, *StudyStatusReq) (*Study, error)
 	SaveStudyProps(context.Context, *StudyPropsReq) (*Study, error)
@@ -993,6 +1004,9 @@ func (UnimplementedStudyServiceApiServer) GetResearcherNotificationSubscriptions
 }
 func (UnimplementedStudyServiceApiServer) UpdateResearcherNotificationSubscriptions(context.Context, *UpdateResearcherNotificationSubscriptionsReq) (*NotificationSubscriptions, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResearcherNotificationSubscriptions not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetStudiesWithPendingParticipantMessages(context.Context, *GetStudiesWithPendingParticipantMessagesReq) (*Studies, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStudiesWithPendingParticipantMessages not implemented")
 }
 func (UnimplementedStudyServiceApiServer) SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveStudyRules not implemented")
@@ -1663,6 +1677,24 @@ func _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler(srv inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_GetStudiesWithPendingParticipantMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStudiesWithPendingParticipantMessagesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).GetStudiesWithPendingParticipantMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/GetStudiesWithPendingParticipantMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).GetStudiesWithPendingParticipantMessages(ctx, req.(*GetStudiesWithPendingParticipantMessagesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_SaveStudyRules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StudyRulesReq)
 	if err := dec(in); err != nil {
@@ -2227,6 +2259,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateResearcherNotificationSubscriptions",
 			Handler:    _StudyServiceApi_UpdateResearcherNotificationSubscriptions_Handler,
+		},
+		{
+			MethodName: "GetStudiesWithPendingParticipantMessages",
+			Handler:    _StudyServiceApi_GetStudiesWithPendingParticipantMessages_Handler,
 		},
 		{
 			MethodName: "SaveStudyRules",

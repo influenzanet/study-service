@@ -2,11 +2,13 @@ package studydb
 
 import (
 	"context"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -167,4 +169,53 @@ func (dbService *StudyDBService) DeleteMessagesFromParticipant(instanceID string
 	}}}
 	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).UpdateOne(ctx, filter, update)
 	return err
+}
+
+func (dbService *StudyDBService) CreateMessageScheduledForIndex(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "messages.scheduledFor", Value: 1},
+				{Key: "studyStatus", Value: 1},
+			},
+		},
+	)
+	return err
+}
+
+func (dbService *StudyDBService) CreateMessageScheduledForIndexForAllStudies(instanceID string) {
+	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
+	if err != nil {
+		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
+		return
+	}
+
+	for _, study := range studies {
+		err = dbService.CreateMessageScheduledForIndex(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating message schedule indexes: %v", err)
+		}
+	}
+}
+
+func (dbService *StudyDBService) CheckParticipantsForPendingMessages(instanceID string, studyKey string) (hasMessage bool, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{"studyStatus": types.PARTICIPANT_STUDY_STATUS_ACTIVE}
+	filter["messages.scheduledFor"] = bson.M{"$lt": time.Now().Unix()}
+
+	elem := &types.ParticipantState{}
+
+	err = dbService.collectionRefStudyParticipant(instanceID, studyKey).FindOne(ctx, filter).Decode(&elem)
+	if err == mongo.ErrNoDocuments {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
