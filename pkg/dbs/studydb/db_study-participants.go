@@ -60,21 +60,28 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 }
 
 // findParticipantsByQuery retrieves participants that fulfill criteria of queryString with pagination... TODO: description here
-func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, limit int32, start int32) (pStates []types.ParticipantState, err error) {
+func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, pageSize int32, page int32) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
 	filter := bson.M{}
-	err = bson.UnmarshalExtJSON([]byte(queryString), true, &filter)
-	if err != nil {
-		logger.Error.Println("Failed to parse query string:", err)
-		return pStates, err
+	if queryString != "" {
+		err = bson.UnmarshalExtJSON([]byte(queryString), true, &filter)
+		if err != nil {
+			logger.Error.Println("Failed to parse query string:", err)
+			return pStates, err
+		}
 	}
 
 	batchSize := int32(32)
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
 	}
+	if pageSize > 0 && page > 0 {
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
+	//TODO: sort results here
 
 	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
 		ctx,

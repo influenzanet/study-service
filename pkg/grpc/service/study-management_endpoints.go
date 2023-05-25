@@ -856,10 +856,11 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		ps = append(ps, state)
 	}
 
+	//TODO return values
 	resp := &api.ParticipantStatesWithPagination{
 		ItemCount: 0,
 		PageCount: 0,
-		Page:      0,
+		Page:      req.Page,
 		Items:     ps,
 	}
 
