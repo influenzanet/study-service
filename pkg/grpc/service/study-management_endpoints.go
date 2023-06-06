@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"time"
 
@@ -845,7 +846,7 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		}
 	}
 
-	participantStates, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.PageSize, req.Page)
+	participantStates, itemCount, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.PageSize, req.Page)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -856,10 +857,9 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		ps = append(ps, state)
 	}
 
-	//TODO return values
 	resp := &api.ParticipantStatesWithPagination{
-		ItemCount: 0,
-		PageCount: 0,
+		ItemCount: itemCount,
+		PageCount: int32(math.Round(float64(itemCount)/float64(req.PageSize) + 0.5)),
 		Page:      req.Page,
 		Items:     ps,
 	}

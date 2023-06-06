@@ -60,7 +60,7 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 }
 
 // findParticipantsByQuery retrieves participants that fulfill criteria of queryString with pagination... TODO: description here
-func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, pageSize int32, page int32) (pStates []types.ParticipantState, err error) {
+func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, pageSize int32, page int32) (pStates []types.ParticipantState, totalCount int32, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -69,7 +69,7 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		err = bson.UnmarshalExtJSON([]byte(queryString), true, &filter)
 		if err != nil {
 			logger.Error.Println("Failed to parse query string:", err)
-			return pStates, err
+			return pStates, 0, err
 		}
 	}
 
@@ -90,7 +90,17 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 	)
 
 	if err != nil {
-		return pStates, err
+		return pStates, 0, err
+	}
+
+	count, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+
+	if err != nil {
+		return pStates, 0, err
 	}
 	defer cur.Close(ctx)
 
@@ -99,16 +109,16 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		var result types.ParticipantState
 		err := cur.Decode(&result)
 		if err != nil {
-			return pStates, err
+			return pStates, totalCount, err
 		}
 
 		pStates = append(pStates, result)
 	}
 	if err := cur.Err(); err != nil {
-		return pStates, err
+		return pStates, totalCount, err
 	}
 
-	return pStates, nil
+	return pStates, totalCount, nil
 }
 
 // FindParticipantState retrieves the participant state for a given participant from a study
