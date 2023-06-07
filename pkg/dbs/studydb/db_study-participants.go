@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// findParticipantsByStudyStatusDB retrieves all participant states from a study by status (e.g. active)
+// FindParticipantsByStudyStatusDB retrieves all participant states from a study by status (e.g. active)
 func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
@@ -59,8 +59,8 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 	return pStates, nil
 }
 
-// findParticipantsByQuery retrieves participants that fulfill criteria of queryString with pagination... TODO: description here
-func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, pageSize int32, page int32) (pStates []types.ParticipantState, totalCount int32, err error) {
+// FindParticipantsByQuery retrieves paginated participants that fulfill conditions of queryString. Sorting can be specified.
+func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, sortBy map[string]int32, pageSize int32, page int32) (pStates []types.ParticipantState, totalCount int32, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -81,7 +81,15 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		opts.SetSkip((int64(page) - 1) * int64(pageSize))
 		opts.SetLimit(int64(pageSize))
 	}
-	//TODO: sort results here
+
+	var sortElements bson.D
+	if len(sortBy) > 0 {
+		for key, el := range sortBy {
+			sortElements = append(sortElements, bson.E{Key: key, Value: el})
+		}
+	}
+
+	opts.SetSort(sortElements)
 
 	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
 		ctx,
@@ -174,7 +182,6 @@ func (dbService *StudyDBService) GetParticipantCountByStatus(instanceID string, 
 	return count, err
 }
 
-// FindParticipantState retrieves the participant state for a given participant from a study
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	ctx context.Context,
 	instanceID string,
