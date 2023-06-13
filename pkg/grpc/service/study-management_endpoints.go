@@ -823,11 +823,11 @@ func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *a
 
 	participantState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.ParticipantId)
 	if err != nil {
+		logger.Warning.Printf("participant with ID %s not found", req.ParticipantId)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	//TODO change log event
-	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, "GET PARTICIPANT STATE", req.StudyKey)
+	logger.Debug.Printf("found participant with ID %s", req.ParticipantId)
 	return participantState.ToAPI(), nil
 }
 
@@ -846,8 +846,9 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		}
 	}
 
-	participantStates, itemCount, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.PageSize, req.Page)
+	participantStates, itemCount, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.SortBy, req.PageSize, req.Page)
 	if err != nil {
+		logger.Error.Printf("error while fetching participant states")
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -857,14 +858,18 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		ps = append(ps, state)
 	}
 
+	pageCount := itemCount
+	if req.PageSize > 0 {
+		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+	}
+
 	resp := &api.ParticipantStatesWithPagination{
 		ItemCount: itemCount,
-		PageCount: int32(math.Round(float64(itemCount)/float64(req.PageSize) + 0.5)),
+		PageCount: pageCount,
 		Page:      req.Page,
 		Items:     ps,
 	}
 
-	//TODO change Log event
-	//s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_GET_STUDY, req.StudyKey)
+	logger.Debug.Printf("received %d participant states for query, page %d with %d results is displayed", itemCount, resp.Page, resp.PageCount)
 	return resp, nil
 }

@@ -87,9 +87,8 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		for key, el := range sortBy {
 			sortElements = append(sortElements, bson.E{Key: key, Value: el})
 		}
+		opts.SetSort(sortElements)
 	}
-
-	opts.SetSort(sortElements)
 
 	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
 		ctx,
