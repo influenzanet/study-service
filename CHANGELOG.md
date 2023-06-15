@@ -1,26 +1,23 @@
 # Changelog
 
-
-## ????
+## [v1.6.0] - 2023-06-15
 
 ### Added
 
 - New gRPC endpoints:
+  - `GetStudiesWithPendingParticipantMessages`: get all studies that have pending messages for a participant.
   - `GetParticipantStateByID`: get participant state with matching id.
   - `GetParticipantStatesWithPagination`: get participant states that fullfill query criteria with pagination and sorting option.
     - EXAMPLE for query parameter: query = `{"enteredAt":{"$gt":1686806848},"$and":[{"flags.ageCategory":"adult"},{"studyStatus":"active"}]}`
     - EXAMPLE for sortBy parameter: sortBy = `{"enteredAt": -1}`
 
-## ????
-
-### Added
+### Changed
 
 - `ensureDBindexes`: ensures that MongoDB indexes are created on the fields
   - `surveyDefinition` in the survey collection for all studies,
   - `scheduledFor` of `messages` object array in the participant collection for all studies.
-- New gRPC endpoints:
-  - `GetStudiesWithPendingParticipantMessages`: get all studies that have pending messages for a participant.
 - Include improved logger, using configurable log levels.
+- Updated project dependencies.
 
 ## [v1.5.0] - 2023-03-20
 
