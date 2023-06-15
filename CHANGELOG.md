@@ -1,5 +1,16 @@
 # Changelog
 
+
+## ????
+
+### Added
+
+- New gRPC endpoints:
+  - `GetParticipantStateByID`: get participant state with matching id.
+  - `GetParticipantStatesWithPagination`: get participant states that fullfill query criteria with pagination and sorting option.
+    - EXAMPLE for query parameter: query = `{"enteredAt":{"$gt":1686806848},"$and":[{"flags.ageCategory":"adult"},{"studyStatus":"active"}]}`
+    - EXAMPLE for sortBy parameter: sortBy = `{"enteredAt": -1}`
+
 ## ????
 
 ### Added

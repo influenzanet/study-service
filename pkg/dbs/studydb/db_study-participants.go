@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// findParticipantsByStudyStatusDB retrieve all participant states from a study by status (e.g. active)
+// FindParticipantsByStudyStatusDB retrieves all participant states from a study by status (e.g. active)
 func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string, studyKey string, studyStatus string, useProjection bool) (pStates []types.ParticipantState, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
@@ -57,6 +57,75 @@ func (dbService *StudyDBService) FindParticipantsByStudyStatus(instanceID string
 	}
 
 	return pStates, nil
+}
+
+// FindParticipantsByQuery retrieves paginated participants that fulfill conditions of queryString. Sorting can be specified.
+func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, studyKey string, queryString string, sortBy map[string]int32, pageSize int32, page int32) (pStates []types.ParticipantState, totalCount int32, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{}
+	if queryString != "" {
+		err = bson.UnmarshalExtJSON([]byte(queryString), true, &filter)
+		if err != nil {
+			logger.Error.Println("Failed to parse query string:", err)
+			return pStates, 0, err
+		}
+	}
+
+	batchSize := int32(32)
+	opts := options.FindOptions{
+		BatchSize: &batchSize,
+	}
+	if pageSize > 0 && page > 0 {
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
+
+	var sortElements bson.D
+	if len(sortBy) > 0 {
+		for key, el := range sortBy {
+			sortElements = append(sortElements, bson.E{Key: key, Value: el})
+		}
+		opts.SetSort(sortElements)
+	}
+
+	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(
+		ctx,
+		filter,
+		&opts,
+	)
+
+	if err != nil {
+		return pStates, 0, err
+	}
+
+	count, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+
+	if err != nil {
+		return pStates, 0, err
+	}
+	defer cur.Close(ctx)
+
+	pStates = []types.ParticipantState{}
+	for cur.Next(ctx) {
+		var result types.ParticipantState
+		err := cur.Decode(&result)
+		if err != nil {
+			return pStates, totalCount, err
+		}
+
+		pStates = append(pStates, result)
+	}
+	if err := cur.Err(); err != nil {
+		return pStates, totalCount, err
+	}
+
+	return pStates, totalCount, nil
 }
 
 // FindParticipantState retrieves the participant state for a given participant from a study
@@ -112,7 +181,6 @@ func (dbService *StudyDBService) GetParticipantCountByStatus(instanceID string, 
 	return count, err
 }
 
-// FindParticipantState retrieves the participant state for a given participant from a study
 func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	ctx context.Context,
 	instanceID string,

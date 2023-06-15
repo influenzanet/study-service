@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"reflect"
 	"time"
 
@@ -803,4 +804,72 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 		Status: api.ServiceStatus_NORMAL,
 		Msg:    "study deleted",
 	}, nil
+}
+
+func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *api.ParticipantStateByIDQuery) (*api.ParticipantState, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	participantState, err := s.studyDBservice.FindParticipantState(req.Token.InstanceId, req.StudyKey, req.ParticipantId)
+	if err != nil {
+		logger.Warning.Printf("participant with ID %s not found", req.ParticipantId)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	logger.Debug.Printf("found participant with ID %s", req.ParticipantId)
+	return participantState.ToAPI(), nil
+}
+
+func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Context, req *api.GetPStatesWithPaginationQuery) (*api.ParticipantStatesWithPagination, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	participantStates, itemCount, err := s.studyDBservice.FindParticipantsByQuery(req.Token.InstanceId, req.StudyKey, req.Query, req.SortBy, req.PageSize, req.Page)
+	if err != nil {
+		logger.Error.Printf("error while fetching participant states")
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	ps := []*api.ParticipantState{}
+	for _, participantState := range participantStates {
+		state := participantState.ToAPI()
+		ps = append(ps, state)
+	}
+
+	pageCount := itemCount
+	if req.PageSize > 0 {
+		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+	}
+
+	resp := &api.ParticipantStatesWithPagination{
+		ItemCount: itemCount,
+		PageCount: pageCount,
+		Page:      req.Page,
+		Items:     ps,
+	}
+
+	logger.Debug.Printf("received %d participant states for query, page %d with %d results is displayed", itemCount, resp.Page, resp.PageCount)
+	return resp, nil
 }
