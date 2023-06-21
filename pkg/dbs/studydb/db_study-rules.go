@@ -7,27 +7,28 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) SaveStudyRule(instanceID string, rule types.StudyRule) (types.StudyRule, error) {
+func (dbService *StudyDBService) SaveStudyRules(instanceID string, rules types.StudyRules) (types.StudyRules, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
 	//update study object
-	study, err := dbService.GetStudyByStudyKey(instanceID, rule.StudyKey)
+	study, err := dbService.GetStudyByStudyKey(instanceID, rules.StudyKey)
 	if err != nil {
-		return rule, err
+		return rules, err
 	}
-	study.Rules = rule.Rules
+	study.Rules = rules.Rules
+	//TODO: dies hier bereits in endpoint aktualisieren, remove
 	_, err = dbService.UpdateStudyInfo(instanceID, study)
 	if err != nil {
-		return rule, err
+		return rules, err
 	}
 
-	res, err := dbService.collectionRefStudyRules(instanceID).InsertOne(ctx, rule)
-	rule.ID = res.InsertedID.(primitive.ObjectID)
-	return rule, err
+	res, err := dbService.collectionRefStudyRules(instanceID).InsertOne(ctx, rules)
+	rules.ID = res.InsertedID.(primitive.ObjectID)
+	return rules, err
 }
 
-func (dbService *StudyDBService) GetCurrentStudyRule(instanceID string, studyKey string) (*types.StudyRule, error) {
+func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKey string) (*types.StudyRules, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -39,11 +40,57 @@ func (dbService *StudyDBService) GetCurrentStudyRule(instanceID string, studyKey
 		"studyKey": studyKey,
 	}
 
-	elem := &types.StudyRule{}
+	elem := &types.StudyRules{}
 	opts := &options.FindOneOptions{
 		Sort: sortByPublishedDesc,
 	}
 
 	err := dbService.collectionRefStudyRules(instanceID).FindOne(ctx, filter, opts).Decode(&elem)
 	return elem, err
+}
+
+func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string) (studyRules []*types.StudyRules, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	sortByPublishedDesc = bson.D{
+		primitive.E{Key: "uploadedAt", Value: -1},
+	}
+
+	filter := bson.M{}
+	if len(studyKey) > 0 {
+		filter["studyKey"] = studyKey
+	}
+
+	opts := &options.FindOptions{
+		Sort: sortByPublishedDesc,
+	}
+
+	cur, err := dbService.collectionRefStudyRules(instanceID).Find(
+		ctx,
+		filter,
+		opts,
+	)
+
+	if err != nil {
+		return studyRules, err
+	}
+
+	defer cur.Close(ctx)
+
+	studyRules = []*types.StudyRules{}
+	for cur.Next(ctx) {
+		var result *types.StudyRules
+		err := cur.Decode(&result)
+		if err != nil {
+			return studyRules, err
+		}
+
+		studyRules = append(studyRules, result)
+	}
+	if err := cur.Err(); err != nil {
+		return studyRules, err
+	}
+
+	return studyRules, nil
 }
