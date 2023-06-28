@@ -49,7 +49,7 @@ func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKe
 	return elem, err
 }
 
-func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string) (studyRules []*types.StudyRules, err error) {
+func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string) (studyRulesHistory []*types.StudyRules, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
@@ -73,24 +73,24 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 	)
 
 	if err != nil {
-		return studyRules, err
+		return studyRulesHistory, err
 	}
 
 	defer cur.Close(ctx)
 
-	studyRules = []*types.StudyRules{}
+	studyRulesHistory = []*types.StudyRules{}
 	for cur.Next(ctx) {
 		var result *types.StudyRules
 		err := cur.Decode(&result)
 		if err != nil {
-			return studyRules, err
+			return studyRulesHistory, err
 		}
 
-		studyRules = append(studyRules, result)
+		studyRulesHistory = append(studyRulesHistory, result)
 	}
 	if err := cur.Err(); err != nil {
-		return studyRules, err
+		return studyRulesHistory, err
 	}
 
-	return studyRules, nil
+	return studyRulesHistory, nil
 }

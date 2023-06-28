@@ -401,6 +401,64 @@ func (s *studyServiceServer) RemoveStudyMember(ctx context.Context, req *api.Stu
 	return uStudy.ToAPI(), nil
 }
 
+func (s *studyServiceServer) GetCurrentStudyRules(ctx context.Context, req *api.StudyReferenceReq) (*api.StudyRules, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	studyRules, err := s.studyDBservice.GetCurrentStudyRules(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		logger.Warning.Printf("study rules for study %s not found", req.StudyKey)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return studyRules.ToAPI(), nil
+}
+
+func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.StudyRulesHistoryReq) (*api.StudyRulesHistory, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, req.StudyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	//TODO: range history und pagination settings
+	studyRules, err := s.studyDBservice.GetStudyRulesHistory(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		logger.Warning.Printf("no study rules found for study %s", req.StudyKey)
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	versions := make([]*api.StudyRules, len(studyRules))
+	for i, s := range studyRules {
+		versions[i] = s.ToAPI()
+	}
+
+	resp := &api.StudyRulesHistory{
+		Rules: versions,
+	}
+
+	return resp, nil
+}
+
 func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyRulesReq) (*api.Study, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
