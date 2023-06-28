@@ -83,7 +83,7 @@ func (dbService *StudyDBService) collectionRefResearcherMessages(instanceID stri
 }
 
 func (dbService *StudyDBService) collectionRefStudyRules(instanceID string) *mongo.Collection {
-	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection("_studyRules")
+	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection("studyRules")
 }
 
 // DB utils

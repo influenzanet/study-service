@@ -484,11 +484,22 @@ func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyR
 		rules = append(rules, *types.ExpressionFromAPI(exp))
 	}
 	study.Rules = rules
-
 	uStudy, err := s.studyDBservice.UpdateStudyInfo(req.Token.InstanceId, study)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	studyRules := types.StudyRules{
+		StudyKey:   req.StudyKey,
+		UploadedAt: time.Now().Unix(),
+		UploadedBy: req.Token.ProfilId,
+		Rules:      rules,
+	}
+	_, err = s.studyDBservice.AddStudyRules(req.Token.InstanceId, studyRules)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_UPDATE, fmt.Sprintf("rules updated for %s", req.StudyKey))
 	return uStudy.ToAPI(), nil
 }

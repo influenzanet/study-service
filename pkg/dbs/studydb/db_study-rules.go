@@ -7,21 +7,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func (dbService *StudyDBService) SaveStudyRules(instanceID string, rules types.StudyRules) (types.StudyRules, error) {
+func (dbService *StudyDBService) AddStudyRules(instanceID string, rules types.StudyRules) (types.StudyRules, error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
-
-	//update study object
-	study, err := dbService.GetStudyByStudyKey(instanceID, rules.StudyKey)
-	if err != nil {
-		return rules, err
-	}
-	study.Rules = rules.Rules
-	//TODO: dies hier bereits in endpoint aktualisieren, remove
-	_, err = dbService.UpdateStudyInfo(instanceID, study)
-	if err != nil {
-		return rules, err
-	}
 
 	res, err := dbService.collectionRefStudyRules(instanceID).InsertOne(ctx, rules)
 	rules.ID = res.InsertedID.(primitive.ObjectID)
