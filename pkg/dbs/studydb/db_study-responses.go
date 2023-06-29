@@ -165,9 +165,29 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 		filter["submittedAt"] = bson.M{"$lt": until}
 	}
 
+	batchSize := int32(32)
+	opts := options.FindOptions{
+		BatchSize: &batchSize,
+	}
+	page := 0
+	pageSize := 0
+	for index, val := range args {
+		switch index {
+		case 1: //page is optional param
+			page, _ = val.(int)
+		case 2: //pageSize is optional param
+			pageSize, _ = val.(int)
+		}
+	}
+	if pageSize > 0 && page > 0 {
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
+
 	cur, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Find(
 		ctx,
 		filter,
+		&opts,
 	)
 	if err != nil {
 		return err
