@@ -440,8 +440,7 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 		}
 	}
 
-	//TODO: range history und pagination settings
-	studyRules, err := s.studyDBservice.GetStudyRulesHistory(req.Token.InstanceId, req.StudyKey)
+	studyRules, itemCount, err := s.studyDBservice.GetStudyRulesHistory(req.Token.InstanceId, req.StudyKey, req.PageSize, req.Page, req.Descending, req.Since, req.Until)
 	if err != nil {
 		logger.Warning.Printf("no study rules found for study %s", req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -452,8 +451,16 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 		versions[i] = s.ToAPI()
 	}
 
+	pageCount := itemCount
+	if req.PageSize > 0 {
+		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+	}
+
 	resp := &api.StudyRulesHistory{
-		Rules: versions,
+		Rules:     versions,
+		PageCount: pageCount,
+		ItemCount: itemCount,
+		Page:      req.Page,
 	}
 
 	return resp, nil

@@ -20,7 +20,7 @@ func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKe
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	sortByPublishedDesc = bson.D{
+	sortByPublished := bson.D{
 		primitive.E{Key: "uploadedAt", Value: -1},
 	}
 
@@ -30,19 +30,23 @@ func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKe
 
 	elem := &types.StudyRules{}
 	opts := &options.FindOneOptions{
-		Sort: sortByPublishedDesc,
+		Sort: sortByPublished,
 	}
 
 	err := dbService.collectionRefStudyRules(instanceID).FindOne(ctx, filter, opts).Decode(&elem)
 	return elem, err
 }
 
-func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string) (studyRulesHistory []*types.StudyRules, err error) {
+func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string, pageSize int32, page int32, descending bool, since int64, until int64) (studyRulesHistory []*types.StudyRules, totalCount int32, err error) {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	sortByPublishedDesc = bson.D{
-		primitive.E{Key: "uploadedAt", Value: -1},
+	sortBy := 1
+	if descending {
+		sortBy = -1
+	}
+	sortByPublished := bson.D{
+		primitive.E{Key: "uploadedAt", Value: sortBy},
 	}
 
 	filter := bson.M{}
@@ -51,7 +55,21 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 	}
 
 	opts := &options.FindOptions{
-		Sort: sortByPublishedDesc,
+		Sort: sortByPublished,
+	}
+	if pageSize > 0 && page > 0 {
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
+	if since > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"uploadedAt": bson.M{"$gte": since}},
+			bson.M{"uploadedAt": bson.M{"$lte": until}},
+		}
+	} else if since > 0 {
+		filter["uploadedAt"] = bson.M{"$gte": since}
+	} else if until > 0 {
+		filter["uploadedAt"] = bson.M{"$lte": until}
 	}
 
 	cur, err := dbService.collectionRefStudyRules(instanceID).Find(
@@ -59,9 +77,17 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 		filter,
 		opts,
 	)
-
 	if err != nil {
-		return studyRulesHistory, err
+		return studyRulesHistory, 0, err
+	}
+
+	count, err := dbService.collectionRefStudyRules(instanceID).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+	if err != nil {
+		return studyRulesHistory, 0, err
 	}
 
 	defer cur.Close(ctx)
@@ -71,14 +97,14 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 		var result *types.StudyRules
 		err := cur.Decode(&result)
 		if err != nil {
-			return studyRulesHistory, err
+			return studyRulesHistory, totalCount, err
 		}
 
 		studyRulesHistory = append(studyRulesHistory, result)
 	}
 	if err := cur.Err(); err != nil {
-		return studyRulesHistory, err
+		return studyRulesHistory, totalCount, err
 	}
 
-	return studyRulesHistory, nil
+	return studyRulesHistory, totalCount, nil
 }
