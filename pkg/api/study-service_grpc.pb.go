@@ -69,6 +69,7 @@ type StudyServiceApiClient interface {
 	SaveStudyRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*Study, error)
 	GetCurrentStudyRules(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*StudyRules, error)
 	GetStudyRulesHistory(ctx context.Context, in *StudyRulesHistoryReq, opts ...grpc.CallOption) (*StudyRulesHistory, error)
+	RemoveStudyRulesVersion(ctx context.Context, in *StudyRulesVersionReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	SaveSurveyToStudy(ctx context.Context, in *AddSurveyReq, opts ...grpc.CallOption) (*Survey, error)
 	GetSurveyVersionInfos(ctx context.Context, in *SurveyReferenceRequest, opts ...grpc.CallOption) (*SurveyVersions, error)
 	GetSurveyKeys(ctx context.Context, in *GetSurveyKeysRequest, opts ...grpc.CallOption) (*SurveyKeys, error)
@@ -486,6 +487,15 @@ func (c *studyServiceApiClient) GetCurrentStudyRules(ctx context.Context, in *St
 func (c *studyServiceApiClient) GetStudyRulesHistory(ctx context.Context, in *StudyRulesHistoryReq, opts ...grpc.CallOption) (*StudyRulesHistory, error) {
 	out := new(StudyRulesHistory)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetStudyRulesHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *studyServiceApiClient) RemoveStudyRulesVersion(ctx context.Context, in *StudyRulesVersionReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error) {
+	out := new(ServiceStatus)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RemoveStudyRulesVersion", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -923,6 +933,7 @@ type StudyServiceApiServer interface {
 	SaveStudyRules(context.Context, *StudyRulesReq) (*Study, error)
 	GetCurrentStudyRules(context.Context, *StudyReferenceReq) (*StudyRules, error)
 	GetStudyRulesHistory(context.Context, *StudyRulesHistoryReq) (*StudyRulesHistory, error)
+	RemoveStudyRulesVersion(context.Context, *StudyRulesVersionReferenceReq) (*ServiceStatus, error)
 	SaveSurveyToStudy(context.Context, *AddSurveyReq) (*Survey, error)
 	GetSurveyVersionInfos(context.Context, *SurveyReferenceRequest) (*SurveyVersions, error)
 	GetSurveyKeys(context.Context, *GetSurveyKeysRequest) (*SurveyKeys, error)
@@ -1066,6 +1077,9 @@ func (UnimplementedStudyServiceApiServer) GetCurrentStudyRules(context.Context, 
 }
 func (UnimplementedStudyServiceApiServer) GetStudyRulesHistory(context.Context, *StudyRulesHistoryReq) (*StudyRulesHistory, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudyRulesHistory not implemented")
+}
+func (UnimplementedStudyServiceApiServer) RemoveStudyRulesVersion(context.Context, *StudyRulesVersionReferenceReq) (*ServiceStatus, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveStudyRulesVersion not implemented")
 }
 func (UnimplementedStudyServiceApiServer) SaveSurveyToStudy(context.Context, *AddSurveyReq) (*Survey, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveSurveyToStudy not implemented")
@@ -1841,6 +1855,24 @@ func _StudyServiceApi_GetStudyRulesHistory_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_RemoveStudyRulesVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StudyRulesVersionReferenceReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).RemoveStudyRulesVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/RemoveStudyRulesVersion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).RemoveStudyRulesVersion(ctx, req.(*StudyRulesVersionReferenceReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_SaveSurveyToStudy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddSurveyReq)
 	if err := dec(in); err != nil {
@@ -2411,6 +2443,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStudyRulesHistory",
 			Handler:    _StudyServiceApi_GetStudyRulesHistory_Handler,
+		},
+		{
+			MethodName: "RemoveStudyRulesVersion",
+			Handler:    _StudyServiceApi_RemoveStudyRulesVersion_Handler,
 		},
 		{
 			MethodName: "SaveSurveyToStudy",
