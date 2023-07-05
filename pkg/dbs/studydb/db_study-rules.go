@@ -1,6 +1,8 @@
 package studydb
 
 import (
+	"errors"
+
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,6 +16,41 @@ func (dbService *StudyDBService) AddStudyRules(instanceID string, rules types.St
 	res, err := dbService.collectionRefStudyRules(instanceID).InsertOne(ctx, rules)
 	rules.ID = res.InsertedID.(primitive.ObjectID)
 	return rules, err
+}
+
+func (dbService *StudyDBService) DeleteStudyRulesVersion(instanceID string, versionID string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	//TODO: correct filter?
+	filter := bson.M{
+		"_id": versionID,
+	}
+	res, err := dbService.collectionRefStudyRules(instanceID).DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount < 1 {
+		return errors.New("no item was deleted")
+	}
+	return nil
+}
+
+func (dbService *StudyDBService) DeleteStudyRulesByStudyKey(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{
+		"studyKey": studyKey,
+	}
+	res, err := dbService.collectionRefStudyRules(instanceID).DeleteMany(ctx, filter)
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount < 1 {
+		return errors.New("no item was deleted")
+	}
+	return nil
 }
 
 func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKey string) (*types.StudyRules, error) {
