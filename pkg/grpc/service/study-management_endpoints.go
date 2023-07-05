@@ -875,6 +875,11 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	//delete all study rules for study
+	err = s.studyDBservice.DeleteStudyRulesByStudyKey(req.Token.InstanceId, req.StudyKey)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_DELETION, req.StudyKey)
 	return &api.ServiceStatus{
 		Status: api.ServiceStatus_NORMAL,
