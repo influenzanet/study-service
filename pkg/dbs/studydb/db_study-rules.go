@@ -1,11 +1,11 @@
 package studydb
 
 import (
-	"errors"
-
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -31,7 +31,7 @@ func (dbService *StudyDBService) DeleteStudyRulesVersion(instanceID string, vers
 		return err
 	}
 	if res.DeletedCount < 1 {
-		return errors.New("no item was deleted")
+		logger.Info.Printf("no study rules deleted")
 	}
 	return nil
 }
@@ -48,7 +48,7 @@ func (dbService *StudyDBService) DeleteStudyRulesByStudyKey(instanceID string, s
 		return err
 	}
 	if res.DeletedCount < 1 {
-		return errors.New("no item was deleted")
+		logger.Info.Printf("no study rules deleted")
 	}
 	return nil
 }
@@ -72,6 +72,19 @@ func (dbService *StudyDBService) GetCurrentStudyRules(instanceID string, studyKe
 
 	err := dbService.collectionRefStudyRules(instanceID).FindOne(ctx, filter, opts).Decode(&elem)
 	return elem, err
+}
+
+func (dbService *StudyDBService) GetStudyKeyByStudyRulesID(instanceID string, versionID string) (studyKey string, err error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{
+		"_id": versionID,
+	}
+
+	elem := &types.StudyRules{}
+	err = dbService.collectionRefStudyRules(instanceID).FindOne(ctx, filter).Decode(&elem)
+	return elem.StudyKey, err
 }
 
 func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKey string, pageSize int32, page int32, descending bool, since int64, until int64) (studyRulesHistory []*types.StudyRules, totalCount int32, err error) {
@@ -144,4 +157,26 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 	}
 
 	return studyRulesHistory, totalCount, nil
+}
+
+func (dbService *StudyDBService) CreateUploadedAtIndex(instanceID string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefStudyRules(instanceID).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "uploadedAt", Value: 1},
+				{Key: "studyKey", Value: 1},
+			},
+		},
+	)
+	_, err = dbService.collectionRefStudyRules(instanceID).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "uploadedAt", Value: 1},
+			},
+		},
+	)
+	return err
 }
