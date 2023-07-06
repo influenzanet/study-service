@@ -466,6 +466,39 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 	return resp, nil
 }
 
+func (s *studyServiceServer) RemoveStudyRulesVersion(ctx context.Context, req *api.StudyRulesVersionReferenceReq) (*api.ServiceStatus, error) {
+	if req == nil || token_checks.IsTokenEmpty(req.Token) {
+		return nil, status.Error(codes.InvalidArgument, "missing argument")
+	}
+	studyKey, err := s.studyDBservice.GetStudyKeyByStudyRulesID(req.Token.InstanceId, req.Id)
+	if err != nil {
+		logger.Error.Printf(err.Error())
+		return nil, status.Error(codes.Internal, "deletion failed")
+	}
+
+	if !token_checks.CheckRoleInToken(req.Token, constants.USER_ROLE_ADMIN) {
+		err := s.HasRoleInStudy(req.Token.InstanceId, studyKey, req.Token.Id,
+			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
+		)
+		if err != nil {
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+studyKey)
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	//delete all study rules for study
+	err = s.studyDBservice.DeleteStudyRulesVersion(req.Token.InstanceId, req.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_DELETION, studyKey)
+	return &api.ServiceStatus{
+		Status: api.ServiceStatus_NORMAL,
+		Msg:    "study rules deleted",
+	}, nil
+}
+
 func (s *studyServiceServer) SaveStudyRules(ctx context.Context, req *api.StudyRulesReq) (*api.Study, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -871,12 +904,12 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 		}
 	}
 
-	err := s.studyDBservice.DeleteStudy(req.Token.InstanceId, req.StudyKey)
+	//delete all study rules for study
+	err := s.studyDBservice.DeleteStudyRulesByStudyKey(req.Token.InstanceId, req.StudyKey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	//delete all study rules for study
-	err = s.studyDBservice.DeleteStudyRulesByStudyKey(req.Token.InstanceId, req.StudyKey)
+	err = s.studyDBservice.DeleteStudy(req.Token.InstanceId, req.StudyKey)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
