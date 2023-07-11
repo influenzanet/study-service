@@ -22,9 +22,9 @@ func (dbService *StudyDBService) DeleteStudyRulesVersion(instanceID string, vers
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	//TODO: correct filter?
+	id, _ := primitive.ObjectIDFromHex(versionID)
 	filter := bson.M{
-		"_id": versionID,
+		"_id": id,
 	}
 	res, err := dbService.collectionRefStudyRules(instanceID).DeleteOne(ctx, filter)
 	if err != nil {
@@ -78,8 +78,9 @@ func (dbService *StudyDBService) GetStudyKeyByStudyRulesID(instanceID string, ve
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
+	id, _ := primitive.ObjectIDFromHex(versionID)
 	filter := bson.M{
-		"_id": versionID,
+		"_id": id,
 	}
 
 	elem := &types.StudyRules{}
@@ -168,13 +169,6 @@ func (dbService *StudyDBService) CreateUploadedAtIndex(instanceID string) error 
 			Keys: bson.D{
 				{Key: "uploadedAt", Value: 1},
 				{Key: "studyKey", Value: 1},
-			},
-		},
-	)
-	_, err = dbService.collectionRefStudyRules(instanceID).Indexes().CreateOne(
-		ctx, mongo.IndexModel{
-			Keys: bson.D{
-				{Key: "uploadedAt", Value: 1},
 			},
 		},
 	)
