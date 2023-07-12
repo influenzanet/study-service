@@ -169,14 +169,14 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
 	}
-	page := 0
-	pageSize := 0
+	page := int32(0)
+	pageSize := int32(0)
 	for index, val := range args {
 		switch index {
 		case 1: //page is optional param
-			page, _ = val.(int)
+			page, _ = val.(int32)
 		case 2: //pageSize is optional param
-			pageSize, _ = val.(int)
+			pageSize, _ = val.(int32)
 		}
 	}
 	if pageSize > 0 && page > 0 {

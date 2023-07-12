@@ -458,6 +458,7 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 	if err != nil {
 		return nil, err
 	}
+	logger.Info.Println("pageSize: ", req.PageSize, "pageNumber: ", req.Page)
 
 	// Download responses
 	ctx := context.Background()
@@ -465,7 +466,7 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 		ctx,
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
-			if len(args) != 1 {
+			if len(args) != 3 {
 				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
 			}
 			rExp, ok := args[0].(*exporter.ResponseExporter)
@@ -474,7 +475,7 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 			}
 			return rExp.AddResponse(&response)
 		},
-		responseExporter,
+		responseExporter, req.Page, req.PageSize,
 	)
 	if err != nil {
 		logger.Info.Print(err)
