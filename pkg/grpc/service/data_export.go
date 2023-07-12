@@ -458,7 +458,6 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 	if err != nil {
 		return nil, err
 	}
-	logger.Info.Println("pageSize: ", req.PageSize, "pageNumber: ", req.Page)
 
 	// Download responses
 	ctx := context.Background()
