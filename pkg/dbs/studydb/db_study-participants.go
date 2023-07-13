@@ -6,6 +6,7 @@ import (
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -77,7 +78,7 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
 	}
-	if pageSize > 0 && page > 0 {
+	if utils.CheckForValidPaginationParameter(pageSize, page) {
 		opts.SetSkip((int64(page) - 1) * int64(pageSize))
 		opts.SetLimit(int64(pageSize))
 	}

@@ -41,3 +41,10 @@ func ContainsString(slice []string, searchTerm string) bool {
 	}
 	return false
 }
+
+func CheckForValidPaginationParameter(pageSize int32, page int32) bool {
+	if pageSize > 0 && page > 0 {
+		return true
+	}
+	return false
+}
