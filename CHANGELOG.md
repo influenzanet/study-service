@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.6.1] - 2023-07-13
+
+### Changed
+
+- Improvements on the `GetParticipantStatesWithPagination` endpoint to handle parameter validation.
+
 ## [v1.6.0] - 2023-06-15
 
 ### Added

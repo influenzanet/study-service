@@ -6,7 +6,7 @@ require (
 	github.com/coneno/logger v1.2.2
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
-	github.com/influenzanet/go-utils v0.2.11
+	github.com/influenzanet/go-utils v0.2.12
 	github.com/influenzanet/logging-service v0.2.0
 	go.mongodb.org/mongo-driver v1.11.7
 	google.golang.org/grpc v1.55.0
