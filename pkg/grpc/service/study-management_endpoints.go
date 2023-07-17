@@ -930,7 +930,7 @@ func (s *studyServiceServer) GetParticipantStateByID(ctx context.Context, req *a
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_PARTICIPANT_STATES, "permission denied for: "+req.StudyKey)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -955,7 +955,7 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_GET_PARTICIPANT_STATES, "permission denied for: "+req.StudyKey)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -972,18 +972,33 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		ps = append(ps, state)
 	}
 
-	pageCount := itemCount
-	if req.PageSize > 0 {
+	pageCount := int32(1)
+	pageSize := itemCount
+	page := req.Page
+	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
 		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+		pageSize = req.PageSize
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
+	} else {
+		page = 1
 	}
-
 	resp := &api.ParticipantStatesWithPagination{
 		ItemCount: itemCount,
 		PageCount: pageCount,
-		Page:      req.Page,
+		Page:      page,
 		Items:     ps,
+		PageSize:  pageSize,
 	}
-
-	logger.Debug.Printf("received %d participant states for query, page %d with %d results is displayed", itemCount, resp.Page, resp.PageCount)
+	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
+		logger.Debug.Printf("received %d participant states for query, page %d out of %d pages is displayed with %d items per page", resp.ItemCount, resp.Page, resp.PageCount, resp.PageSize)
+	} else {
+		logger.Debug.Printf("received %d participant states for query", resp.ItemCount)
+	}
 	return resp, nil
 }
