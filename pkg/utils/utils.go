@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/influenzanet/study-service/pkg/types"
@@ -47,4 +48,9 @@ func CheckForValidPaginationParameter(pageSize int32, page int32) bool {
 		return true
 	}
 	return false
+}
+
+func ComputePageCount(pageSize int32, itemCount int32) int32 {
+	pageCount := int32(math.Floor(float64(itemCount+pageSize-1) / float64(pageSize)))
+	return pageCount
 }
