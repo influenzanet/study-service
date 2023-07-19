@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"math"
 	"reflect"
 	"time"
 
@@ -992,7 +991,7 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 	pageSize := itemCount
 	page := req.Page
 	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
-		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+		pageCount = utils.ComputePageCount(req.PageSize, itemCount)
 		pageSize = req.PageSize
 		if page > pageCount {
 			if pageCount > 0 {
@@ -1003,6 +1002,9 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		}
 	} else {
 		page = 1
+	}
+	if itemCount == 0 {
+		pageCount = 0
 	}
 	resp := &api.ParticipantStatesWithPagination{
 		ItemCount: itemCount,
