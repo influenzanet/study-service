@@ -465,6 +465,9 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 	} else {
 		page = 1
 	}
+	if itemCount == 0 {
+		pageCount = 0
+	}
 
 	resp := &api.StudyRulesHistory{
 		Rules:     versions,
