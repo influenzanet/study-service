@@ -165,6 +165,14 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	} else if until > 0 {
 		filter["submittedAt"] = bson.M{"$lt": until}
 	}
+	count, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount := int32(count)
+	if err != nil {
+		return err
+	}
 
 	batchSize := int32(32)
 	opts := options.FindOptions{
@@ -181,6 +189,14 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 		}
 	}
 	if utils.CheckForValidPaginationParameter(pageSize, page) {
+		pageCount := utils.ComputePageCount(pageSize, totalCount)
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
 		opts.SetSkip((int64(page) - 1) * int64(pageSize))
 		opts.SetLimit(int64(pageSize))
 	}
