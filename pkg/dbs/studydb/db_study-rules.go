@@ -3,6 +3,7 @@ package studydb
 import (
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -105,13 +106,6 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 		filter["studyKey"] = studyKey
 	}
 
-	opts := &options.FindOptions{
-		Sort: sortByPublished,
-	}
-	if pageSize > 0 && page > 0 {
-		opts.SetSkip((int64(page) - 1) * int64(pageSize))
-		opts.SetLimit(int64(pageSize))
-	}
 	if since > 0 && until > 0 {
 		filter["$and"] = bson.A{
 			bson.M{"uploadedAt": bson.M{"$gte": since}},
@@ -123,20 +117,36 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 		filter["uploadedAt"] = bson.M{"$lte": until}
 	}
 
-	cur, err := dbService.collectionRefStudyRules(instanceID).Find(
-		ctx,
-		filter,
-		opts,
-	)
-	if err != nil {
-		return studyRulesHistory, 0, err
-	}
-
 	count, err := dbService.collectionRefStudyRules(instanceID).CountDocuments(
 		ctx,
 		filter,
 	)
 	totalCount = int32(count)
+	if err != nil {
+		return studyRulesHistory, 0, err
+	}
+
+	opts := &options.FindOptions{
+		Sort: sortByPublished,
+	}
+	if utils.CheckForValidPaginationParameter(pageSize, page) {
+		pageCount := utils.ComputePageCount(pageSize, totalCount)
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
+
+	cur, err := dbService.collectionRefStudyRules(instanceID).Find(
+		ctx,
+		filter,
+		opts,
+	)
 	if err != nil {
 		return studyRulesHistory, 0, err
 	}

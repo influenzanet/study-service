@@ -411,7 +411,7 @@ func (s *studyServiceServer) GetCurrentStudyRules(ctx context.Context, req *api.
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_RULES, "permission denied for: "+req.StudyKey)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -435,7 +435,7 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+req.StudyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_RULES, "permission denied for: "+req.StudyKey)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
@@ -445,24 +445,40 @@ func (s *studyServiceServer) GetStudyRulesHistory(ctx context.Context, req *api.
 		logger.Warning.Printf("no study rules found for study %s", req.StudyKey)
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-
 	versions := make([]*api.StudyRules, len(studyRules))
 	for i, s := range studyRules {
 		versions[i] = s.ToAPI()
 	}
 
-	pageCount := itemCount
-	if req.PageSize > 0 {
-		pageCount = int32(math.Floor(float64(itemCount+req.PageSize-1) / float64(req.PageSize)))
+	pageCount := int32(1)
+	pageSize := itemCount
+	page := req.Page
+	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
+		pageCount = utils.ComputePageCount(req.PageSize, itemCount)
+		pageSize = req.PageSize
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
+	} else {
+		page = 1
 	}
 
 	resp := &api.StudyRulesHistory{
 		Rules:     versions,
 		PageCount: pageCount,
 		ItemCount: itemCount,
-		Page:      req.Page,
+		Page:      page,
+		PageSize:  pageSize,
 	}
-
+	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
+		logger.Debug.Printf("received %d study rules objects for query, page %d out of %d pages is displayed with %d items per page", resp.ItemCount, resp.Page, resp.PageCount, resp.PageSize)
+	} else {
+		logger.Debug.Printf("received %d study rules objects for query", resp.ItemCount)
+	}
 	return resp, nil
 }
 
@@ -481,7 +497,7 @@ func (s *studyServiceServer) RemoveStudyRulesVersion(ctx context.Context, req *a
 			[]string{types.STUDY_ROLE_MAINTAINER, types.STUDY_ROLE_OWNER},
 		)
 		if err != nil {
-			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_DELETION, "permission denied for: "+studyKey)
+			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_STUDY_RULES, "permission denied for: "+studyKey)
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
