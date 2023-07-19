@@ -74,11 +74,28 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		}
 	}
 
+	count, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+	if err != nil {
+		return pStates, 0, err
+	}
+
 	batchSize := int32(32)
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
 	}
 	if utils.CheckForValidPaginationParameter(pageSize, page) {
+		pageCount := utils.ComputePageCount(pageSize, totalCount)
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
 		opts.SetSkip((int64(page) - 1) * int64(pageSize))
 		opts.SetLimit(int64(pageSize))
 	}
@@ -101,15 +118,6 @@ func (dbService *StudyDBService) FindParticipantsByQuery(instanceID string, stud
 		return pStates, 0, err
 	}
 
-	count, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).CountDocuments(
-		ctx,
-		filter,
-	)
-	totalCount = int32(count)
-
-	if err != nil {
-		return pStates, 0, err
-	}
 	defer cur.Close(ctx)
 
 	pStates = []types.ParticipantState{}
