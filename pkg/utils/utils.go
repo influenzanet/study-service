@@ -54,3 +54,26 @@ func ComputePageCount(pageSize int32, itemCount int32) int32 {
 	pageCount := int32(math.Floor(float64(itemCount+pageSize-1) / float64(pageSize)))
 	return pageCount
 }
+
+func ComputePaginationParameter(pageSize int32, page int32, itemCount int32) (validPageSize int32, validPage int32, pageCount int32) {
+	pageCount = int32(1)
+	validPageSize = itemCount
+	validPage = page
+	if CheckForValidPaginationParameter(pageSize, page) {
+		pageCount = ComputePageCount(pageSize, itemCount)
+		validPageSize = pageSize
+		if page > pageCount {
+			if pageCount > 0 {
+				validPage = pageCount
+			} else {
+				validPage = 1
+			}
+		}
+	} else {
+		validPage = 1
+	}
+	if itemCount == 0 {
+		pageCount = 0
+	}
+	return validPageSize, validPage, pageCount
+}

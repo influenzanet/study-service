@@ -990,25 +990,8 @@ func (s *studyServiceServer) GetParticipantStatesWithPagination(ctx context.Cont
 		ps = append(ps, state)
 	}
 
-	pageCount := int32(1)
-	pageSize := itemCount
-	page := req.Page
-	if utils.CheckForValidPaginationParameter(req.PageSize, req.Page) {
-		pageCount = utils.ComputePageCount(req.PageSize, itemCount)
-		pageSize = req.PageSize
-		if page > pageCount {
-			if pageCount > 0 {
-				page = pageCount
-			} else {
-				page = 1
-			}
-		}
-	} else {
-		page = 1
-	}
-	if itemCount == 0 {
-		pageCount = 0
-	}
+	pageSize, page, pageCount := utils.ComputePaginationParameter(req.PageSize, req.Page, itemCount)
+
 	resp := &api.ParticipantStatesWithPagination{
 		ItemCount: itemCount,
 		PageCount: pageCount,
