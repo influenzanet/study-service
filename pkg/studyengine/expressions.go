@@ -3,6 +3,7 @@ package studyengine
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -114,6 +115,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.timestampWithOffset(expression)
 	case "parseValueAsNum":
 		val, err = evalCtx.parseValueAsNum(expression)
+	case "generateRandomNumber":
+		val, err = evalCtx.generateRandomNumber(expression)
 	case "externalEventEval":
 		val, err = evalCtx.externalEventEval(expression)
 	default:
@@ -1220,6 +1223,34 @@ func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err e
 	val, err = strconv.ParseFloat(arg1.(string), 64)
 
 	return
+}
+
+func (ctx EvalContext) generateRandomNumber(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 2 {
+		return val, errors.New("should have two arguments")
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
+		return val, errors.New("argument 1 should be resolved as type number (float64)")
+	}
+	min := int(arg1.(float64))
+
+	arg2, err := ctx.expressionArgResolver(exp.Data[1])
+	if err != nil {
+		return val, err
+	}
+	if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
+		return val, errors.New("argument 2 should be resolved as type number (float64)")
+	}
+	max := int(arg2.(float64))
+
+	rand.Seed(time.Now().UnixNano())
+	randomVal := rand.Intn(max-min+1) + min
+	return float64(randomVal), nil
 }
 
 func (ctx EvalContext) externalEventEval(exp types.Expression) (val interface{}, err error) {

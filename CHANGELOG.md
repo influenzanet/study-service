@@ -1,5 +1,13 @@
 # Changelog
 
+### Added
+
+- New study-engine expression to generate a random number: `generateRandomNumber`, with two required arguments for the min and max value.
+
+### Changed
+
+- Improved pagination code.
+
 ## [v1.6.1] - 2023-07-13
 
 ### Changed
