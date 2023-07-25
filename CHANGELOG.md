@@ -2,7 +2,7 @@
 
 ### Added
 
-- New study-engine expression to generate a random number: `generateRandomNumber`, with two required arguments for the min and max value.
+- New study-engine expression to generate a random number: `generateRandomNumber`, with two required arguments for the min and max value (both inclusive).
 
 ### Changed
 
