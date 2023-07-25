@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -2785,6 +2786,54 @@ func TestEvalHasMessageTypeAssigned(t *testing.T) {
 		resTS := ret.(bool)
 		if !resTS {
 			t.Errorf("unexpected value: %v", ret)
+		}
+	})
+}
+
+func TestEvalGenerateRandomNumber(t *testing.T) {
+	t.Run("with invalid args", func(t *testing.T) {
+		exp := types.Expression{Name: "generateRandomNumber", Data: []types.ExpressionArg{
+			{DType: "str", Str: "wrong"},
+			{DType: "str", Str: "wrong"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("with not enough args", func(t *testing.T) {
+		exp := types.Expression{Name: "generateRandomNumber", Data: []types.ExpressionArg{
+			{DType: "num", Num: 10},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return error")
+			return
+		}
+	})
+
+	t.Run("with valid args", func(t *testing.T) {
+		// repeat 100 times
+		for i := 0; i < 100; i++ {
+			exp := types.Expression{Name: "generateRandomNumber", Data: []types.ExpressionArg{
+				{DType: "num", Num: 10},
+				{DType: "num", Num: 20},
+			}}
+			EvalContext := EvalContext{}
+			val, err := ExpressionEval(exp, EvalContext)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+			logger.Debug.Println(val.(float64))
+			if val.(float64) < 10 || val.(float64) > 20 {
+				t.Errorf("unexpected value: %v", val)
+				return
+			}
 		}
 	})
 }
