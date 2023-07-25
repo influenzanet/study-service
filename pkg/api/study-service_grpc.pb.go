@@ -91,6 +91,7 @@ type StudyServiceApiClient interface {
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
 	GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error)
+	GetResponsesFlatJSONWithPagination(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONWithPaginationClient, error)
 	GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error)
 	GetSurveyInfoPreview(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (*SurveyInfoExport, error)
 }
@@ -843,8 +844,40 @@ func (x *studyServiceApiGetResponsesFlatJSONClient) Recv() (*Chunk, error) {
 	return m, nil
 }
 
+func (c *studyServiceApiClient) GetResponsesFlatJSONWithPagination(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONWithPaginationClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[9], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSONWithPagination", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiGetResponsesFlatJSONWithPaginationClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_GetResponsesFlatJSONWithPaginationClient interface {
+	Recv() (*PaginatedFile, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiGetResponsesFlatJSONWithPaginationClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONWithPaginationClient) Recv() (*PaginatedFile, error) {
+	m := new(PaginatedFile)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[9], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[10], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -955,6 +988,7 @@ type StudyServiceApiServer interface {
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
 	GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error
+	GetResponsesFlatJSONWithPagination(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error
 	GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error
 	GetSurveyInfoPreview(context.Context, *SurveyInfoExportQuery) (*SurveyInfoExport, error)
 	mustEmbedUnimplementedStudyServiceApiServer()
@@ -1140,6 +1174,9 @@ func (UnimplementedStudyServiceApiServer) GetResponsesLongFormatCSV(*ResponseExp
 }
 func (UnimplementedStudyServiceApiServer) GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetResponsesFlatJSON not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetResponsesFlatJSONWithPagination(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetResponsesFlatJSONWithPagination not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSurveyInfoPreviewCSV not implemented")
@@ -2254,6 +2291,27 @@ func (x *studyServiceApiGetResponsesFlatJSONServer) Send(m *Chunk) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _StudyServiceApi_GetResponsesFlatJSONWithPagination_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResponseExportQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).GetResponsesFlatJSONWithPagination(m, &studyServiceApiGetResponsesFlatJSONWithPaginationServer{stream})
+}
+
+type StudyServiceApi_GetResponsesFlatJSONWithPaginationServer interface {
+	Send(*PaginatedFile) error
+	grpc.ServerStream
+}
+
+type studyServiceApiGetResponsesFlatJSONWithPaginationServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONWithPaginationServer) Send(m *PaginatedFile) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _StudyServiceApi_GetSurveyInfoPreviewCSV_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(SurveyInfoExportQuery)
 	if err := stream.RecvMsg(m); err != nil {
@@ -2549,6 +2607,11 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetResponsesFlatJSON",
 			Handler:       _StudyServiceApi_GetResponsesFlatJSON_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetResponsesFlatJSONWithPagination",
+			Handler:       _StudyServiceApi_GetResponsesFlatJSONWithPagination_Handler,
 			ServerStreams: true,
 		},
 		{
