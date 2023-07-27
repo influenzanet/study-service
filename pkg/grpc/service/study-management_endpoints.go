@@ -323,8 +323,6 @@ func (s *studyServiceServer) GetSurveyKeys(ctx context.Context, req *api.GetSurv
 	return &resp, nil
 }
 
-type StudyRole string
-
 func (s *studyServiceServer) SaveStudyMember(ctx context.Context, req *api.StudyMemberReq) (*api.Study, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" || req.Member == nil || req.Member.UserId == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
