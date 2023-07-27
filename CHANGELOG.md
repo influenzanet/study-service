@@ -1,5 +1,7 @@
 # Changelog
 
+## [v1.6.2] - 2023-07-27
+
 ### Added
 
 - New study-engine expression to generate a random number: `generateRandomNumber`, with two required arguments for the min and max value (both inclusive).
