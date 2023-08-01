@@ -144,6 +144,36 @@ func (dbService *StudyDBService) CountSurveyResponsesByKey(instanceID string, st
 	return count, err
 }
 
+func (dbService *StudyDBService) GetSurveyResponsesCount(
+	ctx context.Context,
+	instanceID string,
+	studyKey string, surveyKey string, from int64, until int64) (totalCount int32) {
+	filter := bson.M{}
+	if len(surveyKey) > 0 {
+		filter["key"] = surveyKey
+	}
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": from}},
+			bson.M{"submittedAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["submittedAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": until}
+	}
+	count, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+	if err != nil {
+		return 0
+	} else {
+		return totalCount
+	}
+}
+
 func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	ctx context.Context,
 	instanceID string,

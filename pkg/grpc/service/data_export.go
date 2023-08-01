@@ -16,6 +16,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/exporter"
 	"github.com/influenzanet/study-service/pkg/studyengine"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -358,6 +359,42 @@ func (s *studyServiceServer) HasAccessToDownload(t *api_types.TokenInfos, studyK
 		types.STUDY_ROLE_MAINTAINER,
 	})
 	return err
+}
+
+func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error {
+	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
+
+	ctx := context.Background()
+	itemCount := s.studyDBservice.GetSurveyResponsesCount(ctx, req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until)
+	pageSize, page, pageCount := utils.ComputePaginationParameter(req.PageSize, req.Page, itemCount)
+	// Send pagination infos
+	infos := &api.PaginatedFile{
+		Data: &api.PaginatedFile_Info{
+			Info: &api.PaginationInfo{
+				ItemCount: itemCount,
+				PageCount: pageCount,
+				PageSize:  pageSize,
+				Page:      page,
+			},
+		},
+	}
+
+	err = stream.Send(infos)
+	if err != nil {
+		return err
+	}
+
+	data := &api.PaginatedFile{
+		Data: &api.PaginatedFile_Chunk{
+			Chunk: buf.Bytes(),
+		},
+	}
+	err = stream.Send(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // TODO: Test GetResponsesFlatJSON
