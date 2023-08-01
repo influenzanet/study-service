@@ -1,5 +1,11 @@
 # Changelog
 
+## ??? - 2023-08-01
+
+### Added
+
+- New gRPC endpoint `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
+
 ## [v1.6.2] - 2023-07-27
 
 ### Added
