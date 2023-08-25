@@ -1091,7 +1091,6 @@ func (s *studyServiceServer) DeleteParticipantFiles(ctx context.Context, req *ap
 		err = os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
 		if err != nil {
 			logger.Error.Printf("unexpected error: %v", err)
-			continue
 		}
 		os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.PreviewPath))
 
