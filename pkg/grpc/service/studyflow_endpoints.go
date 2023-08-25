@@ -999,6 +999,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	fileInfo.Size = int32(fileSize)
 	fileInfo.Status = types.FILE_STATUS_READY
 	fileInfo.Path = targetFileRelativePath
+	fileInfo.SubmittedAt = time.Now().Unix()
 	fileInfo, err = s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, fileInfo)
 	if err != nil {
 		logger.Debug.Printf("Error UploadParticipantFile: %v", err.Error())
