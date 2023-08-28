@@ -79,6 +79,7 @@ type StudyServiceApiClient interface {
 	DeleteStudy(ctx context.Context, in *StudyReferenceReq, opts ...grpc.CallOption) (*ServiceStatus, error)
 	RunRules(ctx context.Context, in *StudyRulesReq, opts ...grpc.CallOption) (*RuleRunSummary, error)
 	RunRulesForSingleParticipant(ctx context.Context, in *RunRulesForSingleParticipantReq, opts ...grpc.CallOption) (*RuleRunSummary, error)
+	RunRulesForPreviousResponses(ctx context.Context, in *RunRulesForPreviousResponsesReq, opts ...grpc.CallOption) (*RuleRunSummary, error)
 	// Data access:
 	GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error)
 	StreamStudyResponses(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (StudyServiceApi_StreamStudyResponsesClient, error)
@@ -91,6 +92,7 @@ type StudyServiceApiClient interface {
 	GetResponsesWideFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesWideFormatCSVClient, error)
 	GetResponsesLongFormatCSV(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesLongFormatCSVClient, error)
 	GetResponsesFlatJSON(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONClient, error)
+	GetResponsesFlatJSONWithPagination(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONWithPaginationClient, error)
 	GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error)
 	GetSurveyInfoPreview(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (*SurveyInfoExport, error)
 }
@@ -583,6 +585,15 @@ func (c *studyServiceApiClient) RunRulesForSingleParticipant(ctx context.Context
 	return out, nil
 }
 
+func (c *studyServiceApiClient) RunRulesForPreviousResponses(ctx context.Context, in *RunRulesForPreviousResponsesReq, opts ...grpc.CallOption) (*RuleRunSummary, error) {
+	out := new(RuleRunSummary)
+	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/RunRulesForPreviousResponses", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *studyServiceApiClient) GetStudyResponseStatistics(ctx context.Context, in *SurveyResponseQuery, opts ...grpc.CallOption) (*StudyResponseStatistics, error) {
 	out := new(StudyResponseStatistics)
 	err := c.cc.Invoke(ctx, "/influenzanet.study_service.StudyServiceApi/GetStudyResponseStatistics", in, out, opts...)
@@ -843,8 +854,40 @@ func (x *studyServiceApiGetResponsesFlatJSONClient) Recv() (*Chunk, error) {
 	return m, nil
 }
 
+func (c *studyServiceApiClient) GetResponsesFlatJSONWithPagination(ctx context.Context, in *ResponseExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetResponsesFlatJSONWithPaginationClient, error) {
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[9], "/influenzanet.study_service.StudyServiceApi/GetResponsesFlatJSONWithPagination", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &studyServiceApiGetResponsesFlatJSONWithPaginationClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type StudyServiceApi_GetResponsesFlatJSONWithPaginationClient interface {
+	Recv() (*PaginatedFile, error)
+	grpc.ClientStream
+}
+
+type studyServiceApiGetResponsesFlatJSONWithPaginationClient struct {
+	grpc.ClientStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONWithPaginationClient) Recv() (*PaginatedFile, error) {
+	m := new(PaginatedFile)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *studyServiceApiClient) GetSurveyInfoPreviewCSV(ctx context.Context, in *SurveyInfoExportQuery, opts ...grpc.CallOption) (StudyServiceApi_GetSurveyInfoPreviewCSVClient, error) {
-	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[9], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
+	stream, err := c.cc.NewStream(ctx, &StudyServiceApi_ServiceDesc.Streams[10], "/influenzanet.study_service.StudyServiceApi/GetSurveyInfoPreviewCSV", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -943,6 +986,7 @@ type StudyServiceApiServer interface {
 	DeleteStudy(context.Context, *StudyReferenceReq) (*ServiceStatus, error)
 	RunRules(context.Context, *StudyRulesReq) (*RuleRunSummary, error)
 	RunRulesForSingleParticipant(context.Context, *RunRulesForSingleParticipantReq) (*RuleRunSummary, error)
+	RunRulesForPreviousResponses(context.Context, *RunRulesForPreviousResponsesReq) (*RuleRunSummary, error)
 	// Data access:
 	GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error)
 	StreamStudyResponses(*SurveyResponseQuery, StudyServiceApi_StreamStudyResponsesServer) error
@@ -955,6 +999,7 @@ type StudyServiceApiServer interface {
 	GetResponsesWideFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesWideFormatCSVServer) error
 	GetResponsesLongFormatCSV(*ResponseExportQuery, StudyServiceApi_GetResponsesLongFormatCSVServer) error
 	GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error
+	GetResponsesFlatJSONWithPagination(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error
 	GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error
 	GetSurveyInfoPreview(context.Context, *SurveyInfoExportQuery) (*SurveyInfoExport, error)
 	mustEmbedUnimplementedStudyServiceApiServer()
@@ -1108,6 +1153,9 @@ func (UnimplementedStudyServiceApiServer) RunRules(context.Context, *StudyRulesR
 func (UnimplementedStudyServiceApiServer) RunRulesForSingleParticipant(context.Context, *RunRulesForSingleParticipantReq) (*RuleRunSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RunRulesForSingleParticipant not implemented")
 }
+func (UnimplementedStudyServiceApiServer) RunRulesForPreviousResponses(context.Context, *RunRulesForPreviousResponsesReq) (*RuleRunSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RunRulesForPreviousResponses not implemented")
+}
 func (UnimplementedStudyServiceApiServer) GetStudyResponseStatistics(context.Context, *SurveyResponseQuery) (*StudyResponseStatistics, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudyResponseStatistics not implemented")
 }
@@ -1140,6 +1188,9 @@ func (UnimplementedStudyServiceApiServer) GetResponsesLongFormatCSV(*ResponseExp
 }
 func (UnimplementedStudyServiceApiServer) GetResponsesFlatJSON(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetResponsesFlatJSON not implemented")
+}
+func (UnimplementedStudyServiceApiServer) GetResponsesFlatJSONWithPagination(*ResponseExportQuery, StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetResponsesFlatJSONWithPagination not implemented")
 }
 func (UnimplementedStudyServiceApiServer) GetSurveyInfoPreviewCSV(*SurveyInfoExportQuery, StudyServiceApi_GetSurveyInfoPreviewCSVServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetSurveyInfoPreviewCSV not implemented")
@@ -2035,6 +2086,24 @@ func _StudyServiceApi_RunRulesForSingleParticipant_Handler(srv interface{}, ctx 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StudyServiceApi_RunRulesForPreviousResponses_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RunRulesForPreviousResponsesReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StudyServiceApiServer).RunRulesForPreviousResponses(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/influenzanet.study_service.StudyServiceApi/RunRulesForPreviousResponses",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StudyServiceApiServer).RunRulesForPreviousResponses(ctx, req.(*RunRulesForPreviousResponsesReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StudyServiceApi_GetStudyResponseStatistics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SurveyResponseQuery)
 	if err := dec(in); err != nil {
@@ -2251,6 +2320,27 @@ type studyServiceApiGetResponsesFlatJSONServer struct {
 }
 
 func (x *studyServiceApiGetResponsesFlatJSONServer) Send(m *Chunk) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _StudyServiceApi_GetResponsesFlatJSONWithPagination_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ResponseExportQuery)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StudyServiceApiServer).GetResponsesFlatJSONWithPagination(m, &studyServiceApiGetResponsesFlatJSONWithPaginationServer{stream})
+}
+
+type StudyServiceApi_GetResponsesFlatJSONWithPaginationServer interface {
+	Send(*PaginatedFile) error
+	grpc.ServerStream
+}
+
+type studyServiceApiGetResponsesFlatJSONWithPaginationServer struct {
+	grpc.ServerStream
+}
+
+func (x *studyServiceApiGetResponsesFlatJSONWithPaginationServer) Send(m *PaginatedFile) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -2485,6 +2575,10 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _StudyServiceApi_RunRulesForSingleParticipant_Handler,
 		},
 		{
+			MethodName: "RunRulesForPreviousResponses",
+			Handler:    _StudyServiceApi_RunRulesForPreviousResponses_Handler,
+		},
+		{
 			MethodName: "GetStudyResponseStatistics",
 			Handler:    _StudyServiceApi_GetStudyResponseStatistics_Handler,
 		},
@@ -2549,6 +2643,11 @@ var StudyServiceApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetResponsesFlatJSON",
 			Handler:       _StudyServiceApi_GetResponsesFlatJSON_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetResponsesFlatJSONWithPagination",
+			Handler:       _StudyServiceApi_GetResponsesFlatJSONWithPagination_Handler,
 			ServerStreams: true,
 		},
 		{
