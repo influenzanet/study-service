@@ -999,6 +999,7 @@ func (s *studyServiceServer) UploadParticipantFile(stream api.StudyServiceApi_Up
 	fileInfo.Size = int32(fileSize)
 	fileInfo.Status = types.FILE_STATUS_READY
 	fileInfo.Path = targetFileRelativePath
+	fileInfo.SubmittedAt = time.Now().Unix()
 	fileInfo, err = s.studyDBservice.SaveFileInfo(instanceID, info.StudyKey, fileInfo)
 	if err != nil {
 		logger.Debug.Printf("Error UploadParticipantFile: %v", err.Error())
@@ -1090,7 +1091,6 @@ func (s *studyServiceServer) DeleteParticipantFiles(ctx context.Context, req *ap
 		err = os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.Path))
 		if err != nil {
 			logger.Error.Printf("unexpected error: %v", err)
-			continue
 		}
 		os.Remove(filepath.Join(s.persistentStorageConfig.RootPath, fileInfo.PreviewPath))
 
