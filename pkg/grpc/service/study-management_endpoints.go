@@ -484,7 +484,7 @@ func (s *studyServiceServer) RemoveStudyRulesVersion(ctx context.Context, req *a
 		}
 	}
 
-	//delete all study rules for study
+	//delete study rules with specified id
 	err = s.studyDBservice.DeleteStudyRulesVersion(req.Token.InstanceId, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
