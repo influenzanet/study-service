@@ -4,16 +4,16 @@
 
 ### Added
 
-- new db collection for history of study rules, new methods to get, delete and add study rules. 
-- new uploadedAt index model for study rules 
-- new gRPC endpoints: 
+- New db collection for history of study rules, new methods to get, delete and add study rules. 
+- New uploadedAt index model for study rules 
+- New gRPC endpoints: 
   - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options 
   - `GetCurrentStudyRules`: get current study rules for specified study key 
   - `RemoveStudyRulesVersion`: deletes study rules version with specified id.
 
 ### Changed
 
-- gRPC endpoints:
+- Changed gRPC endpoints:
   - `DeleteStudy`: study rules history is also deleted 
   - `SaveStudyRules`: new study rules are added in study rules collection 
 
