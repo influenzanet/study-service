@@ -905,7 +905,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	//delete all study rules for study
 	err := s.studyDBservice.DeleteStudyRulesByStudyKey(req.Token.InstanceId, req.StudyKey)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		logger.Warning.Printf("error while deleting study rules for study %s", req.StudyKey)
 	}
 	err = s.studyDBservice.DeleteStudy(req.Token.InstanceId, req.StudyKey)
 	if err != nil {

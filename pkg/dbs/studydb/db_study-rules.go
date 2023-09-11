@@ -170,7 +170,7 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 	return studyRulesHistory, totalCount, nil
 }
 
-func (dbService *StudyDBService) CreateUploadedAtIndex(instanceID string) error {
+func (dbService *StudyDBService) CreateUploadedAtIndexForStudyRulesCollection(instanceID string) error {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
