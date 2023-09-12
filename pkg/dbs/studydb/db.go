@@ -82,6 +82,10 @@ func (dbService *StudyDBService) collectionRefResearcherMessages(instanceID stri
 	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection(studyKey + "_researcherMessages")
 }
 
+func (dbService *StudyDBService) collectionRefStudyRules(instanceID string) *mongo.Collection {
+	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB").Collection("studyRules")
+}
+
 // DB utils
 func (dbService *StudyDBService) getContext() (ctx context.Context, cancel context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(dbService.timeout)*time.Second)

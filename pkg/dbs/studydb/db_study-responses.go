@@ -8,6 +8,7 @@ import (
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/types"
+	"github.com/influenzanet/study-service/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -143,6 +144,36 @@ func (dbService *StudyDBService) CountSurveyResponsesByKey(instanceID string, st
 	return count, err
 }
 
+func (dbService *StudyDBService) GetSurveyResponsesCount(
+	ctx context.Context,
+	instanceID string,
+	studyKey string, surveyKey string, from int64, until int64) (totalCount int32) {
+	filter := bson.M{}
+	if len(surveyKey) > 0 {
+		filter["key"] = surveyKey
+	}
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": from}},
+			bson.M{"submittedAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["submittedAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": until}
+	}
+	count, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount = int32(count)
+	if err != nil {
+		return 0
+	} else {
+		return totalCount
+	}
+}
+
 func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	ctx context.Context,
 	instanceID string,
@@ -164,10 +195,46 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	} else if until > 0 {
 		filter["submittedAt"] = bson.M{"$lt": until}
 	}
+	count, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).CountDocuments(
+		ctx,
+		filter,
+	)
+	totalCount := int32(count)
+	if err != nil {
+		return err
+	}
+
+	batchSize := int32(32)
+	opts := options.FindOptions{
+		BatchSize: &batchSize,
+	}
+	page := int32(0)
+	pageSize := int32(0)
+	for index, val := range args {
+		switch index {
+		case 1: //page is optional param
+			page, _ = val.(int32)
+		case 2: //pageSize is optional param
+			pageSize, _ = val.(int32)
+		}
+	}
+	if utils.CheckForValidPaginationParameter(pageSize, page) {
+		pageCount := utils.ComputePageCount(pageSize, totalCount)
+		if page > pageCount {
+			if pageCount > 0 {
+				page = pageCount
+			} else {
+				page = 1
+			}
+		}
+		opts.SetSkip((int64(page) - 1) * int64(pageSize))
+		opts.SetLimit(int64(pageSize))
+	}
 
 	cur, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Find(
 		ctx,
 		filter,
+		&opts,
 	)
 	if err != nil {
 		return err
