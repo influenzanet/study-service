@@ -484,7 +484,7 @@ func (s *studyServiceServer) RemoveStudyRulesVersion(ctx context.Context, req *a
 		}
 	}
 
-	//delete all study rules for study
+	//delete study rules with specified id
 	err = s.studyDBservice.DeleteStudyRulesVersion(req.Token.InstanceId, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -1028,7 +1028,7 @@ func (s *studyServiceServer) DeleteStudy(ctx context.Context, req *api.StudyRefe
 	//delete all study rules for study
 	err := s.studyDBservice.DeleteStudyRulesByStudyKey(req.Token.InstanceId, req.StudyKey)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		logger.Warning.Printf("error while deleting study rules for study %s", req.StudyKey)
 	}
 	err = s.studyDBservice.DeleteStudy(req.Token.InstanceId, req.StudyKey)
 	if err != nil {

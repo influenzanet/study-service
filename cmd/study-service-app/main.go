@@ -59,7 +59,7 @@ func ensureDBIndexes(gdb *globaldb.GlobalDBService, sdb *studydb.StudyDBService)
 		sdb.CreateMessageScheduledForIndexForAllStudies(i.InstanceID)
 		sdb.CreateParticipantIDIndexForAllStudies(i.InstanceID)
 		sdb.CreateStudyStatusIndexForAllStudies(i.InstanceID)
-		sdb.CreateUploadedAtIndex(i.InstanceID)
+		sdb.CreateUploadedAtIndexForStudyRulesCollection(i.InstanceID)
 		// TODO: ensure other indexes as well
 	}
 
