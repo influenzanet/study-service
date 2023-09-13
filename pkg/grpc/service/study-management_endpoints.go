@@ -741,15 +741,14 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 					Until:         req.Filter.Until,
 				})
 
-				//TODO: sort responses in reverse
-				for _, response := range responses {
+				for i := len(responses) - 1; i >= 0; i-- {
 					for index, rule := range rules {
 						if rule == nil {
 							continue
 						}
 						event := types.StudyEvent{
 							Type:                                  "SUBMIT",
-							Response:                              response,
+							Response:                              responses[i],
 							InstanceID:                            instanceID,
 							StudyKey:                              studyKey,
 							ParticipantIDForConfidentialResponses: participantID2,
