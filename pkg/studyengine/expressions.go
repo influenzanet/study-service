@@ -113,6 +113,10 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
+	case "getISOWeekForTs":
+		val, err = evalCtx.getISOWeekForTs(expression)
+	case "getTsForNextISOWeek":
+		val, err = evalCtx.getTsForNextISOWeek(expression)
 	case "parseValueAsNum":
 		val, err = evalCtx.parseValueAsNum(expression)
 	case "generateRandomNumber":
@@ -1200,6 +1204,84 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 
 	t = float64(referenceTime + delta)
 	return
+}
+
+func (ctx EvalContext) getTsForNextISOWeek(exp types.Expression) (t float64, err error) {
+	if len(exp.Data) != 1 && len(exp.Data) != 2 {
+		return t, errors.New("should have one or two arguments")
+	}
+
+	arg1, err1 := ctx.expressionArgResolver(exp.Data[0])
+	if err1 != nil {
+		return t, err1
+	}
+	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
+		return t, errors.New("argument 1 should be resolved as type number (float64)")
+	}
+
+	ISOWeek := int64(arg1.(float64))
+
+	if ISOWeek < 1 || ISOWeek > 53 {
+		return t, errors.New("argument 1 should be between 1 and 53")
+	}
+
+	referenceTime := time.Now()
+	if len(exp.Data) == 2 {
+		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
+		if err2 != nil {
+			return t, err2
+		}
+		if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
+			return t, errors.New("argument 2 should be resolved as type number (float64)")
+		}
+
+		referenceTime = time.Unix(int64(arg2.(float64)), 0)
+	}
+
+	for {
+		_, week := referenceTime.ISOWeek()
+		if week == int(ISOWeek) {
+			break
+		}
+		referenceTime = referenceTime.AddDate(0, 0, 1)
+	}
+
+	startOfWeek := referenceTime.AddDate(0, 0, -int(referenceTime.Weekday())+1)
+	t = float64(startOfWeek.Unix())
+	return
+}
+
+func (ctx EvalContext) getISOWeekForTs(exp types.Expression) (t float64, err error) {
+	// TODO
+	return t, errors.New("not implemented")
+	/*if len(exp.Data) != 1 && len(exp.Data) != 2 {
+		return t, errors.New("should have one or two arguments")
+	}
+
+	arg1, err1 := ctx.expressionArgResolver(exp.Data[0])
+	if err1 != nil {
+		return t, err1
+	}
+	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
+		return t, errors.New("argument 1 should be resolved as type number (float64)")
+	}
+	delta := int64(arg1.(float64))
+
+	referenceTime := time.Now().Unix()
+	if len(exp.Data) == 2 {
+		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
+		if err2 != nil {
+			return t, err2
+		}
+		if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
+			return t, errors.New("argument 2 should be resolved as type number (float64)")
+		}
+
+		referenceTime = int64(arg2.(float64))
+	}
+
+	t = float64(referenceTime + delta)
+	return*/
 }
 
 func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err error) {

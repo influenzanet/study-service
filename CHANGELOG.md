@@ -4,25 +4,22 @@
 
 ### Added
 
-- New db collection for history of study rules, new methods to get, delete and add study rules. 
-- New uploadedAt index model for study rules 
-- New gRPC endpoints: 
-  - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options 
-  - `GetCurrentStudyRules`: get current study rules for specified study key 
+- New db collection for history of study rules, new methods to get, delete and add study rules.
+- New uploadedAt index model for study rules
+- New gRPC endpoints:
+  - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options
+  - `GetCurrentStudyRules`: get current study rules for specified study key
   - `RemoveStudyRulesVersion`: deletes study rules version with specified id.
+  - `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
+- New study-engine expressions
+  - `getISOWeekForTs`: accepts one argument as timestamp and returns the ISO week number for the given timestamp.
+  - `getTsForNextISOWeek`: first argument should be a value between 1-53 (ISO week number), second argument optionally can define a reference time (if not provided, current time is used). Returns timestamp for the beginning of the week for the first time that is later than the reference and has the ISO week as defined in argument 1.
 
 ### Changed
 
 - Changed gRPC endpoints:
-  - `DeleteStudy`: study rules history is also deleted 
-  - `SaveStudyRules`: new study rules are added in study rules collection 
-
-
-## ??? - 2023-08-01
-
-### Added
-
-- New gRPC endpoint `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
+  - `DeleteStudy`: study rules history is also deleted
+  - `SaveStudyRules`: new study rules are added in study rules collection
 
 ## [v1.6.2] - 2023-07-27
 
