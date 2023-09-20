@@ -1252,10 +1252,8 @@ func (ctx EvalContext) getTsForNextISOWeek(exp types.Expression) (t float64, err
 }
 
 func (ctx EvalContext) getISOWeekForTs(exp types.Expression) (t float64, err error) {
-	// TODO
-	return t, errors.New("not implemented")
-	/*if len(exp.Data) != 1 && len(exp.Data) != 2 {
-		return t, errors.New("should have one or two arguments")
+	if len(exp.Data) != 1 {
+		return t, errors.New("should have one argument")
 	}
 
 	arg1, err1 := ctx.expressionArgResolver(exp.Data[0])
@@ -1265,23 +1263,11 @@ func (ctx EvalContext) getISOWeekForTs(exp types.Expression) (t float64, err err
 	if reflect.TypeOf(arg1).Kind() != reflect.Float64 {
 		return t, errors.New("argument 1 should be resolved as type number (float64)")
 	}
-	delta := int64(arg1.(float64))
 
-	referenceTime := time.Now().Unix()
-	if len(exp.Data) == 2 {
-		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
-		if err2 != nil {
-			return t, err2
-		}
-		if reflect.TypeOf(arg2).Kind() != reflect.Float64 {
-			return t, errors.New("argument 2 should be resolved as type number (float64)")
-		}
-
-		referenceTime = int64(arg2.(float64))
-	}
-
-	t = float64(referenceTime + delta)
-	return*/
+	ts := int64(arg1.(float64))
+	_, iw := time.Unix(ts, 0).ISOWeek()
+	t = float64(iw)
+	return
 }
 
 func (ctx EvalContext) parseValueAsNum(exp types.Expression) (val float64, err error) {

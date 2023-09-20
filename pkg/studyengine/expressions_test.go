@@ -2724,18 +2724,19 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 
 func TestEvalGetISOWeekForTs(t *testing.T) {
 	t.Run("wrong argument type", func(t *testing.T) {
-		t.Error("TODO")
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return type error")
+			return
+		}
 	})
 	t.Run("with number", func(t *testing.T) {
-		t.Error("TODO")
-	})
-	t.Run("with expression", func(t *testing.T) {
-		t.Error("TODO")
-	})
-	/*t.Run("0 || 0 ", func(t *testing.T) {
-		exp := types.Expression{Name: "or", Data: []types.ExpressionArg{
-			{DType: "num", Num: 0},
-			{DType: "num", Num: 0},
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "num", Num: float64(time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix())},
 		}}
 		EvalContext := EvalContext{}
 		ret, err := ExpressionEval(exp, EvalContext)
@@ -2743,10 +2744,35 @@ func TestEvalGetISOWeekForTs(t *testing.T) {
 			t.Errorf("unexpected error: %s", err.Error())
 			return
 		}
-		if ret.(bool) {
-			t.Errorf("unexpected value: %b", ret)
+		iw := ret.(float64)
+		if iw != 1 {
+			t.Errorf("unexpected value: %f", iw)
+			return
 		}
-	})*/
+	})
+
+	t.Run("with expression", func(t *testing.T) {
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: 0},
+				},
+			},
+			},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		iw := ret.(float64)
+		_, ciw := time.Now().ISOWeek()
+		if iw != float64(ciw) {
+			t.Errorf("unexpected value: %f (should be %d)", iw, ciw)
+			return
+		}
+	})
 }
 
 func TestEvalGetTsForNextISOWeek(t *testing.T) {
@@ -2811,7 +2837,6 @@ func TestEvalGetTsForNextISOWeek(t *testing.T) {
 	})
 
 	t.Run("with absolute reference", func(t *testing.T) {
-
 		refTs := time.Date(2023, 9, 10, 0, 0, 0, 0, time.Local)
 		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
 			{DType: "num", Num: 1},
