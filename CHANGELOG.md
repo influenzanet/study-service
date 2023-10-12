@@ -1,5 +1,15 @@
 # Changelog
 
+## [v1.7.1] - 2023-10-12
+
+### Added
+
+- The service will create a database index on all studies' participants collection in all available instances for `participantID`.
+
+### Changed
+
+- PR24 by dependabot bumping project dependencies
+
 ## [v1.7.0] - 2023-09-21
 
 ### Added
