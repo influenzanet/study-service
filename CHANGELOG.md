@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.7.2] - 2023-10-24
+
+### Changed
+
+- Fix export of expression args, when dtype is set to "str" but string value is empty.
+
 ## [v1.7.1] - 2023-10-12
 
 ### Added
