@@ -9,7 +9,7 @@ require (
 	github.com/influenzanet/go-utils v0.2.13
 	github.com/influenzanet/logging-service v0.2.0
 	go.mongodb.org/mongo-driver v1.11.7
-	google.golang.org/grpc v1.55.0
+	google.golang.org/grpc v1.56.3
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/yaml.v2 v2.4.0
 )
