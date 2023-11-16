@@ -246,11 +246,16 @@ func (dbService *StudyDBService) FindAndExecuteOnFilteredParticipantsStates(
 	args ...interface{},
 ) error {
 	filter := bson.M{}
-	if len(filterByID) > 0 { //TODO: test if this works as expected
-		filter["participantID"] = filterByID
+	if len(filterByID) > 0 {
+		filter["participantID"] = bson.M{
+			"$in": filterByID,
+		}
 	}
+
 	if len(filterByStatus) > 0 {
-		filter["studyStatus"] = filterByStatus
+		filter["studyStatus"] = bson.M{
+			"$in": filterByStatus,
+		}
 	}
 
 	batchSize := int32(32)
