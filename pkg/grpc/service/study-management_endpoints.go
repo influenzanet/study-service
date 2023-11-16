@@ -713,10 +713,6 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 		req.Filter.ParticipantIds,
 		req.Filter.ParticipantStatus,
 		func(dbService *studydb.StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
-			if p.StudyStatus == types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
-				// ignore temporary participants
-				return nil
-			}
 
 			counters.Participants += 1
 
@@ -735,7 +731,7 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 
 			for _, surveyKey := range req.Filter.SurveyKeys {
 				responses, _ := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{ //TODO err handling
-					ParticipantID: participantID2, //TODO: which participant ID here???
+					ParticipantID: p.ParticipantID, //TODO which pid for conf. responses
 					SurveyKey:     surveyKey,
 					Since:         req.Filter.From,
 					Until:         req.Filter.Until,
