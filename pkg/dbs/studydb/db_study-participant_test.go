@@ -220,6 +220,108 @@ func TestFindAndExecuteOnParticipantsStates(t *testing.T) {
 	})
 }
 
+func TestFindAndExecuteOnFilteredParticipantsStates(t *testing.T) {
+	testStudyKey := "teststudy_findandexecutefiltered"
+
+	pStates := []types.ParticipantState{
+		{
+			ParticipantID: "1",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+			Flags: map[string]string{
+				"test1": "1",
+			},
+		},
+		{
+			ParticipantID: "2",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+		},
+		{
+			ParticipantID: "3",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+		},
+		{
+			ParticipantID: "4",
+			StudyStatus:   types.PARTICIPANT_STUDY_STATUS_TEMPORARY,
+		},
+	}
+
+	for _, ps := range pStates {
+		_, err := testDBService.SaveParticipantState(testInstanceID, testStudyKey, ps)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+	}
+
+	t.Run("Finding filtered participants ", func(t *testing.T) {
+		ctx := context.Background()
+		filteredIDs := [3]string{"1", "2", "4"}
+		filteredStatus := [1]string{types.PARTICIPANT_STUDY_STATUS_ACTIVE}
+		err := testDBService.FindAndExecuteOnFilteredParticipantsStates(
+			ctx,
+			testInstanceID,
+			testStudyKey,
+			filteredIDs[:],
+			filteredStatus[:],
+			func(dbService *StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
+				_, ok := p.Flags["test1"]
+				if !ok {
+					p.Flags = map[string]string{
+						"test1": "1",
+					}
+				} else {
+					p.Flags["test1"] = "newvalue"
+				}
+				_, err := dbService.SaveParticipantState(instanceID, studyKey, p)
+				return err
+			}, nil)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+
+		p, err := testDBService.FindParticipantState(testInstanceID, testStudyKey, pStates[0].ParticipantID)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		testval, ok := p.Flags["test1"]
+		if !ok || testval != "newvalue" {
+			t.Errorf("unexpected flags for p1: %s", p.Flags)
+		}
+
+		p, err = testDBService.FindParticipantState(testInstanceID, testStudyKey, pStates[1].ParticipantID)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		testval, ok = p.Flags["test1"]
+		if !ok || testval != "1" {
+			t.Errorf("unexpected flags for p2: %s", p.Flags)
+		}
+
+		p, err = testDBService.FindParticipantState(testInstanceID, testStudyKey, pStates[2].ParticipantID)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		testval, ok = p.Flags["test1"]
+		if ok || testval == "1" {
+			t.Errorf("unexpected flags for p3: %s", p.Flags)
+		}
+		p, err = testDBService.FindParticipantState(testInstanceID, testStudyKey, pStates[3].ParticipantID)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		testval, ok = p.Flags["test1"]
+		if ok || testval == "1" {
+			t.Errorf("unexpected flags for p4: %s", p.Flags)
+		}
+
+	})
+}
+
 func TestDeleteMessagesFromParticipant(t *testing.T) {
 	testStudyKey := "teststudy_deletemessages"
 
