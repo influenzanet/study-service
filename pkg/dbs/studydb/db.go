@@ -91,7 +91,7 @@ func (dbService *StudyDBService) getContext() (ctx context.Context, cancel conte
 	return context.WithTimeout(context.Background(), time.Duration(dbService.timeout)*time.Second)
 }
 
-func (dbService *StudyDBService) GetDatabaseName(instanceID string) *mongo.Database {
+func (dbService *StudyDBService) DatabaseForInstance(instanceID string) *mongo.Database {
 	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB")
 }
 
