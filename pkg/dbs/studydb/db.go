@@ -90,3 +90,20 @@ func (dbService *StudyDBService) collectionRefStudyRules(instanceID string) *mon
 func (dbService *StudyDBService) getContext() (ctx context.Context, cancel context.CancelFunc) {
 	return context.WithTimeout(context.Background(), time.Duration(dbService.timeout)*time.Second)
 }
+
+func (dbService *StudyDBService) GetDatabaseName(instanceID string) *mongo.Database {
+	return dbService.DBClient.Database(dbService.DBNamePrefix + instanceID + "_studyDB")
+}
+
+func (dbService *StudyDBService) GetTimeout() int {
+	return dbService.timeout
+}
+
+// Public aliases of some methods, to allow easier service extension
+func (dbService *StudyDBService) GetContext() (ctx context.Context, cancel context.CancelFunc) {
+	return dbService.getContext()
+}
+
+func (dbService *StudyDBService) CollectionRefStudySurveys(instanceID string, studyKey string) *mongo.Collection {
+	return dbService.collectionRefStudySurveys(instanceID, studyKey)
+}
