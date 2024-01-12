@@ -1,4 +1,3 @@
 [submodule "api"]
 	path = api
-	url = https://github.com/influenzanet/api.git
-	branch = get-report-api-limit
+	url = ../api.git
