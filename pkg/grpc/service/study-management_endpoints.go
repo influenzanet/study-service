@@ -858,8 +858,8 @@ func (s *studyServiceServer) RunRules(ctx context.Context, req *api.StudyRulesRe
 		req.StudyKey,
 		"",
 		func(dbService *studydb.StudyDBService, p types.ParticipantState, instanceID, studyKey string, args ...interface{}) error {
-			if p.StudyStatus == types.PARTICIPANT_STUDY_STATUS_TEMPORARY {
-				// ignore temporary participants
+			if p.StudyStatus != types.PARTICIPANT_STUDY_STATUS_ACTIVE {
+				//CHANGED: ignore all non-active participants
 				return nil
 			}
 
