@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sort"
 	"time"
 
 	"github.com/coneno/logger"
@@ -718,7 +719,7 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 
 			participantID2, _, err := s.profileIDToParticipantID(instanceID, studyKey, p.ParticipantID, true)
 			if err != nil {
-				logger.Error.Printf("RunRules: %v", err)
+				logger.Error.Printf("RunRulesForPreviousResponses: %v", err)
 				return status.Error(codes.Internal, err.Error())
 			}
 
@@ -727,44 +728,71 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 				ReportsToCreate: map[string]types.Report{},
 			}
 
-			anyChange := false
+			surveyKeys := req.Filter.SurveyKeys
+			if len(req.Filter.SurveyKeys) == 0 {
+				surveyKeys, err = s.studyDBservice.GetSurveyKeysInStudy(instanceID, studyKey, false)
+				if err != nil {
+					logger.Error.Printf("RunRulesForPreviousResponses: %v", err)
+					return status.Error(codes.Internal, err.Error())
+				}
+			}
 
-			for _, surveyKey := range req.Filter.SurveyKeys {
-				responses, _ := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{ //TODO err handling
-					ParticipantID: p.ParticipantID, //TODO which pid for conf. responses
+			anyChange := false
+			responses := []types.SurveyResponse{}
+
+			for _, surveyKey := range surveyKeys {
+				responses_temp, err := s.studyDBservice.FindSurveyResponses(instanceID, studyKey, studydb.ResponseQuery{
+					ParticipantID: p.ParticipantID,
 					SurveyKey:     surveyKey,
 					Since:         req.Filter.From,
 					Until:         req.Filter.Until,
 				})
-
-				for i := len(responses) - 1; i >= 0; i-- {
-					for index, rule := range rules {
-						if rule == nil {
-							continue
-						}
-						event := types.StudyEvent{
-							Type:                                  "SUBMIT",
-							Response:                              responses[i],
-							InstanceID:                            instanceID,
-							StudyKey:                              studyKey,
-							ParticipantIDForConfidentialResponses: participantID2,
-						}
-
-						newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
-							DBService:              s.studyDBservice,
-							ExternalServiceConfigs: s.studyEngineExternalServices,
-						})
-						if err != nil {
-							return err
-						}
-
-						if !reflect.DeepEqual(newState.PState, actionData.PState) {
-							counters.ParticipantStateChangePerRule[index] += 1
-							anyChange = true
-						}
-						actionData = newState
-					}
+				if err != nil {
+					logger.Error.Printf("RunRulesForPreviousResponses: %v", err)
+					return status.Error(codes.Internal, err.Error())
 				}
+				responses = append(responses, responses_temp...)
+			}
+
+			//sort responses descending order
+			sort.SliceStable(responses, func(i, j int) bool {
+				return responses[i].SubmittedAt > responses[j].SubmittedAt
+			})
+
+			for i := len(responses) - 1; i >= 0; i-- {
+				for index, rule := range rules {
+					if rule == nil {
+						continue
+					}
+					event := types.StudyEvent{
+						Type:                                  "SUBMIT",
+						Response:                              responses[i],
+						InstanceID:                            instanceID,
+						StudyKey:                              studyKey,
+						ParticipantIDForConfidentialResponses: participantID2,
+					}
+
+					newState, err := studyengine.ActionEval(*rule, actionData, event, studyengine.ActionConfigs{
+						DBService:              s.studyDBservice,
+						ExternalServiceConfigs: s.studyEngineExternalServices,
+					})
+					if err != nil {
+						return err
+					}
+
+					if !reflect.DeepEqual(newState.PState, actionData.PState) {
+						counters.ParticipantStateChangePerRule[index] += 1
+						anyChange = true
+					}
+					actionData = newState
+				}
+				for key, report := range actionData.ReportsToCreate {
+					report.Timestamp = responses[i].SubmittedAt
+					actionData.ReportsToCreate[key] = report
+				}
+
+				s.saveReports(instanceID, req.StudyKey, actionData.ReportsToCreate, "")
+				actionData.ReportsToCreate = map[string]types.Report{} //clean up ReportsToCreate
 			}
 
 			if anyChange {
@@ -776,7 +804,6 @@ func (s *studyServiceServer) RunRulesForPreviousResponses(ctx context.Context, r
 				}
 
 			}
-			s.saveReports(instanceID, req.StudyKey, actionData.ReportsToCreate, "") //use request here???
 			return nil
 		},
 	)
