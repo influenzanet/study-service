@@ -256,6 +256,10 @@ func (dbService *StudyDBService) FindAndExecuteOnFilteredParticipantsStates(
 		filter["studyStatus"] = bson.M{
 			"$in": filterByStatus,
 		}
+	} else {
+		filter = bson.M{
+			"studyStatus": "active",
+		}
 	}
 
 	batchSize := int32(32)
