@@ -25,7 +25,7 @@ func (e *ExpressionArg) ToAPI() *api.ExpressionArg {
 	eargs := &api.ExpressionArg{}
 	if e.Exp != nil && len(e.Exp.Name) > 0 {
 		eargs.Data = &api.ExpressionArg_Exp{Exp: e.Exp.ToAPI()}
-	} else if len(e.Str) > 0 {
+	} else if len(e.Str) > 0 || e.DType == "str" {
 		eargs.Data = &api.ExpressionArg_Str{Str: e.Str}
 	} else {
 		eargs.Data = &api.ExpressionArg_Num{Num: e.Num}

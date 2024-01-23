@@ -1,28 +1,47 @@
 # Changelog
 
-## ??? - 2023-08-31
+## [v1.7.3] - 2024-01-12
+
+### Changed
+
+- `GetReportsForUser` now supports limit parameter (backward compatible)
+
+## [v1.7.2] - 2023-10-24
+
+### Changed
+
+- Fix export of expression args, when dtype is set to "str" but string value is empty.
+
+## [v1.7.1] - 2023-10-12
 
 ### Added
 
-- New db collection for history of study rules, new methods to get, delete and add study rules. 
-- New uploadedAt index model for study rules 
-- New gRPC endpoints: 
-  - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options 
-  - `GetCurrentStudyRules`: get current study rules for specified study key 
+- The service will create a database index on all studies' participants collection in all available instances for `participantID`.
+
+### Changed
+
+- PR24 by dependabot bumping project dependencies
+
+## [v1.7.0] - 2023-09-21
+
+### Added
+
+- New db collection for history of study rules, new methods to get, delete and add study rules.
+- New uploadedAt index model for study rules
+- New gRPC endpoints:
+  - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options
+  - `GetCurrentStudyRules`: get current study rules for specified study key
   - `RemoveStudyRulesVersion`: deletes study rules version with specified id.
+  - `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
+- New study-engine expressions
+  - `getISOWeekForTs`: accepts one argument as timestamp and returns the ISO week number for the given timestamp.
+  - `getTsForNextISOWeek`: first argument should be a value between 1-53 (ISO week number), second argument optionally can define a reference time (if not provided, current time is used). Returns timestamp for the beginning of the week for the first time that is later than the reference and has the ISO week as defined in argument 1.
 
 ### Changed
 
 - Changed gRPC endpoints:
-  - `DeleteStudy`: study rules history is also deleted 
-  - `SaveStudyRules`: new study rules are added in study rules collection 
-
-
-## ??? - 2023-08-01
-
-### Added
-
-- New gRPC endpoint `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
+  - `DeleteStudy`: study rules history is also deleted
+  - `SaveStudyRules`: new study rules are added in study rules collection
 
 ## [v1.6.2] - 2023-07-27
 
@@ -120,7 +139,7 @@
   - API Changes:
     - `GetSurveyDefForStudy` can be used to retrieve a specific survey version.
     - Replaced `RemoveSurveyFromStudy` with `RemoveSurveyVersion` that can be used to delete a specific survey version.
-    - `GetSurveyVersionInfos` is a new method to retrieve  versions of a survey (without the survey content, to reduce size, use `GetSurveyDefForStudy` to get content for a specific version).
+    - `GetSurveyVersionInfos` is a new method to retrieve versions of a survey (without the survey content, to reduce size, use `GetSurveyDefForStudy` to get content for a specific version).
     - `GetSurveyKeys` is a new method to fetch survey keys for a study.
     - `UnpublishSurvey` is a new method to mark all existing survey versions "unpublished".
 
@@ -161,7 +180,7 @@
 - Study-engine can be now extended with external logic via configurable calls to external HTTP endpoints. There are two new expressions for this:
   - `EXTERNAL_EVENT_HANDLER`: is a study action that can be used to trigger some externally defined logic. The https response might contain the updated participant state (`pState`) and/or the map of reports to be created (`reportsToCreate`) after the rules have run. Both of these are optional. If not provided the previous participant state is kept.
   - `externalEventEval`: is a study expression that can be used to process the event (e.g. survey responses) externally and retrieve a value, that can be used in the study engine (e.g. determine which survey should be assigned). For `externalEventEval` the return value of the expression (received through the HTTP response) can be interpreted as string (by default) or a float64 (if return type is defined as "float").
-Both expression will attempt to send an HTTP POST message with a payload containing the `apiKey`, `participantState`, `eventType`, `studyKey`, `instanceID` and if relevant `surveyResponses`.
+    Both expression will attempt to send an HTTP POST message with a payload containing the `apiKey`, `participantState`, `eventType`, `studyKey`, `instanceID` and if relevant `surveyResponses`.
   - The expressions requires the following arguments:
     - `serviceName`: this name will be used to look up the URL and API key for the service.
   - To configure an external service, the study-service requires a yaml file containing the list of service configs. The path to such a yaml file can be defined through the environment variable `EXTERNAL_SERVICES_CONFIG_PATH`.
@@ -204,6 +223,7 @@ services:
 - Study data model now includes the attribute `idMappingMethod`, which allows to select the method used to convert profile ID into participant ID. This configuration is per study. Currently available methods are: 'aesctr' (default for backwards compatibility), 'sha224', 'sha256', 'same'.
 - Include improved logger, using configurable log levels. Use the environment variable `LOG_LEVEL` to select which level should be applied. Possible values are: `debug info warning error`.
 - New gRPC endpoints:
+
   - `GetResponsesFlatJSON`: data exporter to export repsonses in a flat JSON list
   - `RegisterTemporaryParticipant`: create a participant that has no account yet
   - `ConvertTemporaryToParticipant`: convert a temporary participant (or merge) into an active participant
@@ -259,9 +279,10 @@ services:
 - `GET_LAST_SURVEY_ITEM` survey prefill rule accepts now an optional third argument to filter for responses that were submitted not sooner than the provided value in seconds.
 - 'Unknown' question types are now exported as JSON
 - Study Engine:
+
   - `UPDATE_FLAG` action accepts other data types than strings for the value attribute.
   - `or` expression doesn't stop if any of the arguments return an error, instead it continues checking the remaining options
-  - Reworked reporting system. Previously, expressions about "reports" were not used yet. Report attribute from the participant state is removed, and a new collection `<studyKey>_reports` is added.  Study actions remove due to this change: `ADD_REPORT, REMOVE_ALL_REPORTS, REMOVE_REPORT_BY_KEY, REMOVE_REPORTS_BY_KEY`.
+  - Reworked reporting system. Previously, expressions about "reports" were not used yet. Report attribute from the participant state is removed, and a new collection `<studyKey>_reports` is added. Study actions remove due to this change: `ADD_REPORT, REMOVE_ALL_REPORTS, REMOVE_REPORT_BY_KEY, REMOVE_REPORTS_BY_KEY`.
 
 - Study stats contain count of temporary participants as well.
 
@@ -344,7 +365,7 @@ services:
 
 - `getStudyEntryTime`: method to retrieve timestamp of the event, when the participant entered the study from the participant state.
 - `hasSurveyKeyAssigned`: accepts one string argument with the survey key to be checked for. Returns true if the survey key exists in the assigned surveys array.
-- `getSurveyKeyAssignedFrom`:  accepts one string argument with the survey key to be checked for. Returns the timestamp for the survey's validFrom attribute or -1 if the survey key is not assigned.
+- `getSurveyKeyAssignedFrom`: accepts one string argument with the survey key to be checked for. Returns the timestamp for the survey's validFrom attribute or -1 if the survey key is not assigned.
 - `getSurveyKeyAssignedUntil`: accepts one string argument with the survey key to be checked for. Returns the timestamp for the survey's validUntil attribute or -1 if the survey key is not assigned.
 - `responseHasOnlyKeysOtherThan`: expression to check if the response for a specific survey item's response group only inlcudes other keys then provided here. (E.g., symptom response contains any selection other than "no symptoms".) Returns false if response is not present at all.)
 - `hasParticipantFlag`: expression to check if the participant has a specific flag. Needs two arguments for "key" and "value". Return true if key exists and value is the same as the provided second argument. Arguments can be both strings or expressions that return a string.

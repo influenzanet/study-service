@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -2723,6 +2722,175 @@ func TestEvalTimestampWithOffset(t *testing.T) {
 	})
 }
 
+func TestEvalGetISOWeekForTs(t *testing.T) {
+	t.Run("wrong argument type", func(t *testing.T) {
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return type error")
+			return
+		}
+	})
+	t.Run("with number", func(t *testing.T) {
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "num", Num: float64(time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix())},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		iw := ret.(float64)
+		if iw != 1 {
+			t.Errorf("unexpected value: %f", iw)
+			return
+		}
+	})
+
+	t.Run("with expression", func(t *testing.T) {
+		exp := types.Expression{Name: "getISOWeekForTs", Data: []types.ExpressionArg{
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset", Data: []types.ExpressionArg{
+					{DType: "num", Num: 0},
+				},
+			},
+			},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		iw := ret.(float64)
+		_, ciw := time.Now().ISOWeek()
+		if iw != float64(ciw) {
+			t.Errorf("unexpected value: %f (should be %d)", iw, ciw)
+			return
+		}
+	})
+}
+
+func TestEvalGetTsForNextISOWeek(t *testing.T) {
+	t.Run("wrong iso week type", func(t *testing.T) {
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return type error")
+			return
+		}
+	})
+
+	t.Run("with iso week not in range", func(t *testing.T) {
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "num", Num: 0},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return range error")
+			return
+		}
+	})
+
+	t.Run("wrong reference type", func(t *testing.T) {
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "num", Num: 3},
+			{DType: "str", Str: "test"},
+		}}
+		EvalContext := EvalContext{}
+		_, err := ExpressionEval(exp, EvalContext)
+		if err == nil {
+			t.Error("should return type error")
+			return
+		}
+	})
+
+	t.Run("without reference", func(t *testing.T) {
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "num", Num: 1},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		ts := ret.(float64)
+		tsD := time.Unix(int64(ts), 0)
+		refTs := time.Now().AddDate(1, 0, 0)
+		// beginning of the year
+		refTs = time.Date(refTs.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+
+		y_i, w_i := refTs.ISOWeek()
+		y, w := tsD.ISOWeek()
+		if y != y_i || w != w_i {
+			t.Errorf("unexpected value: %d-%d, expected %d-%d", y, w, y_i, w_i)
+		}
+	})
+
+	t.Run("with absolute reference", func(t *testing.T) {
+		refTs := time.Date(2023, 9, 10, 0, 0, 0, 0, time.Local)
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "num", Num: 1},
+			{DType: "num", Num: float64(refTs.Unix())},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		ts := ret.(float64)
+		tsD := time.Unix(int64(ts), 0)
+		refTs = refTs.AddDate(1, 0, 0)
+		// beginning of the year
+		refTs = time.Date(refTs.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		y_i, w_i := refTs.ISOWeek()
+		y, w := tsD.ISOWeek()
+		if y != y_i || w != w_i {
+			t.Errorf("unexpected value: %d-%d, expected %d-%d", y, w, y_i, w_i)
+		}
+
+	})
+
+	t.Run("with relative reference", func(t *testing.T) {
+		exp := types.Expression{Name: "getTsForNextISOWeek", Data: []types.ExpressionArg{
+			{DType: "num", Num: 1},
+			{DType: "exp", Exp: &types.Expression{
+				Name: "timestampWithOffset",
+				Data: []types.ExpressionArg{
+					{DType: "num", Num: 0},
+				},
+			}},
+		}}
+		EvalContext := EvalContext{}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		ts := ret.(float64)
+		tsD := time.Unix(int64(ts), 0)
+		refTs := time.Now().AddDate(1, 0, 0)
+		// beginning of the year
+		refTs = time.Date(refTs.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+
+		y_i, w_i := refTs.ISOWeek()
+		y, w := tsD.ISOWeek()
+		if y != y_i || w != w_i {
+			t.Errorf("unexpected value: %d-%d, expected %d-%d", y, w, y_i, w_i)
+		}
+	})
+}
+
 func TestEvalHasMessageTypeAssigned(t *testing.T) {
 	t.Run("participant has no messages", func(t *testing.T) {
 		exp := types.Expression{Name: "hasMessageTypeAssigned", Data: []types.ExpressionArg{
@@ -2829,7 +2997,7 @@ func TestEvalGenerateRandomNumber(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 				return
 			}
-			logger.Debug.Println(val.(float64))
+			// logger.Debug.Println(val.(float64))
 			if val.(float64) < 10 || val.(float64) > 20 {
 				t.Errorf("unexpected value: %v", val)
 				return
