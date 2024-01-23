@@ -313,7 +313,7 @@ func (dbService *StudyDBService) CreateParticipantIDIndexForResponsesForAllStudi
 	for _, study := range studies {
 		err = dbService.CreateParticipantIDIndexForResponses(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating participantID index for survey responses for study: %v, %v", err, study)
+			logger.Error.Printf("unexpected error when creating participantID index for survey responses for study: %v, %v", study, err)
 		}
 	}
 }
@@ -342,7 +342,7 @@ func (dbService *StudyDBService) CreateSubmittedAtIndexForAllStudies(instanceID 
 	for _, study := range studies {
 		err = dbService.CreateSubmittedAtIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating submittedAt index for survey responses for study: %v, %v", err, study)
+			logger.Error.Printf("unexpected error when creating submittedAt index for survey responses for study: %v, %v", study, err)
 		}
 	}
 }

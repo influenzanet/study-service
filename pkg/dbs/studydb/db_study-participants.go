@@ -367,7 +367,7 @@ func (dbService *StudyDBService) CreateMessageScheduledForIndexForAllStudies(ins
 	for _, study := range studies {
 		err = dbService.CreateMessageScheduledForIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating message schedule index for study: %v, %v", err, study)
+			logger.Error.Printf("unexpected error when creating message schedule index for study: %v, %v", study, err)
 		}
 	}
 }
@@ -382,7 +382,7 @@ func (dbService *StudyDBService) CreateParticipantIDIndexForAllStudies(instanceI
 	for _, study := range studies {
 		err = dbService.CreateParticipantIDIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating participantID index for survey responses for study: %v, %v", err, study)
+			logger.Error.Printf("unexpected error when creating participantID index for study: %v, %v", study, err)
 		}
 	}
 }
@@ -397,7 +397,7 @@ func (dbService *StudyDBService) CreateStudyStatusIndexForAllStudies(instanceID 
 	for _, study := range studies {
 		err = dbService.CreateStudyStatusIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating message schedule indexes: %v", err)
+			logger.Error.Printf("unexpected error when creating study status index for study: %v, %v", study, err)
 		}
 	}
 }
