@@ -1,5 +1,17 @@
 # Changelog
 
+## ??? -2024-01-23
+
+### Added
+
+- New gRPC endpoint:
+  - `RunRulesForPreviousResponses`: run custom rules retrospectively on previous responses. Responses can be filtered by participantIDs, participant status, survey keys and submission time range.
+
+- The service will create a database index in all available instances:
+    - on all studies' participants collection for `studyStatus`,
+    - on all studies' survey responses collection for `studyStatus` and `participantID`.
+
+
 ## [v1.7.3] - 2024-01-12
 
 ### Changed
@@ -29,8 +41,8 @@
 - New db collection for history of study rules, new methods to get, delete and add study rules.
 - New uploadedAt index model for study rules
 - New gRPC endpoints:
-  - `GetStudyRulesHistory`: get study rules history for specified study key that fullfill query criteria with pagination and sorting options
-  - `GetCurrentStudyRules`: get current study rules for specified study key
+  - `GetStudyRulesHistory`: gets study rules history for specified study key that fullfill query criteria with pagination and sorting options
+  - `GetCurrentStudyRules`: gets current study rules for specified study key
   - `RemoveStudyRulesVersion`: deletes study rules version with specified id.
   - `GetResponsesFlatJSONWithPagination`: stream responses in JSON format with pagination infos.
 - New study-engine expressions
