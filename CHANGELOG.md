@@ -11,6 +11,10 @@
     - on all studies' participants collection for `studyStatus`,
     - on all studies' survey responses collection for `studyStatus` and `participantID`.
 
+### Changed
+
+- gRPC endpoint `RunRules`: all non-active participants are ignored, not only temporary participants as before.
+
 
 ## [v1.7.3] - 2024-01-12
 
