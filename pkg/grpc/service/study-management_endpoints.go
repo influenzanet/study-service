@@ -47,7 +47,7 @@ func (s *studyServiceServer) CreateNewStudy(ctx context.Context, req *api.NewStu
 	s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_LOG, constants.LOG_EVENT_STUDY_CREATION, req.Study.Key)
 
 	// create required indexes for the new study:
-	err = s.studyDBservice.CreateSurveyDefintionIndexForStudy(req.Token.InstanceId, study.Key)
+	err = s.studyDBservice.CreateIndexModelForSurveysForStudy(req.Token.InstanceId, study.Key)
 	if err != nil {
 		logger.Error.Printf("unexpected error when creating survey definition indexes: %v", err)
 	}
