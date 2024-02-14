@@ -8,6 +8,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -164,4 +165,41 @@ func (dbService *StudyDBService) PerformActionForReport(
 		return err
 	}
 	return nil
+}
+func (dbService *StudyDBService) CreateIndexModelForReportsForAllStudies(instanceID string) {
+	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
+	if err != nil {
+		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
+		return
+	}
+
+	for _, study := range studies {
+		err = dbService.CreateIndexModelForReportsForStudy(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating indexes for reports collection: %v", err)
+		}
+	}
+}
+
+func (dbService *StudyDBService) CreateIndexModelForReportsForStudy(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefReportHistory(instanceID, studyKey).Indexes().CreateMany(
+		ctx, []mongo.IndexModel{
+			{
+				Keys: bson.D{
+					{Key: "participantID", Value: 1},
+				},
+			},
+			{
+				Keys: bson.D{
+					{Key: "participantID", Value: 1},
+					{Key: "key", Value: 1},
+					{Key: "timestamp", Value: 1},
+				},
+			},
+		},
+	)
+	return err
 }
