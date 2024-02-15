@@ -56,9 +56,7 @@ func ensureDBIndexes(gdb *globaldb.GlobalDBService, sdb *studydb.StudyDBService)
 
 	for _, i := range instances {
 		sdb.CreateIndexModelForSurveysForAllStudies(i.InstanceID)
-		sdb.CreateMessageScheduledForIndexForAllStudies(i.InstanceID)
-		sdb.CreateParticipantIDIndexForAllStudies(i.InstanceID)
-		sdb.CreateStudyStatusIndexForAllStudies(i.InstanceID)
+		sdb.CreateIndexModelForParticipantsForAllStudies(i.InstanceID)
 		sdb.CreateIndexModelForStudyRulesCollection(i.InstanceID)
 		sdb.CreateIndexModelForResponsesForAllStudies(i.InstanceID)
 		sdb.CreateIndexModelForReportsForAllStudies(i.InstanceID)
