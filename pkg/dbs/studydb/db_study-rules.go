@@ -170,15 +170,22 @@ func (dbService *StudyDBService) GetStudyRulesHistory(instanceID string, studyKe
 	return studyRulesHistory, totalCount, nil
 }
 
-func (dbService *StudyDBService) CreateUploadedAtIndexForStudyRulesCollection(instanceID string) error {
+func (dbService *StudyDBService) CreateIndexModelForStudyRulesCollection(instanceID string) error {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	_, err := dbService.collectionRefStudyRules(instanceID).Indexes().CreateOne(
-		ctx, mongo.IndexModel{
-			Keys: bson.D{
-				{Key: "uploadedAt", Value: 1},
-				{Key: "studyKey", Value: 1},
+	_, err := dbService.collectionRefStudyRules(instanceID).Indexes().CreateMany(
+		ctx, []mongo.IndexModel{
+			{
+				Keys: bson.D{
+					{Key: "studyKey", Value: 1},
+				},
+			},
+			{
+				Keys: bson.D{
+					{Key: "uploadedAt", Value: 1},
+					{Key: "studyKey", Value: 1},
+				},
 			},
 		},
 	)

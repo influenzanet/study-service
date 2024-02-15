@@ -236,6 +236,65 @@ func (dbService *StudyDBService) FindAndExecuteOnParticipantsStates(
 	return nil
 }
 
+func (dbService *StudyDBService) FindAndExecuteOnFilteredParticipantsStates(
+	ctx context.Context,
+	instanceID string,
+	studyKey string,
+	filterByID []string,
+	filterByStatus []string,
+	cbk func(dbService *StudyDBService, p types.ParticipantState, instanceID string, studyKey string, args ...interface{}) error,
+	args ...interface{},
+) error {
+	filter := bson.M{}
+	if len(filterByID) > 0 {
+		filter["participantID"] = bson.M{
+			"$in": filterByID,
+		}
+	}
+
+	if len(filterByStatus) > 0 {
+		filter["studyStatus"] = bson.M{
+			"$in": filterByStatus,
+		}
+	} else {
+		filter = bson.M{
+			"studyStatus": "active",
+		}
+	}
+
+	batchSize := int32(32)
+	options := options.FindOptions{
+		BatchSize: &batchSize,
+	}
+
+	cur, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Find(ctx, filter, &options)
+	if err != nil {
+		return err
+	}
+	defer cur.Close(ctx)
+
+	for cur.Next(ctx) {
+		if ctx.Err() != nil {
+			logger.Debug.Println(ctx.Err())
+			return ctx.Err()
+		}
+		// Update state of every participant
+		var pState types.ParticipantState
+		if err := cur.Decode(&pState); err != nil {
+			logger.Error.Printf("wrong data model: %v, %v", pState, err)
+			continue
+		}
+		// Perform callback:
+		if err := cbk(dbService, pState, instanceID, studyKey, args...); err != nil {
+			continue
+		}
+	}
+	if err := cur.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (dbService *StudyDBService) DeleteMessagesFromParticipant(instanceID string, studyKey string, participantID string, messageIDs []string) error {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
@@ -252,11 +311,18 @@ func (dbService *StudyDBService) CreateMessageScheduledForIndex(instanceID strin
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 
-	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Indexes().CreateOne(
-		ctx, mongo.IndexModel{
-			Keys: bson.D{
-				{Key: "messages.scheduledFor", Value: 1},
-				{Key: "studyStatus", Value: 1},
+	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Indexes().CreateMany(
+		ctx, []mongo.IndexModel{
+			{
+				Keys: bson.D{
+					{Key: "messages.scheduledFor", Value: 1},
+					{Key: "studyStatus", Value: 1},
+				},
+			},
+			{
+				Keys: bson.D{
+					{Key: "messages.scheduledFor", Value: 1},
+				},
 			},
 		},
 	)
@@ -277,22 +343,21 @@ func (dbService *StudyDBService) CreateParticipantIDIndex(instanceID string, stu
 	return err
 }
 
-func (dbService *StudyDBService) CreateMessageScheduledForIndexForAllStudies(instanceID string) {
-	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
-	if err != nil {
-		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
-		return
-	}
+func (dbService *StudyDBService) CreateStudyStatusIndex(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
 
-	for _, study := range studies {
-		err = dbService.CreateMessageScheduledForIndex(instanceID, study.Key)
-		if err != nil {
-			logger.Error.Printf("unexpected error when creating message schedule indexes: %v", err)
-		}
-	}
+	_, err := dbService.collectionRefStudyParticipant(instanceID, studyKey).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "studyStatus", Value: 1},
+			},
+		},
+	)
+	return err
 }
 
-func (dbService *StudyDBService) CreateParticipantIDIndexForAllStudies(instanceID string) {
+func (dbService *StudyDBService) CreateIndexModelForParticipantsForAllStudies(instanceID string) {
 	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
 	if err != nil {
 		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
@@ -302,7 +367,15 @@ func (dbService *StudyDBService) CreateParticipantIDIndexForAllStudies(instanceI
 	for _, study := range studies {
 		err = dbService.CreateParticipantIDIndex(instanceID, study.Key)
 		if err != nil {
-			logger.Error.Printf("unexpected error when creating participant ID indexes: %v", err)
+			logger.Error.Printf("unexpected error when creating participantID index for study: %v, %v", study, err)
+		}
+		err = dbService.CreateMessageScheduledForIndex(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating message schedule index for study: %v, %v", study, err)
+		}
+		err = dbService.CreateStudyStatusIndex(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating study status index for study: %v, %v", study, err)
 		}
 	}
 }

@@ -24,7 +24,7 @@ var (
 	}
 )
 
-func (dbService *StudyDBService) CreateSurveyDefintionIndexForAllStudies(instanceID string) {
+func (dbService *StudyDBService) CreateIndexModelForSurveysForAllStudies(instanceID string) {
 	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
 	if err != nil {
 		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
@@ -32,14 +32,14 @@ func (dbService *StudyDBService) CreateSurveyDefintionIndexForAllStudies(instanc
 	}
 
 	for _, study := range studies {
-		err = dbService.CreateSurveyDefintionIndexForStudy(instanceID, study.Key)
+		err = dbService.CreateIndexModelForSurveysForStudy(instanceID, study.Key)
 		if err != nil {
 			logger.Error.Printf("unexpected error when creating survey definition indexes: %v", err)
 		}
 	}
 }
 
-func (dbService *StudyDBService) CreateSurveyDefintionIndexForStudy(instanceID string, studyKey string) error {
+func (dbService *StudyDBService) CreateIndexModelForSurveysForStudy(instanceID string, studyKey string) error {
 	ctx, cancel := dbService.getContext()
 	defer cancel()
 

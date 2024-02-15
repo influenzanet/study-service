@@ -11,6 +11,7 @@ import (
 	"github.com/influenzanet/study-service/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -286,4 +287,78 @@ func (dbService *StudyDBService) DeleteSurveyResponses(instanceID string, studyK
 
 	res, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).DeleteMany(ctx, filter)
 	return res.DeletedCount, err
+}
+
+func (dbService *StudyDBService) CreateParticipantIDIndexForResponses(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Indexes().CreateMany(
+		ctx, []mongo.IndexModel{
+			{
+				Keys: bson.D{
+					{Key: "participantID", Value: 1},
+				},
+			},
+			{
+				Keys: bson.D{
+					{Key: "participantID", Value: 1},
+					{Key: "key", Value: 1},
+					{Key: "submittedAt", Value: 1},
+				},
+			},
+		},
+	)
+	return err
+}
+
+func (dbService *StudyDBService) CreateIndexModelForResponsesForAllStudies(instanceID string) {
+	studies, err := dbService.GetStudiesByStatus(instanceID, "", true)
+	if err != nil {
+		logger.Error.Printf("unexpected error when fetching studies in '%s': %v", instanceID, err)
+		return
+	}
+
+	for _, study := range studies {
+		err = dbService.CreateParticipantIDIndexForResponses(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating participantID index for survey responses for study: %v, %v", study, err)
+		}
+		err = dbService.CreateSubmittedAtIndex(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating submittedAt index for survey responses for study: %v, %v", study, err)
+		}
+		err = dbService.CreateKeyIndex(instanceID, study.Key)
+		if err != nil {
+			logger.Error.Printf("unexpected error when creating key index for survey responses for study: %v, %v", study, err)
+		}
+	}
+}
+
+func (dbService *StudyDBService) CreateSubmittedAtIndex(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "submittedAt", Value: 1},
+			},
+		},
+	)
+	return err
+}
+
+func (dbService *StudyDBService) CreateKeyIndex(instanceID string, studyKey string) error {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	_, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Indexes().CreateOne(
+		ctx, mongo.IndexModel{
+			Keys: bson.D{
+				{Key: "key", Value: 1},
+			},
+		},
+	)
+	return err
 }
