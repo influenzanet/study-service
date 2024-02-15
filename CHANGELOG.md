@@ -1,5 +1,12 @@
 # Changelog
 
+
+## ??? -2024-02-15
+
+### Added
+
+- Added useful index models for db collections.
+
 ## ??? -2024-01-23
 
 ### Added
