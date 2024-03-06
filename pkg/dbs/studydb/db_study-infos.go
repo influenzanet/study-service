@@ -110,6 +110,20 @@ func (dbService *StudyDBService) GetStudyMembers(instanceID string, studyKey str
 }
 
 func (dbService *StudyDBService) GetStudyRules(instanceID string, studyKey string) (rules []types.Expression, err error) {
+	currentRules, err := dbService.GetCurrentStudyRules(instanceID, studyKey)
+	if err == nil {
+		// if current rules are found
+		err := currentRules.UnmarshalRules()
+		if err == nil {
+			// and can be unmarshalled
+			if len(currentRules.Rules) > 0 {
+				// and are not empty
+				return currentRules.Rules, nil
+			}
+		}
+	}
+
+	// fallback to old rules model from study info:
 	projection := bson.D{
 		primitive.E{Key: "rules", Value: 1}, // {"members", 1},
 	}
