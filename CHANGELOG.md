@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.7.4] - 2024-08-12
+
+### Changed
+
+- Can override lifetime of temporary participants with `TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD` environment variable. (Interpreted as seconds)
+- Use study-rules collection to retrieve current study rules, but allow fallback to study info object's rules attribute if not found in the collection. Also it can parse serielized rules (rules attribute stored as string to avoid max nesting level issue in MongoDB).
+
 ## [v1.7.3] - 2024-01-12
 
 ### Changed
