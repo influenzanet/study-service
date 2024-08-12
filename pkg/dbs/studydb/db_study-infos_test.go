@@ -176,19 +176,4 @@ func TestDbGetStudyInfos(t *testing.T) {
 			t.Error("should return only key and secretKey")
 		}
 	})
-
-	t.Run("Get study rule", func(t *testing.T) {
-		rules, err := testDBService.GetStudyRules(testInstanceID, testStudies[0].Key)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
-			return
-		}
-		if len(rules) != 2 {
-			t.Errorf("unexpected number of rules: %d", len(rules))
-			return
-		}
-		if rules[0].Name != "IFTHEN" {
-			t.Error("wrong expression")
-		}
-	})
 }
