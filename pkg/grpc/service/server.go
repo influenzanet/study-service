@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strconv"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/study-service/pkg/api"
@@ -18,6 +19,13 @@ import (
 const (
 	// apiVersion is version of API is provided by server
 	apiVersion = "v1"
+
+	DEFAULT_TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD = 60 * 60 // seconds
+	ENV_TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD     = "TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD"
+)
+
+var (
+	temporaryParticipantTakeoverPeriod = DEFAULT_TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD
 )
 
 type studyServiceServer struct {
@@ -39,6 +47,15 @@ func NewStudyServiceServer(
 	persistentStorageConfig types.PersistentStoreConfig,
 	studyEngineExternalServices []types.ExternalService,
 ) api.StudyServiceApiServer {
+	if val, ok := os.LookupEnv(ENV_TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD); ok {
+		var err error
+		temporaryParticipantTakeoverPeriod, err = strconv.Atoi(val)
+		if err != nil {
+			logger.Error.Printf("failed to parse env variable %s: %v", ENV_TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD, err)
+		}
+	}
+
+	logger.Info.Printf("temporary participant takeover period: %d seconds", temporaryParticipantTakeoverPeriod)
 
 	return &studyServiceServer{
 		clients:                     clients,

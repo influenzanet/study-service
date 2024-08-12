@@ -24,8 +24,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD = 60 * 60 // seconds
-
 func (s *studyServiceServer) EnterStudy(ctx context.Context, req *api.EnterStudyRequest) (*api.AssignedSurveys, error) {
 	if req == nil || token_checks.IsTokenEmpty(req.Token) || req.StudyKey == "" {
 		return nil, status.Error(codes.InvalidArgument, "missing argument")
@@ -156,7 +154,7 @@ func (s *studyServiceServer) ConvertTemporaryToParticipant(ctx context.Context, 
 	if err != nil ||
 		pState.StudyStatus != types.PARTICIPANT_STUDY_STATUS_TEMPORARY ||
 		pState.EnteredAt != req.Timestamp ||
-		pState.EnteredAt+TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD < time.Now().Unix() {
+		pState.EnteredAt+int64(temporaryParticipantTakeoverPeriod) < time.Now().Unix() {
 		// problem with temporary participant
 		logger.Error.Printf("user (%s:%s) attempted to convert wrong temporary participant (ID: %s)", req.Token.InstanceId, req.Token.Id, req.TemporaryParticipantId)
 		s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_PARTICIPANT_ACTION, fmt.Sprintf("user attempted to convert wrong temporary participant (ID: %s)", req.TemporaryParticipantId))
@@ -434,7 +432,7 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 			return nil, status.Error(codes.Internal, "expected temporary participant")
 		}
 		if pState.EnteredAt != req.TemporaryParticipantTimestamp ||
-			pState.EnteredAt+TEMPORARY_PARTICIPANT_TAKEOVER_PERIOD < time.Now().Unix() {
+			pState.EnteredAt+int64(temporaryParticipantTakeoverPeriod) < time.Now().Unix() {
 			// problem with temporary participant
 			logger.Error.Printf("attempted to submit for wrong temporary participant (instance: %s, ID: %s)", instanceID, req.TemporaryParticipantId)
 			time.Sleep(5 * time.Second)
