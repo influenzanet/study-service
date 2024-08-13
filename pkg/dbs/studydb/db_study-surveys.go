@@ -139,7 +139,10 @@ func (dbService *StudyDBService) FindCurrentSurveyDef(instanceID string, studyKe
 
 	filter := bson.M{
 		"surveyDefinition.key": surveyKey,
-		"unpublished":          0,
+		"$or": []bson.M{
+			{"unpublished": 0},
+			{"unpublished": bson.M{"$exists": false}},
+		},
 	}
 
 	elem := &types.Survey{}
