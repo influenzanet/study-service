@@ -23,6 +23,7 @@ type SurveyItem struct {
 	Components       *ItemComponent `bson:"components,omitempty"`
 	Validations      []Validation   `bson:"validations,omitempty"`
 	ConfidentialMode string         `bson:"confidentialMode,omitempty"`
+	MapToKey         string         `bson:"mapToKey,omitempty" json:"mapToKey,omitempty"` // map to this key for confidential mode
 }
 
 func (s SurveyItem) ToAPI() *api.SurveyItem {
@@ -53,6 +54,7 @@ func (s SurveyItem) ToAPI() *api.SurveyItem {
 		Components:       s.Components.ToAPI(),
 		Validations:      validations,
 		ConfidentialMode: s.ConfidentialMode,
+		MapToKey:         s.MapToKey,
 	}
 }
 
@@ -85,5 +87,6 @@ func SurveyItemFromAPI(s *api.SurveyItem) SurveyItem {
 		Components:       ItemComponentFromAPI(s.Components),
 		Validations:      validations,
 		ConfidentialMode: s.ConfidentialMode,
+		MapToKey:         s.MapToKey,
 	}
 }
