@@ -504,8 +504,13 @@ func (s *studyServiceServer) SubmitResponse(ctx context.Context, req *api.Submit
 	// Save confidential data:
 	if len(confidentialResponses) > 0 {
 		for _, confItem := range confidentialResponses {
+			itemKey := confItem.Key
+			if len(confItem.MapToKey) > 0 {
+				itemKey = confItem.MapToKey
+				confItem.Key = itemKey
+			}
 			rItem := types.SurveyResponse{
-				Key:           confItem.Key,
+				Key:           itemKey,
 				ParticipantID: participantID2,
 				Responses:     []types.SurveyItemResponse{confItem},
 			}
