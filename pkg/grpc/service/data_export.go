@@ -150,7 +150,7 @@ func (s *studyServiceServer) StreamParticipantStates(req *api.ParticipantStateQu
 			types.STUDY_ROLE_MAINTAINER,
 		})
 		if err != nil {
-			logger.Warning.Printf("unauthorizd access attempt to participant states: (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
+			logger.Warning.Printf("unauthorizd access attempt to participant states: (%s-%s): %v", req.Token.InstanceId, req.StudyKey, err)
 			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
 			return status.Error(codes.Internal, err.Error())
 		}
@@ -197,7 +197,7 @@ func (s *studyServiceServer) StreamReportHistory(req *api.ReportHistoryQuery, st
 			types.STUDY_ROLE_MAINTAINER,
 		})
 		if err != nil {
-			logger.Warning.Printf("unauthorizd access attempt to report history in (%s-%s): %v", req.Token.TempToken.InstanceId, req.StudyKey, err)
+			logger.Warning.Printf("unauthorizd access attempt to report history in (%s-%s): %v", req.Token.InstanceId, req.StudyKey, err)
 			s.SaveLogEvent(req.Token.InstanceId, req.Token.Id, loggingAPI.LogEventType_SECURITY, constants.LOG_EVENT_DOWNLOAD_RESPONSES, "permission denied for "+req.StudyKey)
 			return status.Error(codes.Internal, err.Error())
 		}
@@ -363,6 +363,9 @@ func (s *studyServiceServer) HasAccessToDownload(t *api_types.TokenInfos, studyK
 
 func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error {
 	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
+	if err != nil {
+		return err
+	}
 
 	ctx := context.Background()
 	itemCount := s.studyDBservice.GetSurveyResponsesCount(ctx, req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until)

@@ -470,7 +470,7 @@ func (s *studyServiceServer) RemoveStudyRulesVersion(ctx context.Context, req *a
 	}
 	studyKey, err := s.studyDBservice.GetStudyKeyByStudyRulesID(req.Token.InstanceId, req.Id)
 	if err != nil {
-		logger.Error.Printf(err.Error())
+		logger.Error.Println(err.Error())
 		return nil, status.Error(codes.Internal, "deletion failed")
 	}
 
