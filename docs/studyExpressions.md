@@ -758,7 +758,7 @@ not(expression)
 
 ## Arithmetic operators
 
-### Add 
+### 30. add 
 
 Add values and return the sum of arguments
 
@@ -780,7 +780,7 @@ An empty list of argument will return 0 value.
 
 **Return:** `(float64, error)`
 
-### neg 
+### 31. neg 
 
 Invert the sign of a float value. e.g. return -1 * value.
 
@@ -802,9 +802,71 @@ neg(expression)
 
 **Return:** `(float64, error)`
 
+## Time functions
+
+### 32. timestampWithOffset
+
+Returns the specified offset time added to either the current time or the specified reference time.
+
+Functional Description:
+```
+timestampWithOffset(offset[, ref_time]: float
+```
+
+Go Implementation:
+```go
+timestampWithOffset(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : should contain the offset time convertible to `int64` \
+>   `expression.Data[1]` : optional parameter that should contain the reference time convertible to `int64`.
+
+**Return:**  `(float64, error)`
+
+### 33. getISOWeekForTs
+
+Return the ISO Week number (1 - 53) for a given timestamp.
+Warning the year of the week is not provided
+
+Functional Description:
+```
+getISOWeekForTs(timestamp:float): float
+```
+
+Go Implementation:
+```go
+getISOWeekForTs(expression)
+```
+
+
+### 34. getTsForNextISOWeek()
+
+Return the timestamp of the starting of the provided week number, after the given reference time
+
+Functional Description:
+```
+getTsForNextISOWeek(week:float, [refTime:float]): float
+```
+
+Go Implementation:
+```go
+getTsForNextISOWeek(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : should contain the week number convertible to `int64` \
+>   `expression.Data[1]` : optional parameter that should contain the reference time convertible to `int64`.
+
+if refTime is not provided, the current time is used.
+
+The timestamp returned
+
 ## Miscellaneous
 
-### 30. checkEventType
+### 35. checkEventType
 
 Checks if the latest event is of the same type as specified in the parameter expression.
 
@@ -827,24 +889,3 @@ checkEventType(expression)
 This method checks if the latest event is of the specified type. Types of events can be e.g. "SUBMISSION", "TIMER" or "ENTER". The length of `expression.Data` must be 1.
 
 **Return:** `(bool, error)`
-
-### 31. timestampWithOffset
-
-Returns the specified offset time added to either the current time or the specified reference time.
-
-Functional Description:
-```
-timestampWithOffset(offset[, ref_time]: float
-```
-
-Go Implementation:
-```go
-timestampWithOffset(expression)
-```
-
-**Required Parameter:**
-
->   `expression.Data[0]` : should contain the offset time convertible to `int64` \
->   `expression.Data[1]` : optional parameter that should contain the reference time convertible to `int64`.
-
-**Return:**  `(float64, error)`
