@@ -756,6 +756,52 @@ not(expression)
 
 **Return:** `(bool, error)`
 
+## Arithmetic operators
+
+### Add 
+
+Add values and return the sum of arguments
+
+Functional Description:
+```
+    add(value...): float64
+```
+
+Go Implementation:
+```go
+add(expression)
+```
+
+** Parameter:**
+
+Each expression argument provided should be resolved to a value of type float64.
+
+An empty list of argument will return 0 value.
+
+**Return:** `(float64, error)`
+
+### neg 
+
+Invert the sign of a float value. e.g. return -1 * value.
+
+Functional Description:
+```
+    neg(value): float64
+```
+
+Go Implementation:
+```go
+neg(expression)
+```
+
+**Required Parameter:**
+
+>   `expression.Data[0]` : should be a value of type `float64`
+
+**Note:** The length of `expression.Data` must be 1. 
+
+**Return:** `(float64, error)`
+
 ## Miscellaneous
 
 ### 30. checkEventType
@@ -781,8 +827,6 @@ checkEventType(expression)
 This method checks if the latest event is of the specified type. Types of events can be e.g. "SUBMISSION", "TIMER" or "ENTER". The length of `expression.Data` must be 1.
 
 **Return:** `(bool, error)`
-
-
 
 ### 31. timestampWithOffset
 

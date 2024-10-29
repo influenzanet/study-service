@@ -3,7 +3,7 @@ package studyengine
 import (
 	"testing"
 	"time"
-
+	"fmt"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -2476,6 +2476,59 @@ func TestEvalNOT(t *testing.T) {
 		}
 	})
 }
+
+func TestEvalAdd(t *testing.T) {
+
+	testAdd := func (v1 float64, v2 float64, expected float64) {
+		t.Run(fmt.Sprintf("Add %f + %f", v1, v2), func(t *testing.T) {
+			exp := types.Expression{Name: "add", Data: []types.ExpressionArg{
+				{DType: "num", Num: v1},
+				{DType: "num", Num: v2},
+			}}
+			EvalContext := EvalContext{}
+			ret, err := ExpressionEval(exp, EvalContext)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err.Error())
+				return
+			}
+			resTS := ret.(float64)
+			if resTS != expected {
+				t.Errorf("unexpected value: %f - expected ca. %f", ret, expected)
+			}
+		})
+	}
+
+	testAdd(0, 1, 1)
+	testAdd(1, 1, 2)
+	testAdd(-1, 2, 1)
+}
+
+
+func TestEvalNeg(t *testing.T) {
+
+	testNeg := func (v1 float64,  expected float64) {
+		t.Run(fmt.Sprintf("Negate %f", v1), func(t *testing.T) {
+			exp := types.Expression{Name: "neg", Data: []types.ExpressionArg{
+				{DType: "num", Num: v1},
+			}}
+			EvalContext := EvalContext{}
+			ret, err := ExpressionEval(exp, EvalContext)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err.Error())
+				return
+			}
+			resTS := ret.(float64)
+			if resTS != expected {
+				t.Errorf("unexpected value: %f - expected ca. %f", ret, expected)
+			}
+		})
+	}
+
+	testNeg(0, 0)
+	testNeg(1, -1)
+	testNeg(-1, 1)
+}
+
 
 func TestEvalTimestampWithOffset(t *testing.T) {
 	t.Run("T + 0", func(t *testing.T) {

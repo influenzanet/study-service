@@ -110,6 +110,14 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.or(expression)
 	case "not":
 		val, err = evalCtx.not(expression)
+	
+	// Arithmetics operators
+	case "add":
+		val, err = evalCtx.add(expression)
+
+	case "neg":
+		val, err = evalCtx.neg(expression)
+
 	// Other
 	case "timestampWithOffset":
 		val, err = evalCtx.timestampWithOffset(expression)
@@ -1174,6 +1182,40 @@ func (ctx EvalContext) not(exp types.Expression) (val bool, err error) {
 	}
 	return
 }
+
+// add(...float64ish)
+func (ctx EvalContext) add(exp types.Expression) (t float64, err error) {
+	for idx, dataExp := range exp.Data {
+		arg, err := ctx.expressionArgResolver(dataExp)
+		if err != nil {
+			return t, err
+		}
+		if reflect.TypeOf(arg).Kind() != reflect.Float64 {
+			return t, fmt.Errorf("argument %d should be resolved as type number (float64)", idx)
+		}
+		v := arg.(float64)
+		t = t + v
+	}
+	return
+}
+
+func (ctx EvalContext) neg(exp types.Expression) (val float64, err error) {
+	if len(exp.Data) != 1 {
+		return val, errors.New("should have one argument")
+	}
+
+	arg, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	if reflect.TypeOf(arg).Kind() != reflect.Float64 {
+		return val, errors.New("argument 1 should be resolved as type number (float64)")
+	}
+	v := arg.(float64)
+	val = -1 * v
+	return
+}
+
 
 func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err error) {
 	if len(exp.Data) != 1 && len(exp.Data) != 2 {
