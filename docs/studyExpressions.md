@@ -758,18 +758,18 @@ not(expression)
 
 ## Arithmetic operators
 
-### 30. add 
+### 30. sum 
 
-Add values and return the sum of arguments
+return the sum the arguments
 
 Functional Description:
 ```
-    add(value...): float64
+    sum(value...): float64
 ```
 
 Go Implementation:
 ```go
-add(expression)
+sum(expression)
 ```
 
 ** Parameter:**

@@ -112,8 +112,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.not(expression)
 	
 	// Arithmetics operators
-	case "add":
-		val, err = evalCtx.add(expression)
+	case "sum":
+		val, err = evalCtx.sum(expression)
 
 	case "neg":
 		val, err = evalCtx.neg(expression)
@@ -1183,8 +1183,8 @@ func (ctx EvalContext) not(exp types.Expression) (val bool, err error) {
 	return
 }
 
-// add(...float64ish)
-func (ctx EvalContext) add(exp types.Expression) (t float64, err error) {
+// sum(...float64ish)
+func (ctx EvalContext) sum(exp types.Expression) (t float64, err error) {
 	for idx, dataExp := range exp.Data {
 		arg, err := ctx.expressionArgResolver(dataExp)
 		if err != nil {
