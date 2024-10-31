@@ -1183,18 +1183,22 @@ func (ctx EvalContext) not(exp types.Expression) (val bool, err error) {
 	return
 }
 
-// sum(...float64ish)
+// sum(...float64) each argument must resolve to a float value or will be disguarded
 func (ctx EvalContext) sum(exp types.Expression) (t float64, err error) {
 	for idx, dataExp := range exp.Data {
 		arg, err := ctx.expressionArgResolver(dataExp)
 		if err != nil {
-			return t, err
+			logger.Debug.Printf("exp %d in 'sum' returned error: %v", idx, err)
+			continue
 		}
-		if reflect.TypeOf(arg).Kind() != reflect.Float64 {
-			return t, fmt.Errorf("argument %d should be resolved as type number (float64)", idx)
+		switch v := arg.(type) {
+			case bool:
+				if(v) {
+					t = t + 1
+				}
+			case float64:
+				t = t + v
 		}
-		v := arg.(float64)
-		t = t + v
 	}
 	return
 }

@@ -760,7 +760,7 @@ not(expression)
 
 ### 30. sum 
 
-return the sum the arguments
+return the sum the arguments. Can be used with numeric values or boolean values (to count true values)
 
 Functional Description:
 ```
@@ -774,7 +774,7 @@ sum(expression)
 
 ** Parameter:**
 
-Each expression argument provided should be resolved to a value of type float64.
+Each expression argument provided should be resolved to a value of type float64 or boolean.
 
 An empty list of argument will return 0 value.
 
