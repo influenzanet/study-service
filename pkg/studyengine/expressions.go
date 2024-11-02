@@ -1189,7 +1189,7 @@ func (ctx EvalContext) timestampWithOffset(exp types.Expression) (t float64, err
 	}
 	delta := int64(arg1.(float64))
 
-	referenceTime := time.Now().Unix()
+	referenceTime := Now().Unix()
 	if len(exp.Data) == 2 {
 		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
 		if err2 != nil {
@@ -1225,7 +1225,7 @@ func (ctx EvalContext) getTsForNextISOWeek(exp types.Expression) (t float64, err
 		return t, errors.New("argument 1 should be between 1 and 53")
 	}
 
-	referenceTime := time.Now()
+	referenceTime := Now()
 	if len(exp.Data) == 2 {
 		arg2, err2 := ctx.expressionArgResolver(exp.Data[1])
 		if err2 != nil {
@@ -1316,7 +1316,7 @@ func (ctx EvalContext) generateRandomNumber(exp types.Expression) (val float64, 
 	}
 	max := int(arg2.(float64))
 
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(Now().UnixNano())
 	randomVal := rand.Intn(max-min+1) + min
 	return float64(randomVal), nil
 }
