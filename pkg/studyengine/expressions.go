@@ -1198,6 +1198,9 @@ func (ctx EvalContext) sum(exp types.Expression) (t float64, err error) {
 				}
 			case float64:
 				t = t + v
+			default:
+				logger.Debug.Printf("exp %d in 'sum' is not num or bool, skipped", idx)
+
 		}
 	}
 	return
