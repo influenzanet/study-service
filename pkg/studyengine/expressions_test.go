@@ -3,7 +3,7 @@ package studyengine
 import (
 	"testing"
 	"time"
-
+	"fmt"
 	"github.com/influenzanet/study-service/pkg/dbs/studydb"
 	"github.com/influenzanet/study-service/pkg/types"
 )
@@ -2476,6 +2476,80 @@ func TestEvalNOT(t *testing.T) {
 		}
 	})
 }
+
+func TestEvalSum(t *testing.T) {
+
+	testAdd := func (expected float64, label string, values ...types.ExpressionArg) {
+		
+		t.Run(fmt.Sprintf("Sum %s", label), func(t *testing.T) {
+			exp := types.Expression{Name: "sum", Data: values}
+			EvalContext := EvalContext{}
+			ret, err := ExpressionEval(exp, EvalContext)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err.Error())
+				return
+			}
+			resTS := ret.(float64)
+			if resTS != expected {
+				t.Errorf("unexpected value: %f - expected ca. %f", ret, expected)
+			}
+		})
+	}
+
+	argNum := func(v float64) types.ExpressionArg {
+		return types.ExpressionArg{DType: "num", Num: v}
+	}
+
+	argBool := func(v bool) types.ExpressionArg {
+		var vN  float64
+		if v {
+			vN = 1
+		} else {
+			vN = 0
+		}
+		return types.ExpressionArg{
+			DType: "exp",
+			Exp: &types.Expression{Name: "or", Data: []types.ExpressionArg{ argNum(vN), argNum(vN) }, },
+		}
+	}
+
+	testAdd(1, "0 + 1", argNum(0), argNum(1))
+	testAdd(2, "1 + 1", argNum(1), argNum(1) )
+	testAdd( 1, "-1 + 2", argNum(-1), argNum(2))
+	testAdd(3, "1+1+1", argNum(1), argNum(1), argNum(1))
+	testAdd(2, "true + true", argBool(true), argBool(true))
+	testAdd(0, "false + false", argBool(false), argBool(false))
+	testAdd(1, "true + false", argBool(true), argBool(false))
+	testAdd(1, "false + true", argBool(false), argBool(true))
+	
+}
+
+
+func TestEvalNeg(t *testing.T) {
+
+	testNeg := func (v1 float64,  expected float64) {
+		t.Run(fmt.Sprintf("Negate %f", v1), func(t *testing.T) {
+			exp := types.Expression{Name: "neg", Data: []types.ExpressionArg{
+				{DType: "num", Num: v1},
+			}}
+			EvalContext := EvalContext{}
+			ret, err := ExpressionEval(exp, EvalContext)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err.Error())
+				return
+			}
+			resTS := ret.(float64)
+			if resTS != expected {
+				t.Errorf("unexpected value: %f - expected ca. %f", ret, expected)
+			}
+		})
+	}
+
+	testNeg(0, 0)
+	testNeg(1, -1)
+	testNeg(-1, 1)
+}
+
 
 func TestEvalTimestampWithOffset(t *testing.T) {
 	t.Run("T + 0", func(t *testing.T) {
