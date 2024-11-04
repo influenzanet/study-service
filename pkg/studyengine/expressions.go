@@ -1316,7 +1316,7 @@ func (ctx EvalContext) generateRandomNumber(exp types.Expression) (val float64, 
 	}
 	max := int(arg2.(float64))
 
-	rand.Seed(Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
 	randomVal := rand.Intn(max-min+1) + min
 	return float64(randomVal), nil
 }
