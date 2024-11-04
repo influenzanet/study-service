@@ -64,6 +64,8 @@ func ExpressionEval(expression types.Expression, evalCtx EvalContext) (val inter
 		val, err = evalCtx.hasParticipantFlagKey(expression, false)
 	case "getParticipantFlagValue":
 		val, err = evalCtx.getParticipantFlagValue(expression, false)
+	case "getLastSubmissionDate":
+		val, err = evalCtx.getLastSubmissionDate(expression, false)
 	case "lastSubmissionDateOlderThan":
 		val, err = evalCtx.lastSubmissionDateOlderThan(expression, false)
 	case "hasMessageTypeAssigned":
@@ -505,6 +507,37 @@ func (ctx EvalContext) hasParticipantFlag(exp types.Expression, withIncomingPart
 		return false, nil
 	}
 	return true, nil
+}
+
+func (ctx EvalContext) getLastSubmissionDate(exp types.Expression, withIncomingParticipantState bool) (val float64, err error) {
+	pState := ctx.ParticipantState
+	if withIncomingParticipantState {
+		pState = ctx.Event.MergeWithParticipant
+	}
+	if len(exp.Data) < 1 {
+		// if no arguments are provided, return the last submission date of the participant
+		maxTs := int64(0)
+		for _, lastTs := range pState.LastSubmissions {
+			if lastTs > maxTs {
+				maxTs = lastTs
+			}
+		}
+
+		return float64(maxTs), nil
+	}
+
+	arg1, err := ctx.expressionArgResolver(exp.Data[0])
+	if err != nil {
+		return val, err
+	}
+	surveyKey := arg1.(string)
+
+	lastSubmissionDate, ok := pState.LastSubmissions[surveyKey]
+	if !ok {
+		return 0, nil
+	}
+
+	return float64(lastSubmissionDate), nil
 }
 
 func (ctx EvalContext) lastSubmissionDateOlderThan(exp types.Expression, withIncomingParticipantState bool) (val bool, err error) {

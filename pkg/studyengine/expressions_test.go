@@ -1749,6 +1749,90 @@ func TestEvalResponseHasKeysAny(t *testing.T) {
 
 }
 
+func TestEvalGetLastSubmissionDate(t *testing.T) {
+	t.Run("with no submissions", func(t *testing.T) {
+		exp := types.Expression{Name: "getLastSubmissionDate", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(float64) != 0 {
+			t.Errorf("unexpected value: %f", ret)
+		}
+	})
+
+	t.Run("with submissions", func(t *testing.T) {
+		exp := types.Expression{Name: "getLastSubmissionDate", Data: []types.ExpressionArg{
+			{DType: "str", Str: "test"},
+		}}
+
+		last_submission := time.Now().Unix() - 10
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+				LastSubmissions: map[string]int64{
+					"test": last_submission,
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(float64) != float64(last_submission) {
+			t.Errorf("unexpected value: %f", ret)
+		}
+	})
+
+	t.Run("with no arguments", func(t *testing.T) {
+		exp := types.Expression{Name: "getLastSubmissionDate"}
+		lastTs := time.Now().Unix() - 10
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+				LastSubmissions: map[string]int64{
+					"test":  lastTs,
+					"test2": lastTs - 10,
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(float64) != float64(lastTs) {
+			t.Errorf("unexpected value: %f", ret)
+		}
+	})
+
+	t.Run("with wrong survey key", func(t *testing.T) {
+		exp := types.Expression{Name: "getLastSubmissionDate", Data: []types.ExpressionArg{
+			{DType: "str", Str: "wrong"},
+		}}
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+				LastSubmissions: map[string]int64{
+					"test": time.Now().Unix() - 10,
+				},
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+			return
+		}
+		if ret.(float64) != 0 {
+			t.Errorf("unexpected value: %f", ret)
+		}
+	})
+}
+
 func TestEvalLastSubmissionDateOlderThan(t *testing.T) {
 	t.Run("with not older", func(t *testing.T) {
 		exp := types.Expression{Name: "lastSubmissionDateOlderThan", Data: []types.ExpressionArg{
