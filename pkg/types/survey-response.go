@@ -7,14 +7,14 @@ import (
 
 type SurveyResponse struct {
 	ID            primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
-	Key           string               `bson:"key"`
-	ParticipantID string               `bson:"participantID"`
-	VersionID     string               `bson:"versionID"`
-	OpenedAt      int64                `bson:"openedAt"`
-	SubmittedAt   int64                `bson:"submittedAt"`
-	ArrivedAt     int64                `bson:"arrivedAt"`
-	Responses     []SurveyItemResponse `bson:"responses"`
-	Context       map[string]string    `bson:"context"`
+	Key           string               `bson:"key" json:"key"`
+	ParticipantID string               `bson:"participantID" json:"participantId"`
+	VersionID     string               `bson:"versionID" json:"versionId"`
+	OpenedAt      int64                `bson:"openedAt" json:"openedAt"`
+	SubmittedAt   int64                `bson:"submittedAt" json:"submittedAt"`
+	ArrivedAt     int64                `bson:"arrivedAt" json:"arrivedAt"`
+	Responses     []SurveyItemResponse `bson:"responses" json:"responses"`
+	Context       map[string]string    `bson:"context"  json:"context"`
 }
 
 func (sr SurveyResponse) ToAPI() *api.SurveyResponse {
