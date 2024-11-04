@@ -3,13 +3,13 @@ package types
 import api "github.com/influenzanet/study-service/pkg/api"
 
 type SurveyItemResponse struct {
-	Key  string       `bson:"key,omitempty"`
-	Meta ResponseMeta `bson:"meta,omitempty"`
+	Key  string       `bson:"key,omitempty" json:"key"`
+	Meta ResponseMeta `bson:"meta,omitempty" json:"meta"`
 	// for item groups:
-	Items []SurveyItemResponse `bson:"items,omitempty"`
+	Items []SurveyItemResponse `bson:"items,omitempty" json:"items,omitempty"`
 	// for single items:
-	Response         *ResponseItem `bson:"response,omitempty"`
-	ConfidentialMode string        `bson:"confidentialMode,omitempty"`
+	Response         *ResponseItem `bson:"response,omitempty" json:"response,omitempty"`
+	ConfidentialMode string        `bson:"confidentialMode,omitempty" json:"confidentialMode,omitempty"`
 	MapToKey         string        `bson:"mapToKey,omitempty" json:"mapToKey,omitempty"` // map to this key for confidential mode
 }
 
@@ -89,12 +89,12 @@ func ResponseItemFromAPI(rv *api.ResponseItem) *ResponseItem {
 
 // ResponseMeta
 type ResponseMeta struct {
-	Position   int32  `bson:"position"`
-	LocaleCode string `bson:"localeCode"`
+	Position   int32  `bson:"position" json:"position"`
+	LocaleCode string `bson:"localeCode" json:"localeCode"`
 	// timestamps:
-	Rendered  []int64 `bson:"rendered"`
-	Displayed []int64 `bson:"displayed"`
-	Responded []int64 `bson:"responded"`
+	Rendered  []int64 `bson:"rendered" json:"rendered"`
+	Displayed []int64 `bson:"displayed" json:"displayed"`
+	Responded []int64 `bson:"responded" json:"responded"`
 }
 
 func (rm ResponseMeta) ToAPI() *api.ResponseMeta {
