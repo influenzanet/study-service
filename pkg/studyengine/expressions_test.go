@@ -3293,3 +3293,53 @@ func TestEvalGetMessageNextTime(t *testing.T) {
 		}
 	})
 }
+
+func TestNow(t *testing.T) {
+	t.Run("testing now", func(t *testing.T) {
+		cur := time.Now()
+		now := Now()
+		if(cur.Sub(now).Abs() > time.Microsecond) {
+			t.Errorf("Current time is more than 1 microsecond")
+		}
+	})
+
+	t.Run("testing change time", func(t *testing.T) {
+		cur := time.Unix(1730419200, 0)
+		Now = func() time.Time {
+			return cur
+		}
+		now := Now()
+		if(cur.Sub(now).Abs() > 0) {
+			t.Errorf("Current time is not the time set %s got %s", cur, now)
+		}
+		Now = time.Now // resetting to current time
+	})
+
+	t.Run("testing change time on timestampWithOffset", func(t *testing.T) {
+		curTS := int64(1730419200)
+		cur := time.Unix(curTS, 0)
+		Now = func() time.Time {
+			return cur
+		}
+		exp := types.Expression{Name: "timestampWithOffset", Data: []types.ExpressionArg{
+				{DType: "num", Num: -10},
+			},
+		}
+		
+		EvalContext := EvalContext{
+			ParticipantState: types.ParticipantState{
+				StudyStatus: types.PARTICIPANT_STUDY_STATUS_ACTIVE,
+			},
+		}
+		ret, err := ExpressionEval(exp, EvalContext)
+		if err != nil {
+			t.Error(err)
+		} 
+		resTS := int64(ret.(float64))
+		expTS := curTS - 10
+		if( resTS != expTS) {
+			t.Errorf("Unexpected timestamp got %d, expecting %d", resTS, expTS)
+		}
+		Now = time.Now // resetting to current time
+	})
+}
