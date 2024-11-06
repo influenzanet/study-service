@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.7.6] - 2024-08-12
+
+### Changed
+
+- add json annotation for survey responses and expressions
+- Allow to customize current time in studyengine using Now variable (function returing current time, time.Now() by default)
+- add new Study Expressions `sum` and `neg` for arithmetic operations
+- add `MapToKey` in SurveyItemResponse to map confidential reponse to another key
+
+
+## [v1.7.5] - 2024-08-13
+
+### Changed
+
+- when looking for latest survey def, unpublished might be missing
+
 ## [v1.7.4] - 2024-08-12
 
 ### Changed
