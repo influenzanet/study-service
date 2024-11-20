@@ -23,8 +23,12 @@ func main() {
 
 	ensureDBIndexes(globalDBService, studyDBService)
 
-	sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices, conf.Study.GlobalSecret)
-	sTimerService.Run()
+	if !conf.DisableTimerTask {
+		sTimerService := studytimer.NewStudyTimerService(conf.Study, studyDBService, globalDBService, conf.ExternalServices, conf.Study.GlobalSecret)
+		sTimerService.Run()
+	} else {
+		logger.Info.Println("Timer task disabled")
+	}
 
 	clients := &types.APIClients{}
 

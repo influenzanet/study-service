@@ -24,6 +24,7 @@ type Config struct {
 	}
 	PersistentStoreConfig types.PersistentStoreConfig
 	ExternalServices      []types.ExternalService
+	DisableTimerTask      bool
 }
 
 func InitConfig() Config {
@@ -47,6 +48,8 @@ func InitConfig() Config {
 	conf.PersistentStoreConfig = getPersistentStoreConfig()
 
 	conf.ExternalServices = getExternalServicesConfig()
+
+	conf.DisableTimerTask = os.Getenv("DISABLE_TIMER_TASK") == "true"
 	return conf
 }
 
