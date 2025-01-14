@@ -98,7 +98,7 @@ func getResponseColumns(question SurveyQuestion, response *types.SurveyItemRespo
 	case QUESTION_TYPE_LIKERT_GROUP:
 		return handleSingleChoiceGroupList(question.ID, question.Responses, response, questionOptionSep)
 	case QUESTION_TYPE_RESPONSIVE_SINGLE_CHOICE_ARRAY:
-		return processResponseForSingleChoice(question, response, questionOptionSep)
+		return handleSingleChoiceGroupList(question.ID, question.Responses, response, questionOptionSep)
 	case QUESTION_TYPE_RESPONSIVE_BIPOLAR_LIKERT_ARRAY:
 		return processResponseForSingleChoice(question, response, questionOptionSep)
 	case QUESTION_TYPE_MULTIPLE_CHOICE:
