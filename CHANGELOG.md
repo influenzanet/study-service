@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.8.1] - 2025-01-14
+
+### Changed
+
+- exporter for responsive single choice array always using the list processing method (fix missing export, when only one row)
+
 ## [v1.8.0] - 2024-11-06
 
 ### Changed
