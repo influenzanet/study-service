@@ -401,7 +401,7 @@ func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *Includ
 				line = append(line, "")
 				continue
 			}
-			line = append(line, responseColToString(v))
+			line = append(line, replaceNewlines(responseColToString(v)))
 		}
 
 		if includeMeta != nil {
@@ -508,7 +508,7 @@ func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos
 			if !ok {
 				currentRespLine = append(currentRespLine, "")
 			} else {
-				currentRespLine = append(currentRespLine, responseColToString(v))
+				currentRespLine = append(currentRespLine, replaceNewlines(responseColToString(v)))
 			}
 
 			err := w.Write(currentRespLine)

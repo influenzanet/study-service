@@ -728,6 +728,12 @@ func responseColToString(responseCol interface{}) string {
 	return str
 }
 
+func replaceNewlines(str string) string {
+	newStr := strings.ReplaceAll(str, "\r\n", "<br />")
+	newStr = strings.ReplaceAll(newStr, "\n", "<br />")
+	return newStr
+}
+
 func isEmbeddedCloze(optionType string) bool {
 	return optionType == OPTION_TYPE_EMBEDDED_CLOZE_DATE_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_DROPDOWN ||
 		optionType == OPTION_TYPE_EMBEDDED_CLOZE_NUMBER_INPUT || optionType == OPTION_TYPE_EMBEDDED_CLOZE_TEXT_INPUT
