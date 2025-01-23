@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.8.2] - 2025-01-23
+
+### Changed
+
+- CSV exporter: replacing the `\r\n` and `\n` with `<br />` tags to avoid the line break in the exported CSV file (for support a wider range of CSV parser, that could not handle the `\r\n` and `\n` line breaks)
+
 ## [v1.8.1] - 2025-01-14
 
 ### Changed
