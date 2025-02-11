@@ -409,59 +409,71 @@ func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.Respons
 // TODO: Test GetResponsesFlatJSON
 func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
 
-	// CPU Profiling
-    cpuFile, err := os.Create("cpu.prof")
-    if err != nil {
-        log.Fatal("could not create CPU profile: ", err)
-    }
-    defer cpuFile.Close()
-    if err := pprof.StartCPUProfile(cpuFile); err != nil {
-        log.Fatal("could not start CPU profile: ", err)
-    }
-    defer pprof.StopCPUProfile()
+	var cpuProfile bytes.Buffer
+	var memProfile bytes.Buffer
+	var blockProfile bytes.Buffer
+	var traceProfile bytes.Buffer
 
-    // Memory Profiling
-    memFile, err := os.Create("mem.prof")
-    if err != nil {
-        log.Fatal("could not create memory profile: ", err)
-    }
-    defer memFile.Close()
-    runtime.GC() // Get an accurate snapshot of memory usage
-    defer func() { // Write heap profile on exit
-        if err := pprof.WriteHeapProfile(memFile); err != nil {
-            log.Fatal("could not write memory profile: ", err)
-        }
-    }()
+	if err := pprof.StartCPUProfile(&cpuProfile); err != nil {
+		log.Println("CPU profiling error:", err)
+	}
+	defer pprof.StopCPUProfile()
 
-    // Block Profiling
-    blockFile, err := os.Create("block.prof")
-    if err != nil {
-        log.Fatal("could not create block profile: ", err)
-    }
-    defer blockFile.Close()
-    runtime.SetBlockProfileRate(1) // Sample every block event. Adjust as needed.
-    defer func() {
-        pprof.Lookup("block").WriteTo(blockFile, 0)
-    }()
+	runtime.GC()
+	if err := pprof.WriteHeapProfile(&memProfile); err != nil {
+		log.Println("Memory profiling error:", err)
+	}
 
+	runtime.SetBlockProfileRate(1)
+	defer func() {
+		if err := pprof.Lookup("block").WriteTo(&blockProfile, 0); err != nil {
+			log.Println("Block profiling error:", err)
+		}
+		runtime.SetBlockProfileRate(0)
+	}()
 
-    // Tracing
-    traceFile, err := os.Create("trace.out")
-    if err != nil {
-        log.Fatal("could not create trace file: ", err)
-    }
-    defer traceFile.Close()
-
-    if err := trace.Start(traceFile); err != nil {
-        log.Fatal("could not start trace: ", err)
-    }
-    defer trace.Stop()
+	if err := trace.Start(&traceProfile); err != nil {
+		log.Println("Tracing error:", err)
+	}
+	defer trace.Stop()
 
 	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
-
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("--- CPU Profile ---")
+	if _, err := io.Copy(os.Stdout, &cpuProfile); err != nil {
+		log.Println("Error printing CPU profile:", err)
+	}
+
+
+	fmt.Println("--- Memory Profile ---")
+	if _, err := io.Copy(os.Stdout, &memProfile); err != nil {
+		log.Println("Error printing Memory profile:", err)
+	}
+
+	fmt.Println("--- Block Profile ---")
+	if _, err := io.Copy(os.Stdout, &blockProfile); err != nil {
+		log.Println("Error printing Block profile:", err)
+	}
+
+	fmt.Println("--- Trace Data (Base64 Encoded) ---")
+	traceBytes := traceProfile.Bytes()
+	traceBase64 := base64.StdEncoding.EncodeToString(traceBytes)
+	fmt.Println(traceBase64)
+
+	log.Println("--- CPU Profile ---")
+	log.Println(cpuProfile.String())
+
+	log.Println("--- Memory Profile ---")
+	log.Println(memProfile.String())
+
+	log.Println("--- Block Profile ---")
+	log.Println(blockProfile.String())
+
+	log.Printf("--- Trace Data (Base64):\n%s", traceBase64)
+
 
 	return StreamFile(stream, buf)
 }
@@ -469,60 +481,71 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 // TODO: Test GetResponsesWideFormatCSV
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
 
-	// CPU Profiling
-    cpuFile, err := os.Create("cpu.prof")
-    if err != nil {
-        log.Fatal("could not create CPU profile: ", err)
-    }
-    defer cpuFile.Close()
-    if err := pprof.StartCPUProfile(cpuFile); err != nil {
-        log.Fatal("could not start CPU profile: ", err)
-    }
-    defer pprof.StopCPUProfile()
+	var cpuProfile bytes.Buffer
+	var memProfile bytes.Buffer
+	var blockProfile bytes.Buffer
+	var traceProfile bytes.Buffer
 
-    // Memory Profiling
-    memFile, err := os.Create("mem.prof")
-    if err != nil {
-        log.Fatal("could not create memory profile: ", err)
-    }
-    defer memFile.Close()
-    runtime.GC() // Get an accurate snapshot of memory usage
-    defer func() { // Write heap profile on exit
-        if err := pprof.WriteHeapProfile(memFile); err != nil {
-            log.Fatal("could not write memory profile: ", err)
-        }
-    }()
+	if err := pprof.StartCPUProfile(&cpuProfile); err != nil {
+		log.Println("CPU profiling error:", err)
+	}
+	defer pprof.StopCPUProfile()
 
-    // Block Profiling
-    blockFile, err := os.Create("block.prof")
-    if err != nil {
-        log.Fatal("could not create block profile: ", err)
-    }
-    defer blockFile.Close()
-    runtime.SetBlockProfileRate(1) // Sample every block event. Adjust as needed.
-    defer func() {
-        pprof.Lookup("block").WriteTo(blockFile, 0)
-    }()
+	runtime.GC()
+	if err := pprof.WriteHeapProfile(&memProfile); err != nil {
+		log.Println("Memory profiling error:", err)
+	}
 
+	runtime.SetBlockProfileRate(1)
+	defer func() {
+		if err := pprof.Lookup("block").WriteTo(&blockProfile, 0); err != nil {
+			log.Println("Block profiling error:", err)
+		}
+		runtime.SetBlockProfileRate(0)
+	}()
 
-    // Tracing
-    traceFile, err := os.Create("trace.out")
-    if err != nil {
-        log.Fatal("could not create trace file: ", err)
-    }
-    defer traceFile.Close()
-
-    if err := trace.Start(traceFile); err != nil {
-        log.Fatal("could not start trace: ", err)
-    }
-    defer trace.Stop()
-
+	if err := trace.Start(&traceProfile); err != nil {
+		log.Println("Tracing error:", err)
+	}
+	defer trace.Stop()
 
 	buf, err := s.getResponseExportBuffer(req, WIDE_FORMAT_CSV)
-
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("--- CPU Profile ---")
+	if _, err := io.Copy(os.Stdout, &cpuProfile); err != nil {
+		log.Println("Error printing CPU profile:", err)
+	}
+
+
+	fmt.Println("--- Memory Profile ---")
+	if _, err := io.Copy(os.Stdout, &memProfile); err != nil {
+		log.Println("Error printing Memory profile:", err)
+	}
+
+	fmt.Println("--- Block Profile ---")
+	if _, err := io.Copy(os.Stdout, &blockProfile); err != nil {
+		log.Println("Error printing Block profile:", err)
+	}
+
+	fmt.Println("--- Trace Data (Base64 Encoded) ---")
+	traceBytes := traceProfile.Bytes()
+	traceBase64 := base64.StdEncoding.EncodeToString(traceBytes)
+	fmt.Println(traceBase64)
+
+	log.Println("--- CPU Profile ---")
+	log.Println(cpuProfile.String())
+
+	log.Println("--- Memory Profile ---")
+	log.Println(memProfile.String())
+
+	log.Println("--- Block Profile ---")
+	log.Println(blockProfile.String())
+
+	log.Printf("--- Trace Data (Base64):\n%s", traceBase64)
+
 
 	return StreamFile(stream, buf)
 }
