@@ -7,6 +7,12 @@ import (
 	"fmt"
 	"io"
 
+	"os"
+	"log"
+	"runtime"
+    "runtime/pprof"
+    "runtime/trace"
+
 	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
 	"github.com/influenzanet/go-utils/pkg/constants"
@@ -402,6 +408,55 @@ func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.Respons
 
 // TODO: Test GetResponsesFlatJSON
 func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
+
+	// CPU Profiling
+    cpuFile, err := os.Create("cpu.prof")
+    if err != nil {
+        log.Fatal("could not create CPU profile: ", err)
+    }
+    defer cpuFile.Close()
+    if err := pprof.StartCPUProfile(cpuFile); err != nil {
+        log.Fatal("could not start CPU profile: ", err)
+    }
+    defer pprof.StopCPUProfile()
+
+    // Memory Profiling
+    memFile, err := os.Create("mem.prof")
+    if err != nil {
+        log.Fatal("could not create memory profile: ", err)
+    }
+    defer memFile.Close()
+    runtime.GC() // Get an accurate snapshot of memory usage
+    defer func() { // Write heap profile on exit
+        if err := pprof.WriteHeapProfile(memFile); err != nil {
+            log.Fatal("could not write memory profile: ", err)
+        }
+    }()
+
+    // Block Profiling
+    blockFile, err := os.Create("block.prof")
+    if err != nil {
+        log.Fatal("could not create block profile: ", err)
+    }
+    defer blockFile.Close()
+    runtime.SetBlockProfileRate(1) // Sample every block event. Adjust as needed.
+    defer func() {
+        pprof.Lookup("block").WriteTo(blockFile, 0)
+    }()
+
+
+    // Tracing
+    traceFile, err := os.Create("trace.out")
+    if err != nil {
+        log.Fatal("could not create trace file: ", err)
+    }
+    defer traceFile.Close()
+
+    if err := trace.Start(traceFile); err != nil {
+        log.Fatal("could not start trace: ", err)
+    }
+    defer trace.Stop()
+
 	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
 
 	if err != nil {
@@ -413,6 +468,56 @@ func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, 
 
 // TODO: Test GetResponsesWideFormatCSV
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
+
+	// CPU Profiling
+    cpuFile, err := os.Create("cpu.prof")
+    if err != nil {
+        log.Fatal("could not create CPU profile: ", err)
+    }
+    defer cpuFile.Close()
+    if err := pprof.StartCPUProfile(cpuFile); err != nil {
+        log.Fatal("could not start CPU profile: ", err)
+    }
+    defer pprof.StopCPUProfile()
+
+    // Memory Profiling
+    memFile, err := os.Create("mem.prof")
+    if err != nil {
+        log.Fatal("could not create memory profile: ", err)
+    }
+    defer memFile.Close()
+    runtime.GC() // Get an accurate snapshot of memory usage
+    defer func() { // Write heap profile on exit
+        if err := pprof.WriteHeapProfile(memFile); err != nil {
+            log.Fatal("could not write memory profile: ", err)
+        }
+    }()
+
+    // Block Profiling
+    blockFile, err := os.Create("block.prof")
+    if err != nil {
+        log.Fatal("could not create block profile: ", err)
+    }
+    defer blockFile.Close()
+    runtime.SetBlockProfileRate(1) // Sample every block event. Adjust as needed.
+    defer func() {
+        pprof.Lookup("block").WriteTo(blockFile, 0)
+    }()
+
+
+    // Tracing
+    traceFile, err := os.Create("trace.out")
+    if err != nil {
+        log.Fatal("could not create trace file: ", err)
+    }
+    defer traceFile.Close()
+
+    if err := trace.Start(traceFile); err != nil {
+        log.Fatal("could not start trace: ", err)
+    }
+    defer trace.Stop()
+
+
 	buf, err := s.getResponseExportBuffer(req, WIDE_FORMAT_CSV)
 
 	if err != nil {
