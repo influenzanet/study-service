@@ -17,7 +17,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflag
 ##########################
 # STAGE 2
 ##########################
-FROM scratch
+FROM alpine:latest
 # we need those on scratch for connecting to mongoDB:
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/influenzanet/study-service/cmd/study-service-app/app /app/
