@@ -18,10 +18,24 @@ type ResponseExporter struct {
 	surveyVersions       []SurveyVersionPreview
 	responses            []ParsedResponse
 	contextColNames      []string
+	contextColSeen       map[string]struct{}
 	responseColNames     []string
+	responseColSeen      map[string]struct{}
 	metaColNames         []string
+	metaColSeen          map[string]struct{}
 	shortQuestionKeys    bool
 	questionOptionKeySep string
+
+	// metaColCache holds the four meta-column-name strings for every
+	// question of every survey version, keyed by VersionID
+	metaColCache map[string]versionMetaCols
+}
+
+type versionMetaCols struct {
+	init []string
+	disp []string
+	resp []string
+	pos  []string
 }
 
 // Also update getFixedColumns when updating this
@@ -115,6 +129,10 @@ func newResponseExporterBase(
 		responses:            []ParsedResponse{},
 		shortQuestionKeys:    shortQuestionKeys,
 		questionOptionKeySep: questionOptionSep,
+		contextColSeen:       map[string]struct{}{},
+		responseColSeen:      map[string]struct{}{},
+		metaColSeen:          map[string]struct{}{},
+		metaColCache:         map[string]versionMetaCols{},
 	}
 
 	for _, v := range surveyHistory {
@@ -127,6 +145,22 @@ func newResponseExporterBase(
 				rp.surveyVersions[versionInd].Questions[qInd].ID = strings.TrimPrefix(question.ID, rp.surveyKey+".")
 			}
 		}
+	}
+
+	for _, sv := range rp.surveyVersions {
+		cols := versionMetaCols{
+			init: make([]string, len(sv.Questions)),
+			disp: make([]string, len(sv.Questions)),
+			resp: make([]string, len(sv.Questions)),
+			pos:  make([]string, len(sv.Questions)),
+		}
+		for i, q := range sv.Questions {
+			cols.init[i] = q.ID + rp.questionOptionKeySep + "metaInit"
+			cols.disp[i] = q.ID + rp.questionOptionKeySep + "metaDisplayed"
+			cols.resp[i] = q.ID + rp.questionOptionKeySep + "metaResponse"
+			cols.pos[i] = q.ID + rp.questionOptionKeySep + "metaPosition"
+		}
+		rp.metaColCache[sv.VersionID] = cols
 	}
 
 	return &rp, nil
@@ -167,7 +201,8 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		}
 	}
 
-	for _, question := range currentVersion.Questions {
+	cache := rp.metaColCache[currentVersion.VersionID]
+	for qIdx, question := range currentVersion.Questions {
 		resp := findResponse(rawResp.Responses, question.ID)
 
 		responseColumns := getResponseColumns(question, resp, rp.questionOptionKeySep)
@@ -175,20 +210,22 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			parsedResponse.Responses[k] = v
 		}
 
-		// Set meta infos
-		initColName := question.ID + rp.questionOptionKeySep + "metaInit"
+		// Meta column names are precomputed per (version, question) in
+		// newResponseExporterBase to avoid four string allocations per
+		// question per row.
+		initColName := cache.init[qIdx]
 		rp.AddMetaColName(initColName)
 		parsedResponse.Meta.Initialised[initColName] = []int64{}
 
-		dispColName := question.ID + rp.questionOptionKeySep + "metaDisplayed"
+		dispColName := cache.disp[qIdx]
 		rp.AddMetaColName(dispColName)
 		parsedResponse.Meta.Displayed[dispColName] = []int64{}
 
-		respColName := question.ID + rp.questionOptionKeySep + "metaResponse"
+		respColName := cache.resp[qIdx]
 		rp.AddMetaColName(respColName)
 		parsedResponse.Meta.Responded[respColName] = []int64{}
 
-		positionColName := question.ID + rp.questionOptionKeySep + "metaPosition"
+		positionColName := cache.pos[qIdx]
 		rp.AddMetaColName(positionColName)
 		parsedResponse.Meta.Position[positionColName] = 0
 
@@ -219,29 +256,44 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 }
 
 func (rp *ResponseExporter) AddResponseColName(name string) {
-	for _, n := range rp.responseColNames {
-		if n == name {
-			return
+	if rp.responseColSeen == nil {
+		rp.responseColSeen = map[string]struct{}{}
+		for _, n := range rp.responseColNames {
+			rp.responseColSeen[n] = struct{}{}
 		}
 	}
+	if _, ok := rp.responseColSeen[name]; ok {
+		return
+	}
+	rp.responseColSeen[name] = struct{}{}
 	rp.responseColNames = append(rp.responseColNames, name)
 }
 
 func (rp *ResponseExporter) AddContextColName(name string) {
-	for _, n := range rp.contextColNames {
-		if n == name {
-			return
+	if rp.contextColSeen == nil {
+		rp.contextColSeen = map[string]struct{}{}
+		for _, n := range rp.contextColNames {
+			rp.contextColSeen[n] = struct{}{}
 		}
 	}
+	if _, ok := rp.contextColSeen[name]; ok {
+		return
+	}
+	rp.contextColSeen[name] = struct{}{}
 	rp.contextColNames = append(rp.contextColNames, name)
 }
 
 func (rp *ResponseExporter) AddMetaColName(name string) {
-	for _, n := range rp.metaColNames {
-		if n == name {
-			return
+	if rp.metaColSeen == nil {
+		rp.metaColSeen = map[string]struct{}{}
+		for _, n := range rp.metaColNames {
+			rp.metaColSeen[n] = struct{}{}
 		}
 	}
+	if _, ok := rp.metaColSeen[name]; ok {
+		return
+	}
+	rp.metaColSeen[name] = struct{}{}
 	rp.metaColNames = append(rp.metaColNames, name)
 }
 
