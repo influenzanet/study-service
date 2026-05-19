@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
@@ -24,6 +27,20 @@ import (
 )
 
 const CHUNK_SIZE = 64 * 1024 // 64 KiB
+
+// useStreamingTwoPassExport reports whether streamResponseExport should use
+// the new two-pass cursor (pass 1 to build the columns, pass 2 streams rows
+// to chunkWriter without retaining parsed rows in memory). Defaults to true.
+// set EXPORT_USE_STREAMING_TWO_PASS=false to fall back to the old behaviour
+func useStreamingTwoPassExport() bool {
+	v := strings.ToLower(strings.TrimSpace(os.Getenv("EXPORT_USE_STREAMING_TWO_PASS")))
+	switch v {
+	case "", "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
+}
 
 type ResponseFormat int
 
@@ -551,6 +568,122 @@ func (w *chunkWriter) flush() error {
 // Mongo cursor and then serializes directly into the gRPC stream via
 // chunkWriter. 
 func (s *studyServiceServer) streamResponseExport(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
+	if useStreamingTwoPassExport() {
+		return s.streamResponseExportTwoPass(req, fmt, stream)
+	}
+	return s.streamResponseExportBuffered(req, fmt, stream)
+}
+
+// streamResponseExportTwoPass implements two-pass cursor
+func (s *studyServiceServer) streamResponseExportTwoPass(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
+	responseExporter, err := s.getResponseExporterResponseExport(req)
+	if err != nil {
+		return err
+	}
+
+	includeMeta := &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	}
+
+	// Limit the responses on submittedAt at the start of pass 1.
+	// Without this rows inserted between the two passes would slip into
+	// pass 2 with column names that pass 1 never saw (the header is frozen
+	// after pass 1, so those columns would be dropped on the
+	// pass-2 row)
+	from := req.From
+	until := req.Until
+	if until <= 0 {
+		until = time.Now().Unix()
+	}
+
+	ctx := context.Background()
+
+	// Pass 1, harvest columns. Rows are parsed and discarded.
+	var rowCount int64
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		from, until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[streamResponseExportTwoPass:pass1]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[streamResponseExportTwoPass:pass1]: wrong DB method argument")
+			}
+			rowCount++
+			return rExp.HarvestResponse(&response)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	// Preserve the legacy "no responses, nothing is generated" error for
+	// the CSV paths. JSON emits "[]" (an empty but valid array) in that
+	// case, matching the buffered path.
+	if rowCount < 1 && fmt != FLAT_JSON {
+		return status.Error(codes.Internal, "no responses, nothing is generated")
+	}
+
+	cw := newChunkWriter(stream)
+
+	var sink exporter.RowSink
+	switch fmt {
+	case FLAT_JSON:
+		sink = responseExporter.NewJSONSink(cw, includeMeta)
+	case WIDE_FORMAT_CSV:
+		sink = responseExporter.NewWideCSVSink(cw, includeMeta)
+	case LONG_FORMAT_CSV:
+		sink = responseExporter.NewLongCSVSink(cw, includeMeta)
+	default:
+		return status.Error(codes.Internal, "[streamResponseExportTwoPass]: wrong response format")
+	}
+	if err := sink.WriteHeader(); err != nil {
+		logger.Info.Println(err)
+		return err
+	}
+
+	// Pass 2, parse and stream each row
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		from, until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[streamResponseExportTwoPass:pass2]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[streamResponseExportTwoPass:pass2]: wrong DB method argument")
+			}
+			parsed, perr := rExp.ParseResponse(&response)
+			if perr != nil {
+				return perr
+			}
+			return sink.WriteRow(parsed)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	if err := sink.Flush(); err != nil {
+		logger.Info.Println(err)
+		return err
+	}
+	return cw.Flush()
+}
+
+// streamResponseExportBuffered is the legacy single pass path, used as a
+// fallback behind the EXPORT_USE_STREAMING_TWO_PASS flag.
+func (s *studyServiceServer) streamResponseExportBuffered(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
 	responseExporter, err := s.getResponseExporterResponseExport(req)
 	if err != nil {
 		return err
@@ -562,11 +695,11 @@ func (s *studyServiceServer) streamResponseExport(req *api.ResponseExportQuery, 
 		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
 		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
 			if len(args) != 3 {
-				return errors.New("[streamResponseExport]: wrong DB method argument")
+				return errors.New("[streamResponseExportBuffered]: wrong DB method argument")
 			}
 			rExp, ok := args[0].(*exporter.ResponseExporter)
 			if !ok {
-				return errors.New("[streamResponseExport]: wrong DB method argument")
+				return errors.New("[streamResponseExportBuffered]: wrong DB method argument")
 			}
 			return rExp.AddResponse(&response)
 		},
@@ -593,7 +726,7 @@ func (s *studyServiceServer) streamResponseExport(req *api.ResponseExportQuery, 
 	case LONG_FORMAT_CSV:
 		err = responseExporter.GetResponsesLongFormatCSV(cw, includeMeta)
 	default:
-		return status.Error(codes.Internal, errors.New("[streamResponseExport]: wrong response format").Error())
+		return status.Error(codes.Internal, errors.New("[streamResponseExportBuffered]: wrong response format").Error())
 	}
 	if err != nil {
 		logger.Info.Println(err)

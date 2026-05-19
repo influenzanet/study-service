@@ -29,6 +29,11 @@ type ResponseExporter struct {
 	// metaColCache holds the four meta-column-name strings for every
 	// question of every survey version, keyed by VersionID
 	metaColCache map[string]versionMetaCols
+
+	frozen             bool
+	sortedContextCols  []string
+	sortedResponseCols []string
+	sortedMetaCols     []string
 }
 
 type versionMetaCols struct {
@@ -47,7 +52,7 @@ var fixedColumnKeys = []string{
 	"submitted",
 }
 
-func (rp ResponseExporter) getFixedColumns(resp ParsedResponse) map[string]interface{} {
+func (rp *ResponseExporter) getFixedColumns(resp ParsedResponse) map[string]interface{} {
 	// Must always assign every entry of fixedColumnKeys
 	return map[string]interface{}{
 		fixedColumnKeys[0]: resp.ID,
@@ -58,7 +63,7 @@ func (rp ResponseExporter) getFixedColumns(resp ParsedResponse) map[string]inter
 	}
 }
 
-func (rp ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []string {
+func (rp *ResponseExporter) getFixedColumnValueStrings(resp ParsedResponse) []string {
 	fixedColumns := rp.getFixedColumns(resp)
 	valueStrings := make([]string, 0, len(fixedColumnKeys))
 
@@ -166,7 +171,38 @@ func newResponseExporterBase(
 	return &rp, nil
 }
 
+// AddResponse parses rawResp and retains the result in rp.responses.
+// Used for legacy callersthat materialize the whole result set in memory
+// (GetResponsesFlatJSONWithPagination).
+// Streaming callers use HarvestResponse in pass 1 and ParseResponse in pass 2 instead.
 func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
+	parsed, err := rp.parseResponseInternal(rawResp)
+	if err != nil {
+		return err
+	}
+	rp.responses = append(rp.responses, *parsed)
+	return nil
+}
+
+// HarvestResponse parses rawResp, registers any new column names, and
+// discards the parsed value. Used in pass 1 of two-pass streaming export to
+// discover the full column set without retaining row data.
+func (rp *ResponseExporter) HarvestResponse(rawResp *types.SurveyResponse) error {
+	_, err := rp.parseResponseInternal(rawResp)
+	return err
+}
+
+// ParseResponse parses rawResp and returns the result without retaining it.
+// Used in pass 2 of two-pass streaming export, after Freeze(). Registration
+// of new column names is a no-op once the exporter is frozen, so the header
+// established in pass 1 stays fixed even if pass 2 sees columns not present
+// in pass 1 (e.g. a row inserted between the two passes that selects a
+// previously-unseen cloze-in-choice option).
+func (rp *ResponseExporter) ParseResponse(rawResp *types.SurveyResponse) (*ParsedResponse, error) {
+	return rp.parseResponseInternal(rawResp)
+}
+
+func (rp *ResponseExporter) parseResponseInternal(rawResp *types.SurveyResponse) (*ParsedResponse, error) {
 	parsedResponse := ParsedResponse{
 		ID:            rawResp.ID.Hex(),
 		ParticipantID: rawResp.ParticipantID,
@@ -185,7 +221,7 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 
 	currentVersion, err := findSurveyVersion(rawResp.VersionID, rawResp.SubmittedAt, rp.surveyVersions)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if currentVersion.VersionID != rawResp.VersionID && currentVersion.VersionID != "" {
 		parsedResponse.Version = rawResp.VersionID + " (" + currentVersion.VersionID + ")"
@@ -210,9 +246,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 			parsedResponse.Responses[k] = v
 		}
 
-		// Meta column names are precomputed per (version, question) in
-		// newResponseExporterBase to avoid four string allocations per
-		// question per row.
 		initColName := cache.init[qIdx]
 		rp.AddMetaColName(initColName)
 		parsedResponse.Meta.Initialised[initColName] = []int64{}
@@ -243,7 +276,6 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		}
 	}
 
-	// Extend response col names:
 	for k := range parsedResponse.Responses {
 		rp.AddResponseColName(k)
 	}
@@ -251,11 +283,13 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 		rp.AddContextColName(k)
 	}
 
-	rp.responses = append(rp.responses, parsedResponse)
-	return nil
+	return &parsedResponse, nil
 }
 
 func (rp *ResponseExporter) AddResponseColName(name string) {
+	if rp.frozen {
+		return
+	}
 	if rp.responseColSeen == nil {
 		rp.responseColSeen = map[string]struct{}{}
 		for _, n := range rp.responseColNames {
@@ -270,6 +304,9 @@ func (rp *ResponseExporter) AddResponseColName(name string) {
 }
 
 func (rp *ResponseExporter) AddContextColName(name string) {
+	if rp.frozen {
+		return
+	}
 	if rp.contextColSeen == nil {
 		rp.contextColSeen = map[string]struct{}{}
 		for _, n := range rp.contextColNames {
@@ -284,6 +321,9 @@ func (rp *ResponseExporter) AddContextColName(name string) {
 }
 
 func (rp *ResponseExporter) AddMetaColName(name string) {
+	if rp.frozen {
+		return
+	}
 	if rp.metaColSeen == nil {
 		rp.metaColSeen = map[string]struct{}{}
 		for _, n := range rp.metaColNames {
@@ -297,333 +337,428 @@ func (rp *ResponseExporter) AddMetaColName(name string) {
 	rp.metaColNames = append(rp.metaColNames, name)
 }
 
-func (rp ResponseExporter) GetSurveyVersionDefs() []SurveyVersionPreview {
+// Freeze locks the column set
+func (rp *ResponseExporter) Freeze() {
+	if rp.frozen {
+		return
+	}
+	rp.sortedContextCols = append([]string(nil), rp.contextColNames...)
+	sort.Strings(rp.sortedContextCols)
+	rp.sortedResponseCols = append([]string(nil), rp.responseColNames...)
+	sort.Strings(rp.sortedResponseCols)
+	rp.sortedMetaCols = append([]string(nil), rp.metaColNames...)
+	sort.Strings(rp.sortedMetaCols)
+	rp.frozen = true
+}
+
+func (rp *ResponseExporter) GetSurveyVersionDefs() []SurveyVersionPreview {
 	return rp.surveyVersions
 }
 
-func (rp ResponseExporter) GetResponses() []ParsedResponse {
+func (rp *ResponseExporter) GetResponses() []ParsedResponse {
 	return rp.responses
 }
 
-func (rp ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *IncludeMeta) error {
-	responseArray := []map[string]interface{}{}
-	for _, resp := range rp.responses {
-
-		currentResp := rp.getFixedColumns(resp)
-
-		contextCols := rp.contextColNames
-		for _, colName := range contextCols {
-			v, ok := resp.Context[colName]
-			if !ok {
-				currentResp[colName] = ""
-			} else {
-				currentResp[colName] = v
-			}
-		}
-
-		responseCols := rp.responseColNames
-		for _, colName := range responseCols {
-			r, ok := resp.Responses[colName]
-			if !ok {
-				currentResp[colName] = ""
-			} else {
-				currentResp[colName] = r
-			}
-		}
-
-		metaCols := rp.metaColNames
-		sort.Strings(metaCols)
-
-		if includeMeta != nil {
-			for _, colName := range metaCols {
-				if strings.Contains(colName, "metaInit") {
-					if !includeMeta.InitTimes {
-						continue
-					}
-					v, ok := resp.Meta.Initialised[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
-				} else if strings.Contains(colName, "metaDisplayed") {
-					if !includeMeta.DisplayedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Displayed[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
-				} else if strings.Contains(colName, "metaResponse") {
-					if !includeMeta.ResponsedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Responded[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
-				} else if strings.Contains(colName, "metaPosition") {
-					if !includeMeta.Postion {
-						continue
-					}
-					v, ok := resp.Meta.Position[colName]
-					if !ok {
-						currentResp[colName] = ""
-					} else {
-						currentResp[colName] = v
-					}
-				}
-			}
-		}
-
-		responseArray = append(responseArray, currentResp)
-	}
-	b, err := json.Marshal(responseArray)
-	if err != nil {
-		return err
-	}
-	_, err = writer.Write(b)
-	return err
+// RowSink writes serialized responses one at a time to its underlying writer.
+// The order is: WriteHeader, WriteRow per ParsedResponse and then Flush.
+// For the JSON sink, WriteHeader emits the opening bracket and Flush emits
+// the closing bracket. For the CSV sinks WriteHeader writes the header row
+// and Flush flushes the csv.Writer.
+type RowSink interface {
+	WriteHeader() error
+	WriteRow(parsed *ParsedResponse) error
+	Flush() error
 }
 
-func (rp ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *IncludeMeta) error {
-	if len(rp.responses) < 1 {
-		return errors.New("no responses, nothing is generated")
-	}
+// NewWideCSVSink returns a streaming wide-format CSV sink writing to w.
+func (rp *ResponseExporter) NewWideCSVSink(w io.Writer, includeMeta *IncludeMeta) RowSink {
+	return &wideCSVSink{rp: rp, csv: csv.NewWriter(w), includeMeta: includeMeta}
+}
 
-	// Sort column names
-	contextCols := rp.contextColNames
-	sort.Strings(contextCols)
-	responseCols := rp.responseColNames
-	sort.Strings(responseCols)
-	metaCols := rp.metaColNames
-	sort.Strings(metaCols)
+// NewLongCSVSink returns a streaming long-format CSV sink writing to w.
+func (rp *ResponseExporter) NewLongCSVSink(w io.Writer, includeMeta *IncludeMeta) RowSink {
+	return &longCSVSink{rp: rp, csv: csv.NewWriter(w), includeMeta: includeMeta}
+}
 
-	// Prepare csv header
-	header := fixedColumnKeys
-	header = append(header, contextCols...)
-	header = append(header, responseCols...)
-	if includeMeta != nil {
-		for _, c := range metaCols {
-			if !includeMeta.Postion && strings.Contains(c, "metaPosition") {
+// NewJSONSink returns a streaming JSON sink writing to w.      
+func (rp *ResponseExporter) NewJSONSink(w io.Writer, includeMeta *IncludeMeta) RowSink {
+	return &jsonSink{rp: rp, w: w, includeMeta: includeMeta}
+}
+
+type wideCSVSink struct {
+	rp          *ResponseExporter
+	csv         *csv.Writer
+	includeMeta *IncludeMeta
+}
+
+func (s *wideCSVSink) WriteHeader() error {
+	s.rp.Freeze()
+	header := append([]string(nil), fixedColumnKeys...)
+	header = append(header, s.rp.sortedContextCols...)
+	header = append(header, s.rp.sortedResponseCols...)
+	if s.includeMeta != nil {
+		for _, c := range s.rp.sortedMetaCols {
+			if !s.includeMeta.Postion && strings.Contains(c, "metaPosition") {
 				continue
 			}
-			if !includeMeta.InitTimes && strings.Contains(c, "metaInit") {
+			if !s.includeMeta.InitTimes && strings.Contains(c, "metaInit") {
 				continue
 			}
-			if !includeMeta.DisplayedTimes && strings.Contains(c, "metaDisplayed") {
+			if !s.includeMeta.DisplayedTimes && strings.Contains(c, "metaDisplayed") {
 				continue
 			}
-			if !includeMeta.ResponsedTimes && strings.Contains(c, "metaResponse") {
+			if !s.includeMeta.ResponsedTimes && strings.Contains(c, "metaResponse") {
 				continue
 			}
 			header = append(header, c)
 		}
 	}
+	return s.csv.Write(header)
+}
 
-	// Init writer
-	w := csv.NewWriter(writer)
+func (s *wideCSVSink) WriteRow(parsed *ParsedResponse) error {
+	line := s.rp.getFixedColumnValueStrings(*parsed)
 
-	// Write header
-	err := w.Write(header)
-	if err != nil {
-		return err
+	for _, colName := range s.rp.sortedContextCols {
+		v, ok := parsed.Context[colName]
+		if !ok {
+			line = append(line, "")
+			continue
+		}
+		line = append(line, v)
 	}
 
-	// Write responses
-	for _, resp := range rp.responses {
-		line := rp.getFixedColumnValueStrings(resp)
-
-		for _, colName := range contextCols {
-			v, ok := resp.Context[colName]
-			if !ok {
-				line = append(line, "")
-				continue
-			}
-			line = append(line, v)
+	for _, colName := range s.rp.sortedResponseCols {
+		v, ok := parsed.Responses[colName]
+		if !ok {
+			line = append(line, "")
+			continue
 		}
+		line = append(line, responseColToString(v))
+	}
 
-		for _, colName := range responseCols {
-			v, ok := resp.Responses[colName]
-			if !ok {
-				line = append(line, "")
-				continue
-			}
-			line = append(line, responseColToString(v))
-		}
-
-		if includeMeta != nil {
-			for _, colName := range metaCols {
-				if strings.Contains(colName, "metaInit") {
-					if !includeMeta.InitTimes {
-						continue
-					}
-					v, ok := resp.Meta.Initialised[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, timestampsToStr(v))
-				} else if strings.Contains(colName, "metaDisplayed") {
-					if !includeMeta.DisplayedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Displayed[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, timestampsToStr(v))
-				} else if strings.Contains(colName, "metaResponse") {
-					if !includeMeta.ResponsedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Responded[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, timestampsToStr(v))
-				} else if strings.Contains(colName, "metaPosition") {
-					if !includeMeta.Postion {
-						continue
-					}
-					v, ok := resp.Meta.Position[colName]
-					if !ok {
-						line = append(line, "")
-						continue
-					}
-					line = append(line, fmt.Sprintf("%d", v))
+	if s.includeMeta != nil {
+		for _, colName := range s.rp.sortedMetaCols {
+			if strings.Contains(colName, "metaInit") {
+				if !s.includeMeta.InitTimes {
+					continue
 				}
+				v, ok := parsed.Meta.Initialised[colName]
+				if !ok {
+					line = append(line, "")
+					continue
+				}
+				line = append(line, timestampsToStr(v))
+			} else if strings.Contains(colName, "metaDisplayed") {
+				if !s.includeMeta.DisplayedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Displayed[colName]
+				if !ok {
+					line = append(line, "")
+					continue
+				}
+				line = append(line, timestampsToStr(v))
+			} else if strings.Contains(colName, "metaResponse") {
+				if !s.includeMeta.ResponsedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Responded[colName]
+				if !ok {
+					line = append(line, "")
+					continue
+				}
+				line = append(line, timestampsToStr(v))
+			} else if strings.Contains(colName, "metaPosition") {
+				if !s.includeMeta.Postion {
+					continue
+				}
+				v, ok := parsed.Meta.Position[colName]
+				if !ok {
+					line = append(line, "")
+					continue
+				}
+				line = append(line, fmt.Sprintf("%d", v))
 			}
 		}
+	}
 
-		err := w.Write(line)
-		if err != nil {
+	return s.csv.Write(line)
+}
+
+func (s *wideCSVSink) Flush() error {
+	s.csv.Flush()
+	return s.csv.Error()
+}
+
+type longCSVSink struct {
+	rp          *ResponseExporter
+	csv         *csv.Writer
+	includeMeta *IncludeMeta
+}
+
+func (s *longCSVSink) WriteHeader() error {
+	s.rp.Freeze()
+	header := append([]string(nil), fixedColumnKeys...)
+	header = append(header, s.rp.sortedContextCols...)
+	header = append(header, "responseSlot", "value")
+	return s.csv.Write(header)
+}
+
+func (s *longCSVSink) WriteRow(parsed *ParsedResponse) error {
+	line := s.rp.getFixedColumnValueStrings(*parsed)
+
+	for _, colName := range s.rp.sortedContextCols {
+		v, ok := parsed.Context[colName]
+		if !ok {
+			line = append(line, "")
+			continue
+		}
+		line = append(line, v)
+	}
+
+	for _, colName := range s.rp.sortedResponseCols {
+		currentRespLine := []string{}
+		currentRespLine = append(currentRespLine, line...)
+		currentRespLine = append(currentRespLine, colName)
+		v, ok := parsed.Responses[colName]
+		if !ok {
+			currentRespLine = append(currentRespLine, "")
+		} else {
+			currentRespLine = append(currentRespLine, responseColToString(v))
+		}
+		if err := s.csv.Write(currentRespLine); err != nil {
 			return err
 		}
 	}
-	w.Flush()
-	return nil
-}
 
-func (rp ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos *IncludeMeta) error {
-	if len(rp.responses) < 1 {
-		return errors.New("no responses, nothing is generated")
-	}
-
-	// Sort column names
-	contextCols := rp.contextColNames
-	sort.Strings(contextCols)
-	responseCols := rp.responseColNames
-	sort.Strings(responseCols)
-	metaCols := rp.metaColNames
-	sort.Strings(metaCols)
-
-	// Prepare csv header
-	header := fixedColumnKeys
-	header = append(header, contextCols...)
-	header = append(header, "responseSlot")
-	header = append(header, "value")
-
-	// Init writer
-	w := csv.NewWriter(writer)
-
-	// Write header
-	err := w.Write(header)
-	if err != nil {
-		return err
-	}
-
-	// Write responses
-	for _, resp := range rp.responses {
-		line := rp.getFixedColumnValueStrings(resp)
-
-		for _, colName := range contextCols {
-			v, ok := resp.Context[colName]
-			if !ok {
-				line = append(line, "")
-				continue
+	if s.includeMeta != nil {
+		for _, colName := range s.rp.sortedMetaCols {
+			value := ""
+			if strings.Contains(colName, "metaInit") {
+				if !s.includeMeta.InitTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Initialised[colName]
+				if ok {
+					value = timestampsToStr(v)
+				}
+			} else if strings.Contains(colName, "metaDisplayed") {
+				if !s.includeMeta.DisplayedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Displayed[colName]
+				if ok {
+					value = timestampsToStr(v)
+				}
+			} else if strings.Contains(colName, "metaResponse") {
+				if !s.includeMeta.ResponsedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Responded[colName]
+				if ok {
+					value = timestampsToStr(v)
+				}
+			} else if strings.Contains(colName, "metaPosition") {
+				if !s.includeMeta.Postion {
+					continue
+				}
+				v, ok := parsed.Meta.Position[colName]
+				if ok {
+					value = fmt.Sprintf("%d", v)
+				}
 			}
-			line = append(line, v)
-		}
 
-		for _, colName := range responseCols {
 			currentRespLine := []string{}
 			currentRespLine = append(currentRespLine, line...)
 			currentRespLine = append(currentRespLine, colName)
-			v, ok := resp.Responses[colName]
-			if !ok {
-				currentRespLine = append(currentRespLine, "")
-			} else {
-				currentRespLine = append(currentRespLine, responseColToString(v))
-			}
-
-			err := w.Write(currentRespLine)
-			if err != nil {
+			currentRespLine = append(currentRespLine, value)
+			if err := s.csv.Write(currentRespLine); err != nil {
 				return err
 			}
 		}
-
-		if metaInfos != nil {
-			for _, colName := range metaCols {
-				value := ""
-				if strings.Contains(colName, "metaInit") {
-					if !metaInfos.InitTimes {
-						continue
-					}
-					v, ok := resp.Meta.Initialised[colName]
-					if ok {
-						value = timestampsToStr(v)
-					}
-				} else if strings.Contains(colName, "metaDisplayed") {
-					if !metaInfos.DisplayedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Displayed[colName]
-					if ok {
-						value = timestampsToStr(v)
-					}
-				} else if strings.Contains(colName, "metaResponse") {
-					if !metaInfos.ResponsedTimes {
-						continue
-					}
-					v, ok := resp.Meta.Responded[colName]
-					if ok {
-						value = timestampsToStr(v)
-					}
-				} else if strings.Contains(colName, "metaPosition") {
-					if !metaInfos.Postion {
-						continue
-					}
-					v, ok := resp.Meta.Position[colName]
-					if ok {
-						value = fmt.Sprintf("%d", v)
-					}
-				}
-
-				currentRespLine := []string{}
-				currentRespLine = append(currentRespLine, line...)
-				currentRespLine = append(currentRespLine, colName)
-				currentRespLine = append(currentRespLine, value)
-
-				err := w.Write(currentRespLine)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
 	}
-	w.Flush()
+
 	return nil
 }
 
-func (rp ResponseExporter) GetSurveyInfoCSV(writer io.Writer) error {
+func (s *longCSVSink) Flush() error {
+	s.csv.Flush()
+	return s.csv.Error()
+}
+
+type jsonSink struct {
+	rp          *ResponseExporter
+	w           io.Writer
+	includeMeta *IncludeMeta
+	opened      bool
+	closed      bool
+	rowEmitted  bool
+}
+
+func (s *jsonSink) WriteHeader() error {
+	if s.opened {
+		return nil
+	}
+	s.rp.Freeze()
+	if _, err := io.WriteString(s.w, "["); err != nil {
+		return err
+	}
+	s.opened = true
+	return nil
+}
+
+func (s *jsonSink) WriteRow(parsed *ParsedResponse) error {
+	if !s.opened {
+		if err := s.WriteHeader(); err != nil {
+			return err
+		}
+	}
+	if s.rowEmitted {
+		if _, err := io.WriteString(s.w, ","); err != nil {
+			return err
+		}
+	}
+
+	currentResp := s.rp.getFixedColumns(*parsed)
+
+	for _, colName := range s.rp.sortedContextCols {
+		v, ok := parsed.Context[colName]
+		if !ok {
+			currentResp[colName] = ""
+		} else {
+			currentResp[colName] = v
+		}
+	}
+
+	for _, colName := range s.rp.sortedResponseCols {
+		r, ok := parsed.Responses[colName]
+		if !ok {
+			currentResp[colName] = ""
+		} else {
+			currentResp[colName] = r
+		}
+	}
+
+	if s.includeMeta != nil {
+		for _, colName := range s.rp.sortedMetaCols {
+			if strings.Contains(colName, "metaInit") {
+				if !s.includeMeta.InitTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Initialised[colName]
+				if !ok {
+					currentResp[colName] = ""
+				} else {
+					currentResp[colName] = v
+				}
+			} else if strings.Contains(colName, "metaDisplayed") {
+				if !s.includeMeta.DisplayedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Displayed[colName]
+				if !ok {
+					currentResp[colName] = ""
+				} else {
+					currentResp[colName] = v
+				}
+			} else if strings.Contains(colName, "metaResponse") {
+				if !s.includeMeta.ResponsedTimes {
+					continue
+				}
+				v, ok := parsed.Meta.Responded[colName]
+				if !ok {
+					currentResp[colName] = ""
+				} else {
+					currentResp[colName] = v
+				}
+			} else if strings.Contains(colName, "metaPosition") {
+				if !s.includeMeta.Postion {
+					continue
+				}
+				v, ok := parsed.Meta.Position[colName]
+				if !ok {
+					currentResp[colName] = ""
+				} else {
+					currentResp[colName] = v
+				}
+			}
+		}
+	}
+
+	b, err := json.Marshal(currentResp)
+	if err != nil {
+		return err
+	}
+	if _, err := s.w.Write(b); err != nil {
+		return err
+	}
+	s.rowEmitted = true
+	return nil
+}
+
+func (s *jsonSink) Flush() error {
+	if s.closed {
+		return nil
+	}
+	s.closed = true
+	if !s.opened {
+		_, err := io.WriteString(s.w, "[]")
+		return err
+	}
+	_, err := io.WriteString(s.w, "]")
+	return err
+}
+
+// Legacy buffered serializers.
+// Retained for callers that load the whole result set in memory (e.g. GetResponsesFlatJSONWithPagination
+// and those behind the streaming flag in data_export.go)
+func (rp *ResponseExporter) GetResponsesJSON(writer io.Writer, includeMeta *IncludeMeta) error {
+	sink := rp.NewJSONSink(writer, includeMeta)
+	if err := sink.WriteHeader(); err != nil {
+		return err
+	}
+	for i := range rp.responses {
+		if err := sink.WriteRow(&rp.responses[i]); err != nil {
+			return err
+		}
+	}
+	return sink.Flush()
+}
+
+func (rp *ResponseExporter) GetResponsesCSV(writer io.Writer, includeMeta *IncludeMeta) error {
+	if len(rp.responses) < 1 {
+		return errors.New("no responses, nothing is generated")
+	}
+	sink := rp.NewWideCSVSink(writer, includeMeta)
+	if err := sink.WriteHeader(); err != nil {
+		return err
+	}
+	for i := range rp.responses {
+		if err := sink.WriteRow(&rp.responses[i]); err != nil {
+			return err
+		}
+	}
+	return sink.Flush()
+}
+
+func (rp *ResponseExporter) GetResponsesLongFormatCSV(writer io.Writer, metaInfos *IncludeMeta) error {
+	if len(rp.responses) < 1 {
+		return errors.New("no responses, nothing is generated")
+	}
+	sink := rp.NewLongCSVSink(writer, metaInfos)
+	if err := sink.WriteHeader(); err != nil {
+		return err
+	}
+	for i := range rp.responses {
+		if err := sink.WriteRow(&rp.responses[i]); err != nil {
+			return err
+		}
+	}
+	return sink.Flush()
+}
+
+func (rp *ResponseExporter) GetSurveyInfoCSV(writer io.Writer) error {
 	header := []string{
 		"surveyKey", "versionID", "questionKey", "title",
 		"responseKey", "type", "optionKey", "optionType", "optionLabel",
