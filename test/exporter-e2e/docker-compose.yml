@@ -1,0 +1,115 @@
+name: influweb-local-lab
+
+services:
+  mongo:
+    image: mongo:6.0.2
+    container_name: lab-mongo
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all", "--auth"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+      - ./dump:/dump:ro
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  user-management:
+    image: ${USERMGMT_IMAGE:-influenzanet/user-management-image:v1.3.0-influenzanet}
+    container_name: lab-user-management
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      USER_MANAGEMENT_LISTEN_PORT: "5002"
+      DB_TIMEOUT: "30"
+      DB_IDLE_CONN_TIMEOUT: "46"
+      DB_MAX_POOL_SIZE: "8"
+      DB_DB_NAME_PREFIX: ${DB_NAME_PREFIX:-}
+      GLOBAL_DB_CONNECTION_STR: "mongo:27017"
+      GLOBAL_DB_USERNAME: ${MONGO_USERNAME:-}
+      GLOBAL_DB_PASSWORD: ${MONGO_PASSWORD:-}
+      USER_DB_CONNECTION_STR: "mongo:27017"
+      USER_DB_USERNAME: ${MONGO_USERNAME:-}
+      USER_DB_PASSWORD: ${MONGO_PASSWORD:-}
+      TOKEN_EXPIRATION_MIN: "60"
+      INVITATION_TOKEN_LIFETIME: "168h"
+      CONTACT_VERIFICATION_TOKEN_LIFETIME: "720h"
+      WEEKDAY_ASSIGNATION_WEIGHTS: ""
+      JWT_TOKEN_KEY: ${JWT_TOKEN_KEY}
+      ARGON2_MEMORY: "65536"
+      ARGON2_ITERATIONS: "4"
+      ARGON2_PARALLELISM: "2"
+      ADDR_MESSAGING_SERVICE: "unused:5004"
+      ADDR_LOGGING_SERVICE: "unused:5006"
+      NEW_USER_RATE_LIMIT: "1000"
+      # Effectively disable cleanup so the imported prod users aren't deleted.
+      CLEAN_UP_UNVERIFIED_USERS_AFTER: "999999999"
+      SEND_REMINDER_TO_UNVERIFIED_USERS_AFTER: "999999999"
+      VERIFICATION_CODE_LIFETIME: "900"
+      LOG_LEVEL: "info"
+    ports:
+      - "5002:5002"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  study:
+    image: ${STUDY_IMAGE:-influenzanet/study-service-image:v1.7.3}
+    container_name: lab-study
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      STUDY_SERVICE_LISTEN_PORT: "5003"
+      DB_TIMEOUT: "30"
+      DB_IDLE_CONN_TIMEOUT: "46"
+      DB_MAX_POOL_SIZE: "8"
+      DB_DB_NAME_PREFIX: ${DB_NAME_PREFIX:-}
+      GLOBAL_DB_CONNECTION_STR: "mongo:27017"
+      GLOBAL_DB_USERNAME: ${MONGO_USERNAME:-}
+      GLOBAL_DB_PASSWORD: ${MONGO_PASSWORD:-}
+      STUDY_DB_CONNECTION_STR: "mongo:27017"
+      STUDY_DB_USERNAME: ${MONGO_USERNAME:-}
+      STUDY_DB_PASSWORD: ${MONGO_PASSWORD:-}
+      STUDY_TIMER_EVENT_FREQUENCY: "31536000"
+      STUDY_TIMER_EVENT_CHECK_INTERVAL_MIN: "31536000"
+      STUDY_TIMER_EVENT_CHECK_INTERVAL_VAR: "1"
+      STUDY_GLOBAL_SECRET: ${STUDY_GLOBAL_SECRET}
+      ADDR_LOGGING_SERVICE: "unused:5006"
+    ports:
+      - "5003:5003"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  management-api:
+    image: ${MGMT_IMAGE:-influenzanet/management-api-image:v1.5.0}
+    container_name: lab-management-api
+    restart: unless-stopped
+    depends_on:
+      - user-management
+      - study
+    environment:
+      MANAGEMENT_API_GATEWAY_LISTEN_PORT: "3232"
+      CORS_ALLOW_ORIGINS: "http://localhost:3232,http://127.0.0.1:3232,*"
+      DEBUG_MODE: "true"
+      ADDR_USER_MANAGEMENT_SERVICE: "user-management:5002"
+      ADDR_STUDY_SERVICE: "study:5003"
+      ADDR_MESSAGING_SERVICE: "unused:5004"
+    ports:
+      - "3232:3232"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+volumes:
+  mongo-data:
