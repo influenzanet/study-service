@@ -205,8 +205,11 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 	}
 
 	batchSize := int32(32)
+	// Sort by _id ascending so the cursor returns documents in a deterministic order across
+	// also fixes Skip/Limit pagination providing stable boundaries   
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
+		Sort:      bson.D{{Key: "_id", Value: 1}},
 	}
 	page := int32(0)
 	pageSize := int32(0)
