@@ -168,7 +168,39 @@ func newResponseExporterBase(
 		rp.metaColCache[sv.VersionID] = cols
 	}
 
+	rp.initSchemaColumns()
 	return &rp, nil
+}
+
+// initSchemaColumns pre-registers every response and meta column name derivable
+// from the survey schema
+func (rp *ResponseExporter) initSchemaColumns() {
+	for _, sv := range rp.surveyVersions {
+		for _, question := range sv.Questions {
+			for k := range getResponseColumns(question, nil, rp.questionOptionKeySep) {
+				rp.AddResponseColName(k)
+			}
+		}
+		cols := rp.metaColCache[sv.VersionID]
+		for i := range cols.init {
+			for _, n := range []string{cols.init[i], cols.disp[i], cols.resp[i], cols.pos[i]} {
+				if _, ok := rp.metaColSeen[n]; !ok {
+					rp.metaColSeen[n] = struct{}{}
+					rp.metaColNames = append(rp.metaColNames, n)
+				}
+			}
+		}
+	}
+}
+
+// HarvestContextKeys registers context column names from rawResp.Context without full parsing.
+func (rp *ResponseExporter) HarvestContextKeys(rawResp *types.SurveyResponse) {
+	if rp.frozen {
+		return
+	}
+	for k := range rawResp.Context {
+		rp.AddContextColName(k)
+	}
 }
 
 // AddResponse parses rawResp and retains the result in rp.responses.

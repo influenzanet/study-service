@@ -568,10 +568,103 @@ func (w *chunkWriter) flush() error {
 // Mongo cursor and then serializes directly into the gRPC stream via
 // chunkWriter. 
 func (s *studyServiceServer) streamResponseExport(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
-	if useStreamingTwoPassExport() {
-		return s.streamResponseExportTwoPass(req, fmt, stream)
+	return s.streamResponseExportSinglePass(req, fmt, stream)
+}
+
+// streamResponseExportSinglePass streams the export in a single cursor pass.
+// Response and meta columns are derived from the survey schema in the constructor and
+// context columns are computed from the first response.
+func (s *studyServiceServer) streamResponseExportSinglePass(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
+	responseExporter, err := s.getResponseExporterResponseExport(req)
+	if err != nil {
+		return err
 	}
-	return s.streamResponseExportBuffered(req, fmt, stream)
+
+	includeMeta := &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	}
+
+	from := req.From
+	until := req.Until
+	if until <= 0 {
+		until = time.Now().Unix()
+	}
+
+	ctx := context.Background()
+	cw := newChunkWriter(stream)
+
+	var sink exporter.RowSink
+	var headerWritten bool
+
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		from, until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[streamResponseExportSinglePass]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[streamResponseExportSinglePass]: wrong DB method argument")
+			}
+			if !headerWritten {
+				// Context keys are computed from the first response only.
+				// Responses are ordered by _id ascending (oldest first), so if a newer
+				// app version introduced a context key absent from the oldest submissions,
+				// that key will be missing from the header and its data silently dropped.
+				rExp.HarvestContextKeys(&response)
+				rExp.Freeze()
+				switch fmt {
+				case FLAT_JSON:
+					sink = rExp.NewJSONSink(cw, includeMeta)
+				case WIDE_FORMAT_CSV:
+					sink = rExp.NewWideCSVSink(cw, includeMeta)
+				case LONG_FORMAT_CSV:
+					sink = rExp.NewLongCSVSink(cw, includeMeta)
+				default:
+					return errors.New("[streamResponseExportSinglePass]: wrong response format")
+				}
+				if err := sink.WriteHeader(); err != nil {
+					return err
+				}
+				
+				if err := cw.Flush(); err != nil {
+					return err
+				}
+				headerWritten = true
+			}
+			parsed, perr := rExp.ParseResponse(&response)
+			if perr != nil {
+				return perr
+			}
+			return sink.WriteRow(parsed)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	if !headerWritten {
+		if fmt != FLAT_JSON {
+			return status.Error(codes.Internal, "no responses, nothing is generated")
+		}
+		// Emit an empty JSON array for zero-response exports.
+		sink = responseExporter.NewJSONSink(cw, includeMeta)
+		if err := sink.WriteHeader(); err != nil {
+			return err
+		}
+	}
+
+	if err := sink.Flush(); err != nil {
+		logger.Info.Println(err)
+		return err
+	}
+	return cw.Flush()
 }
 
 // streamResponseExportTwoPass implements two-pass cursor
