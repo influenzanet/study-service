@@ -204,7 +204,7 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 		return err
 	}
 
-	batchSize := int32(32)
+	batchSize := int32(256)
 	// Sort by _id ascending so the cursor returns documents in a deterministic order across
 	// also fixes Skip/Limit pagination providing stable boundaries   
 	opts := options.FindOptions{
