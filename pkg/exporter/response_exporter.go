@@ -184,12 +184,44 @@ func (rp *ResponseExporter) AddResponse(rawResp *types.SurveyResponse) error {
 	return nil
 }
 
-// HarvestResponse parses rawResp, registers any new column names, and
-// discards the parsed value. Used in pass 1 of two-pass streaming export to
-// discover the full column set without retaining row data.
+// HarvestResponse registers any new column names without building or retaining
+// a ParsedResponse. Used in pass 1 of two-pass streaming export.
 func (rp *ResponseExporter) HarvestResponse(rawResp *types.SurveyResponse) error {
-	_, err := rp.parseResponseInternal(rawResp)
-	return err
+	if rp.frozen {
+		return nil
+	}
+
+	currentVersion, err := findSurveyVersion(rawResp.VersionID, rawResp.SubmittedAt, rp.surveyVersions)
+	if err != nil {
+		return err
+	}
+
+	// Build key→response index without mutating rawResp.Responses.
+	respByKey := make(map[string]*types.SurveyItemResponse, len(rawResp.Responses))
+	for i := range rawResp.Responses {
+		key := rawResp.Responses[i].Key
+		if rp.shortQuestionKeys {
+			key = strings.TrimPrefix(key, rp.surveyKey+".")
+		}
+		respByKey[key] = &rawResp.Responses[i]
+	}
+
+	cache := rp.metaColCache[currentVersion.VersionID]
+	for qIdx, question := range currentVersion.Questions {
+		for k := range getResponseColumns(question, respByKey[question.ID], rp.questionOptionKeySep) {
+			rp.AddResponseColName(k)
+		}
+		rp.AddMetaColName(cache.init[qIdx])
+		rp.AddMetaColName(cache.disp[qIdx])
+		rp.AddMetaColName(cache.resp[qIdx])
+		rp.AddMetaColName(cache.pos[qIdx])
+	}
+
+	for k := range rawResp.Context {
+		rp.AddContextColName(k)
+	}
+
+	return nil
 }
 
 // ParseResponse parses rawResp and returns the result without retaining it.
