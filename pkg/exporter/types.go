@@ -128,14 +128,15 @@ func (ro ResponseOption) ToAPI() *api.ResponseOptionPreview {
 }
 
 type ParsedResponse struct {
-	ID            string
-	ParticipantID string
-	OpenedAt      int64
-	SubmittedAt   int64
-	Version       string
-	Context       map[string]string // e.g. Language, or engine version
-	Responses     map[string]interface{}
-	Meta          ResponseMeta
+	ID                string
+	ParticipantID     string
+	OpenedAt          int64
+	SubmittedAt       int64
+	Version           string
+	resolvedVersionID string
+	Context           map[string]string // e.g. Language, or engine version
+	Responses         map[string]interface{}
+	Meta              ResponseMeta
 }
 
 type ResponseMeta struct {

@@ -204,9 +204,12 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 		return err
 	}
 
-	batchSize := int32(32)
+	batchSize := int32(256)
+	// Sort by _id ascending so the cursor returns documents in a deterministic order across
+	// also fixes Skip/Limit pagination providing stable boundaries   
 	opts := options.FindOptions{
 		BatchSize: &batchSize,
+		Sort:      bson.D{{Key: "_id", Value: 1}},
 	}
 	page := int32(0)
 	pageSize := int32(0)
@@ -256,6 +259,58 @@ func (dbService *StudyDBService) PerformActionForSurveyResponses(
 		return err
 	}
 	return nil
+}
+
+// GetSurveyResponseContextKeys returns all distinct context map keys present
+// across responses for the given survey and time range. It runs a single
+// aggregation pass and is used to pre-seed the exporter before streaming.
+func (dbService *StudyDBService) GetSurveyResponseContextKeys(instanceID, studyKey, surveyKey string, from, until int64) ([]string, error) {
+	ctx, cancel := dbService.getContext()
+	defer cancel()
+
+	filter := bson.M{}
+	if len(surveyKey) > 0 {
+		filter["key"] = surveyKey
+	}
+	if from > 0 && until > 0 {
+		filter["$and"] = bson.A{
+			bson.M{"submittedAt": bson.M{"$gt": from}},
+			bson.M{"submittedAt": bson.M{"$lt": until}},
+		}
+	} else if from > 0 {
+		filter["submittedAt"] = bson.M{"$gt": from}
+	} else if until > 0 {
+		filter["submittedAt"] = bson.M{"$lt": until}
+	}
+
+	pipeline := bson.A{
+		bson.D{{Key: "$match", Value: filter}},
+		bson.D{{Key: "$project", Value: bson.D{
+			{Key: "k", Value: bson.D{{Key: "$objectToArray", Value: "$context"}}},
+		}}},
+		bson.D{{Key: "$unwind", Value: "$k"}},
+		bson.D{{Key: "$group", Value: bson.D{
+			{Key: "_id", Value: nil},
+			{Key: "keys", Value: bson.D{{Key: "$addToSet", Value: "$k.k"}}},
+		}}},
+	}
+
+	cur, err := dbService.collectionRefSurveyResponses(instanceID, studyKey).Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var results []struct {
+		Keys []string `bson:"keys"`
+	}
+	if err := cur.All(ctx, &results); err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return nil, nil
+	}
+	return results[0].Keys, nil
 }
 
 func (dbService *StudyDBService) UpdateParticipantIDonResponses(instanceID string, studyKey string, oldID string, newID string) (count int64, err error) {

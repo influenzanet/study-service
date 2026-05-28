@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/coneno/logger"
 	"github.com/influenzanet/go-utils/pkg/api_types"
@@ -362,12 +363,47 @@ func (s *studyServiceServer) HasAccessToDownload(t *api_types.TokenInfos, studyK
 }
 
 func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONWithPaginationServer) error {
-	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
+
+	responseExporter, err := s.getResponseExporterResponseExport(req)
+	if err != nil {
+		return err
+	}
 
 	ctx := context.Background()
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[GetResponsesFlatJSONWithPagination]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[GetResponsesFlatJSONWithPagination]: wrong DB method argument")
+			}
+			return rExp.AddResponse(&response)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	includeMeta := &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	}
+	buf := new(bytes.Buffer)
+	if err := responseExporter.GetResponsesJSON(buf, includeMeta); err != nil {
+		logger.Info.Println(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
 	itemCount := s.studyDBservice.GetSurveyResponsesCount(ctx, req.Token.InstanceId, req.StudyKey, req.SurveyKey, req.From, req.Until)
 	pageSize, page, pageCount := utils.ComputePaginationParameter(req.PageSize, req.Page, itemCount)
-	// Send pagination infos
 	infos := &api.PaginatedFile{
 		Data: &api.PaginatedFile_Info{
 			Info: &api.PaginationInfo{
@@ -378,56 +414,65 @@ func (s *studyServiceServer) GetResponsesFlatJSONWithPagination(req *api.Respons
 			},
 		},
 	}
-
-	err = stream.Send(infos)
-	if err != nil {
+	if err := stream.Send(infos); err != nil {
 		return err
 	}
-
 	data := &api.PaginatedFile{
-		Data: &api.PaginatedFile_Chunk{
-			Chunk: buf.Bytes(),
-		},
+		Data: &api.PaginatedFile_Chunk{Chunk: buf.Bytes()},
 	}
-	err = stream.Send(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return stream.Send(data)
 }
 
 // TODO: Test GetResponsesFlatJSON
 func (s *studyServiceServer) GetResponsesFlatJSON(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesFlatJSONServer) error {
-	buf, err := s.getResponseExportBuffer(req, FLAT_JSON)
-
+	responseExporter, err := s.getResponseExporterResponseExport(req)
 	if err != nil {
 		return err
 	}
 
+	ctx := context.Background()
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[GetResponsesFlatJSON]: wrong DB method argument")
+			}
+			return rExp.AddResponse(&response)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	includeMeta := &exporter.IncludeMeta{
+		Postion:        req.IncludeMeta.Position,
+		InitTimes:      req.IncludeMeta.InitTimes,
+		ResponsedTimes: req.IncludeMeta.ResponsedTimes,
+		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
+	}
+	buf := new(bytes.Buffer)
+	if err := responseExporter.GetResponsesJSON(buf, includeMeta); err != nil {
+		logger.Info.Println(err)
+		return status.Error(codes.Internal, err.Error())
+	}
 	return StreamFile(stream, buf)
 }
 
 // TODO: Test GetResponsesWideFormatCSV
 func (s *studyServiceServer) GetResponsesWideFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesWideFormatCSVServer) error {
-	buf, err := s.getResponseExportBuffer(req, WIDE_FORMAT_CSV)
-
-	if err != nil {
-		return err
-	}
-
-	return StreamFile(stream, buf)
+	return s.streamResponseExport(req, WIDE_FORMAT_CSV, stream)
 }
 
 // TODO: Test GetResponsesLongFormatCSV
 func (s *studyServiceServer) GetResponsesLongFormatCSV(req *api.ResponseExportQuery, stream api.StudyServiceApi_GetResponsesLongFormatCSVServer) error {
-	buf, err := s.getResponseExportBuffer(req, LONG_FORMAT_CSV)
-
-	if err != nil {
-		return err
-	}
-
-	return StreamFile(stream, buf)
+	return s.streamResponseExport(req, LONG_FORMAT_CSV, stream)
 }
 
 // TODO: Test GetSurveyInfoPreviewCSV
@@ -437,14 +482,12 @@ func (s *studyServiceServer) GetSurveyInfoPreviewCSV(req *api.SurveyInfoExportQu
 		return err
 	}
 
-	buf := new(bytes.Buffer)
-	err = responseExporter.GetSurveyInfoCSV(buf)
-	if err != nil {
+	cw := newChunkWriter(stream)
+	if err := responseExporter.GetSurveyInfoCSV(cw); err != nil {
 		logger.Info.Println(err)
 		return status.Error(codes.Internal, err.Error())
 	}
-
-	return StreamFile(stream, buf)
+	return cw.Flush()
 }
 
 // TODO: Test GetSurveyInfoPreview
@@ -470,16 +513,18 @@ type StreamObj interface {
 	Send(*api.Chunk) error
 }
 
+// chunks a buffer over the gRPC stream.
+// this is for methods that already have the payload in memory (e.g. GetParticipantFile
+// reading a local file).
+// use chunkWriter otherwise
 func StreamFile(stream StreamObj, buf *bytes.Buffer) error {
 	chnk := &api.Chunk{}
-
 	for currentByte := 0; currentByte < len(buf.Bytes()); currentByte += CHUNK_SIZE {
 		if currentByte+CHUNK_SIZE > len(buf.Bytes()) {
 			chnk.Chunk = buf.Bytes()[currentByte:len(buf.Bytes())]
 		} else {
 			chnk.Chunk = buf.Bytes()[currentByte : currentByte+CHUNK_SIZE]
 		}
-
 		if err := stream.Send(chnk); err != nil {
 			if err == io.EOF {
 				break
@@ -490,35 +535,66 @@ func StreamFile(stream StreamObj, buf *bytes.Buffer) error {
 	return nil
 }
 
-func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuery, fmt ResponseFormat) (*bytes.Buffer, error) {
+// chunkWriter let's  the exporter stream CSV/JSON directly to the
+// client without first materializing the full payload in a bytes.Buffer.
+type chunkWriter struct {
+	stream StreamObj
+	arr    [CHUNK_SIZE]byte
+	n      int
+}
+
+func newChunkWriter(stream StreamObj) *chunkWriter {
+	return &chunkWriter{stream: stream}
+}
+
+func (w *chunkWriter) Write(p []byte) (int, error) {
+	total := 0
+	for len(p) > 0 {
+		space := CHUNK_SIZE - w.n
+		if space == 0 {
+			if err := w.flush(); err != nil {
+				return total, err
+			}
+			space = CHUNK_SIZE
+		}
+		n := len(p)
+		if n > space {
+			n = space
+		}
+		copy(w.arr[w.n:], p[:n])
+		w.n += n
+		p = p[n:]
+		total += n
+	}
+	return total, nil
+}
+
+// Flush sends any buffered bytes as a final chunk. Must be called once the
+// caller is done writing otherwise the tail of the payload is lost.
+func (w *chunkWriter) Flush() error { return w.flush() }
+
+func (w *chunkWriter) flush() error {
+	if w.n == 0 {
+		return nil
+	}
+	err := w.stream.Send(&api.Chunk{Chunk: w.arr[:w.n]})
+	w.n = 0
+	if err == io.EOF {
+		return nil
+	}
+	return err
+}
+
+// streamResponseExport streams the export in a single cursor pass.
+// Response and meta columns are derived from the survey schema in the constructor.
+// Context columns are pre-seeded via a lightweight aggregation before the cursor starts,
+// so all context keys are present in the header regardless of response age.
+func (s *studyServiceServer) streamResponseExport(req *api.ResponseExportQuery, fmt ResponseFormat, stream StreamObj) error {
 	responseExporter, err := s.getResponseExporterResponseExport(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// Download responses
-	ctx := context.Background()
-	err = s.studyDBservice.PerformActionForSurveyResponses(
-		ctx,
-		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
-		req.From, req.Until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
-			if len(args) != 3 {
-				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
-			}
-			rExp, ok := args[0].(*exporter.ResponseExporter)
-			if !ok {
-				return errors.New("[getResponseExportBuffer]: wrong DB method argument")
-			}
-			return rExp.AddResponse(&response)
-		},
-		responseExporter, req.Page, req.PageSize,
-	)
-	if err != nil {
-		logger.Info.Print(err)
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	buf := new(bytes.Buffer)
 	includeMeta := &exporter.IncludeMeta{
 		Postion:        req.IncludeMeta.Position,
 		InitTimes:      req.IncludeMeta.InitTimes,
@@ -526,22 +602,90 @@ func (s *studyServiceServer) getResponseExportBuffer(req *api.ResponseExportQuer
 		DisplayedTimes: req.IncludeMeta.DisplayedTimes,
 	}
 
-	switch fmt {
-	case FLAT_JSON:
-		err = responseExporter.GetResponsesJSON(buf, includeMeta)
-	case WIDE_FORMAT_CSV:
-		err = responseExporter.GetResponsesCSV(buf, includeMeta)
-	case LONG_FORMAT_CSV:
-		err = responseExporter.GetResponsesLongFormatCSV(buf, includeMeta)
-	default:
-		return nil, status.Error(codes.Internal, errors.New("[getResponseExportBuffer]: wrong response format").Error())
+	from := req.From
+	until := req.Until
+	if until <= 0 {
+		until = time.Now().Unix()
 	}
 
+	responseExporter.InitSchemaColumnsForWindow(from, until)
+
+	contextKeys, err := s.studyDBservice.GetSurveyResponseContextKeys(
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey, from, until,
+	)
 	if err != nil {
-		logger.Info.Println(err)
-		return nil, err
+		return status.Error(codes.Internal, err.Error())
 	}
-	return buf, nil
+	for _, k := range contextKeys {
+		responseExporter.AddContextColName(k)
+	}
+
+	ctx := context.Background()
+	cw := newChunkWriter(stream)
+
+	var sink exporter.RowSink
+	var headerWritten bool
+
+	err = s.studyDBservice.PerformActionForSurveyResponses(
+		ctx,
+		req.Token.InstanceId, req.StudyKey, req.SurveyKey,
+		from, until, func(instanceID, studyKey string, response types.SurveyResponse, args ...interface{}) error {
+			if len(args) != 3 {
+				return errors.New("[streamResponseExport]: wrong DB method argument")
+			}
+			rExp, ok := args[0].(*exporter.ResponseExporter)
+			if !ok {
+				return errors.New("[streamResponseExport]: wrong DB method argument")
+			}
+			if !headerWritten {
+				rExp.Freeze()
+				switch fmt {
+				case FLAT_JSON:
+					sink = rExp.NewJSONSink(cw, includeMeta)
+				case WIDE_FORMAT_CSV:
+					sink = rExp.NewWideCSVSink(cw, includeMeta)
+				case LONG_FORMAT_CSV:
+					sink = rExp.NewLongCSVSink(cw, includeMeta)
+				default:
+					return errors.New("[streamResponseExport]: wrong response format")
+				}
+				if err := sink.WriteHeader(); err != nil {
+					return err
+				}
+				if err := cw.Flush(); err != nil {
+					return err
+				}
+				headerWritten = true
+			}
+			parsed, perr := rExp.ParseResponse(&response)
+			if perr != nil {
+				return perr
+			}
+			return sink.WriteRow(parsed)
+		},
+		responseExporter, req.Page, req.PageSize,
+	)
+	if err != nil {
+		logger.Info.Print(err)
+		return status.Error(codes.Internal, err.Error())
+	}
+
+	if !headerWritten {
+		if fmt != FLAT_JSON {
+			return status.Error(codes.Internal, "no responses, nothing is generated")
+		}
+		// Emit an empty JSON array for zero-response exports.
+		sink = responseExporter.NewJSONSink(cw, includeMeta)
+		if err := sink.WriteHeader(); err != nil {
+			return err
+		}
+	}
+
+	if err := sink.Flush(); err != nil {
+		logger.Info.Println(err)
+		return err
+	}
+	return cw.Flush()
 }
 
 func (s *studyServiceServer) getResponseExporterSurveyInfo(req *api.SurveyInfoExportQuery) (*exporter.ResponseExporter, error) {
