@@ -845,7 +845,7 @@ func externalEventHandler(action types.Expression, oldState ActionData, event ty
 
 	if len(action.Data) < 1 {
 		msg := "externalEventHandler must have at least 1 argument"
-		logger.Error.Printf(msg)
+		logger.Error.Print(msg)
 		return newState, errors.New(msg)
 	}
 	EvalContext := EvalContext{
