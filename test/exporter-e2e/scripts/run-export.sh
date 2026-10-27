@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Drive one export through the real HTTP path while simultaneously capturing
-# the study container's peak resident memory and wall-clock time.
+# the study and management-api containers' peak resident memory and wall time.
 #
 # Usage: run-export.sh {wide|long|json}
 #
 # Produces under out/<timestamp>-<format>/:
 #   - the downloaded CSV/JSON file
-#   - memory.log  (one docker-stats RSS reading per ~500ms, with peak printed)
+#   - memory.log  (one docker-stats RSS reading per ~500ms for both the study
+#                  and management-api containers, with peaks printed)
 #   - meta.txt    (timing, byte count, sha256, image tags in use)
 set -euo pipefail
 
@@ -57,31 +58,35 @@ label="${RUN_LABEL:-run}"
 run_dir="out/$(date +%Y%m%d-%H%M%S)-${label}-${format}"
 mkdir -p "$run_dir"
 
-# Memory sampler: poll the study container via `docker stats` every 500 ms.
-# Using docker stats rather than cgroup files inside the container so it works
-# on macOS (Docker Desktop / Podman) where cgroup paths are not exposed.
+# Memory sampler: poll the study and management-api containers via `docker stats`
+# every 500 ms. Using docker stats rather than cgroup files inside the container
+# so it works on macOS (Docker Desktop / Podman) where cgroup paths are not
+# exposed. Each line: "<epoch> <study_bytes> <mgmt_bytes>".
 sample_pid=""
 start_memory_sampler() {
   (
     while true; do
-      raw=$(docker stats --no-stream --format '{{.MemUsage}}' lab-study 2>/dev/null | awk '{print $1}')
-      if [[ -n "$raw" ]]; then
-        bytes=$(awk -v s="$raw" 'BEGIN {
-          val = s; gsub(/[^0-9.]/, "", val)
-          unit = s; gsub(/[0-9.]/,  "", unit)
-          if      (unit == "B")   mult = 1
-          else if (unit == "kB")  mult = 1000
-          else if (unit == "MB")  mult = 1000000
-          else if (unit == "GB")  mult = 1000000000
-          else if (unit == "KiB") mult = 1024
-          else if (unit == "MiB") mult = 1048576
-          else if (unit == "GiB") mult = 1073741824
-          else if (unit == "TiB") mult = 1099511627776
-          else                    mult = 1
-          print int(val * mult)
-        }')
-        echo "$(date +%s.%N) ${bytes:-0}"
-      fi
+      docker stats --no-stream --format '{{.Name}} {{.MemUsage}}' \
+        lab-study lab-management-api 2>/dev/null \
+      | awk -v ts="$(date +%s.%N)" '
+          function tobytes(s,   val, unit, mult) {
+            val = s; gsub(/[^0-9.]/, "", val)
+            unit = s; gsub(/[0-9.]/,  "", unit)
+            if      (unit == "B")   mult = 1
+            else if (unit == "kB")  mult = 1000
+            else if (unit == "MB")  mult = 1000000
+            else if (unit == "GB")  mult = 1000000000
+            else if (unit == "KiB") mult = 1024
+            else if (unit == "MiB") mult = 1048576
+            else if (unit == "GiB") mult = 1073741824
+            else if (unit == "TiB") mult = 1099511627776
+            else                    mult = 1
+            return int(val * mult)
+          }
+          $1 == "lab-study"          { study = tobytes($2) }
+          $1 == "lab-management-api" { mgmt  = tobytes($2) }
+          END { printf "%s %d %d\n", ts, study+0, mgmt+0 }
+        '
       sleep 0.5 || true
     done
   ) > "$run_dir/memory.log" &
@@ -122,15 +127,18 @@ bytes=$(stat -f%z "$run_dir/data.${ext}" 2>/dev/null || stat -c%s "$run_dir/data
 sha=$(shasum -a 256 "$run_dir/data.${ext}" | awk '{print $1}')
 
 if [[ -s "$run_dir/memory.log" ]]; then
-  peak=$(awk 'NF==2 && $2+0>0 {if($2+0>m){m=$2+0}} END{printf "%d", m}' "$run_dir/memory.log")
+  study_peak=$(awk 'NF==3 && $2+0>0 {if($2+0>m){m=$2+0}} END{printf "%d", m}' "$run_dir/memory.log")
+  mgmt_peak=$(awk 'NF==3 && $3+0>0 {if($3+0>m){m=$3+0}} END{printf "%d", m}' "$run_dir/memory.log")
   samples=$(wc -l <"$run_dir/memory.log" | awk '{print $1}')
 else
-  peak=0
+  study_peak=0
+  mgmt_peak=0
   samples=0
 fi
 
 # Pretty bytes (MB).
-peak_mb=$(awk -v b="$peak" 'BEGIN{printf "%.1f", b/1024/1024}')
+study_peak_mb=$(awk -v b="$study_peak" 'BEGIN{printf "%.1f", b/1024/1024}')
+mgmt_peak_mb=$(awk -v b="$mgmt_peak" 'BEGIN{printf "%.1f", b/1024/1024}')
 file_mb=$(awk -v b="$bytes" 'BEGIN{printf "%.1f", b/1024/1024}')
 
 {
@@ -140,7 +148,8 @@ file_mb=$(awk -v b="$bytes" 'BEGIN{printf "%.1f", b/1024/1024}')
   echo "elapsed_seconds:        $elapsed"
   echo "bytes:                  $bytes  (${file_mb} MB)"
   echo "sha256:                 $sha"
-  echo "study_peak_memory_bytes: $peak  (${peak_mb} MB)"
+  echo "study_peak_memory_bytes: $study_peak  (${study_peak_mb} MB)"
+  echo "management_api_peak_memory_bytes: $mgmt_peak  (${mgmt_peak_mb} MB)"
   echo "memory_samples:         $samples"
   echo "study_image:            $study_image"
   echo "management_api_image:   $mgmt_image"

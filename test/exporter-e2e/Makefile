@@ -4,15 +4,27 @@ SHELL := bash
 
 DUMP_DIR ?= ./dump
 
-# Tags used when building the local refactor images.
-STUDY_REFACTOR_TAG ?= influweb-local/study-service:refactor
-MGMT_REFACTOR_TAG  ?= influweb-local/management-api:refactor
+# Host architecture (arm64/aarch64 -> arm64, x86_64/amd64 -> amd64). The lab
+# builds all Go services natively for this arch; see scripts/build-images.sh.
+ARCH := $(shell uname -m | sed -e 's/aarch64/arm64/' -e 's/x86_64/amd64/')
+
+# Arch-suffixed local image tags. Must match scripts/build-images.sh. What each
+# tag is built from is declared per-service in images.conf.
+STUDY_STABLE_IMAGE      ?= influweb-local/study-service:stable-$(ARCH)
+MGMT_STABLE_IMAGE       ?= influweb-local/management-api:stable-$(ARCH)
+USERMGMT_STABLE_IMAGE   ?= influweb-local/user-management:stable-$(ARCH)
+STUDY_REFACTOR_IMAGE    ?= influweb-local/study-service:refactor-$(ARCH)
+MGMT_REFACTOR_IMAGE     ?= influweb-local/management-api:refactor-$(ARCH)
+USERMGMT_REFACTOR_IMAGE ?= influweb-local/user-management:refactor-$(ARCH)
 
 .PHONY: help
 help:
+	@echo "Host architecture: $(ARCH)"
 	@echo "Targets:"
-	@echo "  build-refactor  - docker build refactor images from the working tree"
-	@echo "  up-stable       - start the lab with production-tagged images"
+	@echo "  build-stable    - build the stable image set (sources declared in images.conf)"
+	@echo "  build-refactor  - build the refactor image set (sources declared in images.conf)"
+	@echo "  build-all       - build both stable and refactor image sets"
+	@echo "  up-stable       - start the lab with locally-built stable images"
 	@echo "  up-refactor     - start the lab with locally-built refactor images"
 	@echo "  down            - stop the lab (data preserved)"
 	@echo "  nuke            - stop the lab AND drop the mongo volume"
@@ -26,22 +38,28 @@ help:
 	@echo "  diff            - sha256 + size compare two runs (RUN_A=stable RUN_B=refactor)"
 	@echo "  ps              - show lab container status + memory usage"
 
+.PHONY: build-stable
+build-stable:
+	./scripts/build-images.sh stable
+
 .PHONY: build-refactor
 build-refactor:
-	@echo "Building study-service refactor image..."
-	docker build --load -t $(STUDY_REFACTOR_TAG) -f ../../build/docker/Dockerfile ../..
-	@echo "Building management-api refactor image..."
-	docker build --load -t $(MGMT_REFACTOR_TAG)  -f ../../../api-gateway/build/docker/management-api/Dockerfile ../../../api-gateway
-	@echo "Done. Use 'make up-refactor' to start the lab."
+	./scripts/build-images.sh refactor
+
+.PHONY: build-all
+build-all:
+	./scripts/build-images.sh all
 
 .PHONY: up-stable
 up-stable:
-	docker compose up -d
+	./scripts/build-images.sh stable
+	STUDY_IMAGE=$(STUDY_STABLE_IMAGE) MGMT_IMAGE=$(MGMT_STABLE_IMAGE) USERMGMT_IMAGE=$(USERMGMT_STABLE_IMAGE) docker compose up -d
 	@echo "Lab up (stable images). Tail logs with 'docker compose logs -f'."
 
 .PHONY: up-refactor
 up-refactor:
-	STUDY_IMAGE=$(STUDY_REFACTOR_TAG) MGMT_IMAGE=$(MGMT_REFACTOR_TAG) docker compose up -d
+	./scripts/build-images.sh refactor
+	STUDY_IMAGE=$(STUDY_REFACTOR_IMAGE) MGMT_IMAGE=$(MGMT_REFACTOR_IMAGE) USERMGMT_IMAGE=$(USERMGMT_REFACTOR_IMAGE) docker compose up -d
 	@echo "Lab up (refactor images). Tail logs with 'docker compose logs -f'."
 
 .PHONY: down

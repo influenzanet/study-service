@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Compare two export runs: file sha + size, elapsed time,
-# peak study-container memory.
+# peak study-container and management-api-container memory.
 #
 # For CSV files: headers are compared separately, then bodies are sorted before
 # sha comparison (old versions of the study service didn't enforce any sort on rows).
@@ -30,6 +30,8 @@ a_secs=$(get elapsed_seconds "$a/meta.txt")
 b_secs=$(get elapsed_seconds "$b/meta.txt")
 a_peak=$(get study_peak_memory_bytes "$a/meta.txt" | awk '{print $1}')
 b_peak=$(get study_peak_memory_bytes "$b/meta.txt" | awk '{print $1}')
+a_peak_api=$(get management_api_peak_memory_bytes "$a/meta.txt" | awk '{print $1}')
+b_peak_api=$(get management_api_peak_memory_bytes "$b/meta.txt" | awk '{print $1}')
 
 fmt_mb() { awk -v b="$1" 'BEGIN{printf "%.1f MB", b/1024/1024}'; }
 delta()  { awk -v a="$1" -v b="$2" 'BEGIN{ if(a==0){print "—"} else {printf "%+.1f%%", (b-a)/a*100} }'; }
@@ -42,6 +44,7 @@ printf '%-26s  %-30s  %-30s  %s\n' 'sha256 (file equality)' "$a_sha" "$b_sha" "$
 printf '%-26s  %-30s  %-30s  %s\n' 'output size'    "$(fmt_mb "$a_bytes")" "$(fmt_mb "$b_bytes")" "$(delta "$a_bytes" "$b_bytes")"
 printf '%-26s  %-30s  %-30s  %s\n' 'wall time (s)'  "$a_secs"             "$b_secs"             "$(delta "$a_secs" "$b_secs")"
 printf '%-26s  %-30s  %-30s  %s\n' 'study peak RSS' "$(fmt_mb "$a_peak")"  "$(fmt_mb "$b_peak")"  "$(delta "$a_peak" "$b_peak")"
+printf '%-26s  %-30s  %-30s  %s\n' 'api peak RSS'   "$(fmt_mb "$a_peak_api")"  "$(fmt_mb "$b_peak_api")"  "$(delta "$a_peak_api" "$b_peak_api")"
 
 # --- Content comparison when sha differs ---
 
